@@ -1,0 +1,158 @@
+Staging:
+  src_columns:
+    id text,
+    openid text,
+    pin text,
+    order_total_price text,
+    seller_discount text,
+    order_payment text,
+    order_source text,
+    order_start_time text,
+    payment_confirm_time text,
+    invoice_info text,
+    consignee_info_id text,
+    order_state text,
+    order_state_remark text,
+    create_date text ,
+    update_date text
+
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_jd_pop_order(
+    parent_order_id varchar(50), 
+    shopperid varchar(255),
+    date_id date,
+    openid varchar(255),
+    pin varchar(255),
+    order_total_price decimal(17,6),
+    sellerscount decimal(17,6),
+    order_amt decimal(17,6),
+    order_source varchar(255), 
+    order_start_date timestamp, 
+    order_end_date timestamp, 
+    invoice_info varchar(255), 
+    consignee_info_id varchar(50),
+    province varchar(50),
+    city varchar(255),
+    order_state varchar(255), 
+    order_state_remark varchar(255), 
+    create_date timestamp, 
+    update_date timestamp,
+    is_gwp_include varchar(1),
+    is_delivered varchar(100), 
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_pop_order_id primary key( parent_order_id )
+    )distributed by (parent_order_id);
+
+  insert_edw_from_ods_query:
+    insert into edw.f_jd_pop_order(
+    parent_order_id,
+    openid,
+    date_id,
+    pin,
+    order_total_price,
+    sellerscount,
+    order_amt,
+    order_source,
+    order_start_date,
+    order_end_date,
+    invoice_info,
+    consignee_info_id,
+    order_state,
+    order_state_remark,
+    create_date,
+    update_date,
+    dl_batch_date,
+    dl_load_time
+    )
+    select
+    id,
+    openid,
+    date(to_timestamp(payment_confirm_time,'YYYY-MM-DD HH24:MI:SS')),
+    pin,
+    order_total_price::decimal(17,6),
+    seller_discount::decimal(17,6),
+    order_payment::decimal(17,6),
+    order_source,
+    to_timestamp(order_start_time,'YYYY-MM-DD HH24:MI:SS'),
+    to_timestamp(payment_confirm_time,'YYYY-MM-DD HH24:MI:SS'),
+    invoice_info,
+    consignee_info_id,
+    order_state,
+    order_state_remark,
+    to_timestamp(create_date,'YYYY-MM-DD HH24:MI:SS'),
+    to_timestamp(update_date,'YYYY-MM-DD HH24:MI:SS'),
+    dl_batch_date,
+    now()
+    from ods.r_jd_pop_order;
+    
+    update edw.f_jd_pop_order a
+    set shopperid = coalesce(b.openid,b.pin)
+    from (select pin,max(openid) openid from edw.f_jd_pop_order group by pin) b 
+    where a.pin = b.pin;
+
+    # dont need the historica data
+    #  insert into edw.f_jd_pop_order
+    # (
+    #   parent_order_id,
+    #   pin,
+    #   order_total_price,
+    #   order_amt,
+    #   order_start_date,
+    #   order_end_date,
+    #   invoice_info,
+    #   province,
+    #   city,
+    #   order_state,
+    #   date_id
+    # )
+    # select 
+    #   parent_order_id,
+    #   pin,
+    #   order_amount as order_total_price,
+    #   actual_amount as order_amt,
+    #   order_create_time order_start_time,
+    #   order_completed_time order_end_time,
+    #   invoice_type,
+    #   (string_to_array(edw.func_parse_address(delivery_address),','))[1] province,
+    #   (string_to_array(edw.func_parse_address(delivery_address),','))[2] city,
+    #   order_status,
+    #   order_completed_time::date date_id
+    # from edw.f_jd_pop_order_dtl_his
+    # group by parent_order_id, pin, order_create_time, order_amount, actual_amount,
+    #   order_completed_time, invoice_type,
+    #   (edw.func_parse_address(delivery_address)),
+    #   order_status;
+  
+  sync_to_rds_dm:
+    create table if not exists dm.f_jd_pop_order (like frn.f_jd_pop_order);
+    
+    delete from  dm.f_jd_pop_order;
+    delete from  dm.f_jd_pop_order;
+
+    insert into dm.f_jd_pop_order select *  from frn.f_jd_pop_order;
+
+  # pop_consignee(id,province,city) -> pop_order(province,city)
+  update_by_consignee:
+    update edw.f_jd_pop_order a
+    set province = b.province,
+        city = b.city
+    from edw.f_jd_pop_consignee b
+    where a.consignee_info_id = b.id;
+  
+  # pop_order_dtl(parent_order_id,is_gwp)  -> pop_order(is_gwp_include)
+  update_by_pop_order_dtl:
+    update edw.f_jd_pop_order a
+    set is_gwp_include = case when b.agg ~ '.*Y.*' then 'Y' else 'N' end,
+    is_delivered = case when b.dlv_agg ~ '.*Y.*' then 'Y' else 'N' end
+    from (select 
+            parent_order_id,
+            string_agg(is_gwp,'') agg,
+            string_agg(is_delivered ,'') dlv_agg 
+          from edw.f_jd_pop_order_dtl 
+          group by parent_order_id) b
+    where a.parent_order_id = b.parent_order_id ;

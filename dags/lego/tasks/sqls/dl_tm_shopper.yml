@@ -1,0 +1,83 @@
+EDW:
+  create_table_query:
+    create table if not exists edw.d_dl_tm_shopper(
+      shopperid varchar(255),
+      openid varchar(255),
+      pin varchar(255),
+      member_id varchar(255),
+      register_date date,
+      sex varchar(10),
+      birthday date,
+      member_cluster varchar(30),
+      member_grade varchar(30),
+      shopper_cluster varchar(50),
+      contribute_amt decimal(17,6),
+      first_purchase_id varchar(100),
+      first_purchase_date date,
+      first_purchase_order_amt decimal(17,6),
+      last_purchase_id varchar(100),
+      last_purchase_date date, 
+      last_purchase_order_amt decimal(17,6),
+      dl_batch_date varchar(8),
+      dl_load_time timestamp,
+      constraint pk_dl_tm_shopper_id primary key(shopperid)
+    )distributed by (shopperid);
+
+  sync_to_rds_dm:
+    create table if not exists dm.d_dl_tm_shopper (like frn.d_dl_tm_shopper);
+    delete from dm.d_dl_tm_shopper;
+    delete from dm.d_dl_tm_shopper;
+    insert into dm.d_dl_tm_shopper  select *   from frn.d_dl_tm_shopper;
+
+  update_by_oms_order_dtl:
+      delete from edw.d_dl_tm_shopper;
+      insert into edw.d_dl_tm_shopper(
+             shopperid,
+             shopper_cluster,
+             contribute_amt,
+             first_purchase_id,
+             first_purchase_date,
+             first_purchase_order_amt,
+             last_purchase_id,
+             last_purchase_date,
+             last_purchase_order_amt,
+             dl_batch_date,
+             dl_load_time,
+             member_id,
+             register_date,
+             sex,
+             birthday,
+             member_cluster,
+             member_grade
+      )
+      select a.*,
+             null member_id,
+             null register_date,
+             null sex,
+             null birthday,
+             null member_cluster,
+             null member_grade
+      from (SELECT shopperid,
+                   case when count(distinct date_id) = 1 then 'New Shopper' else 'Exist Shopper' end shopper_cluster,
+                   sum(case when lego_sku_gmv_price >= 19 and is_gwp = 'N' then order_gmv_amount end) contribute_amt,
+                   max(case when min_order_date = create_time then parent_order_id end) first_purchase_id,
+                   max(case when min_order_date = create_time then date_id end) first_purchase_date,
+                   sum(case when min_order_date = create_time and lego_sku_gmv_price >= 19 and is_gwp = 'N' then order_gmv_amount end) first_purchase_order_amt,
+                   max(case when max_order_date = create_time then parent_order_id end) last_purchase_id,
+                   max(case when max_order_date = create_time then date_id end) last_purchase_date,
+                   sum(case when max_order_date = create_time and lego_sku_gmv_price >= 19 and is_gwp = 'N' then order_gmv_amount end) last_purchase_order_amt,
+                   to_char(now(),'yyyymmdd') dl_batch_date,
+                   now() dl_load_time
+          FROM (select shopperid,
+                       parent_order_id,
+                       create_time,
+                       date_id,
+                       lego_sku_gmv_price,
+                       order_gmv_amount,
+                       is_gwp,
+                       max(create_time) over(partition by shopperid) max_order_date,
+                       min(create_time) over(partition by shopperid) min_order_date
+                  from edw.f_oms_order_dtl
+                 where shopperid is not null) a
+          group by shopperid) a
+          ;

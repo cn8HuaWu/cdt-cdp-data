@@ -1,0 +1,106 @@
+Staging:
+  src_columns:
+    distributor text,
+    return_order_id text,
+    original_order_id text,
+    member_id text,
+    lego_store_code text,
+    distributor_store_code text,
+    store_name text,
+    is_special_sales text,
+    special_sales_type text,
+    return_order_type text,
+    sale_channel text,
+    return_piece_cnt text,
+    return_amt text,
+    return_confirm_time text,
+    order_create_time text,
+    order_end_time text,
+    operator_id text,
+    sendout_time text 
+
+ODS:    
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_phy_store_return_order (
+      distributor varchar(255) NULL,
+      return_order_id varchar(255) NOT NULL,
+      original_order_id varchar(255) NULL,
+      member_id varchar(255) NULL,
+      lego_store_code varchar(255) NULL,
+      distributor_store_code varchar(255) NULL,
+      store_name varchar(255) NULL,
+      is_special_sales varchar(255) NULL,
+      special_sales_type varchar(255) NULL,
+      return_order_type varchar(255) NULL,
+      sale_channel varchar(255) NULL,
+      return_piece_cnt decimal(15) NULL,
+      return_amt decimal(17,2) NULL,
+      return_confirm_time timestamp NULL,
+      order_create_time timestamp NULL,
+      order_end_time timestamp NULL,
+      operator_id varchar(255) NULL,
+      sendout_time timestamp NULL,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (distributor, return_order_id);
+
+  insert_edw_from_ods_query:
+    insert into edw.f_phy_store_return_order(
+      distributor,
+      return_order_id,
+      original_order_id,
+      member_id,
+      lego_store_code,
+      distributor_store_code,
+      store_name,
+      is_special_sales,
+      special_sales_type,
+      return_order_type,
+      sale_channel,
+      return_piece_cnt,
+      return_amt,
+      return_confirm_time,
+      order_create_time,
+      order_end_time,
+      operator_id,
+      sendout_time,
+      dl_batch_date,
+      dl_load_time
+    )select 
+      upper(distributor),
+      return_order_id,
+      case when trim(original_order_id) in('','null') then null else original_order_id end as original_order_id,
+      member_id,
+      case when trim(lego_store_code) in('','null') then null else lego_store_code end as lego_store_code,
+      distributor_store_code,
+      store_name,
+      case when trim(is_special_sales) in('','null') then null else is_special_sales end as is_special_sales,
+      case when trim(special_sales_type) in('','null') then null else special_sales_type end as special_sales_type,
+      case when trim(return_order_type) in('','null') then null else return_order_type end as return_order_type,
+      case when trim(sale_channel) in('','null') then null else sale_channel end as sale_channel,
+      return_piece_cnt::decimal(15),
+      return_amt::decimal(17,2),
+      TIMESTAMP WITH TIME ZONE 'epoch' + return_confirm_time::decimal(13) * INTERVAL '1 s',
+      TIMESTAMP WITH TIME ZONE 'epoch' + order_create_time::decimal(13) * INTERVAL '1 s',
+      case when order_end_time in ('null','') then null else TIMESTAMP WITH TIME ZONE 'epoch' + order_end_time::decimal(13) * INTERVAL '1 s' end,
+      operator_id,
+      TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s',
+      dl_batch_date,
+      dl_load_time
+    from (
+      select * , row_number() over( partition by upper(distributor), distributor_store_code, return_order_id order by (TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s') desc ) rk
+      from ods.r_phy_store_return_order
+    )ab
+    where rk=1;
+
+  update_by_phy_store:
+    update edw.f_phy_store_return_order o
+    set lego_store_code = s.lego_store_code 
+    from edw.f_phy_store s
+    where o.distributor_store_code  = s.distributor_store_code 
+    and o.distributor = s.distributor 
+    and lower(o.distributor) ='lewin'
+    and (o.lego_store_code is null or trim(o.lego_store_code) ='')
+    and s.lego_store_code is not null;

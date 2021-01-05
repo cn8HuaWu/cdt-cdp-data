@@ -1,0 +1,87 @@
+Staging:
+  src_columns:
+    parent_order_id text,
+    store_sku_id text,
+    store_sku_name text,
+    order_create_time text,
+    order_status text,
+    actual_amount text,
+    pieces_cnt text,
+    gmv_unit_price text,
+    payment_type text,
+    estimated_delivery_date text,
+    user_risk_level text,
+    branches text,
+    delivery_center text,
+    datawarehouse text,
+    sales_assistant text,
+    buyer text
+
+ODS:
+
+EDW:
+  create_table_query:
+    create table if not exists edw.f_jd_b2b_order_dtl_his(
+    son_order_id varchar(200),
+    store_sku_id varchar(200),
+    store_sku_name varchar(200),
+    order_create_time timestamp, 
+    order_status varchar(200),
+    actual_amount decimal(17,6),
+    pieces_cnt decimal(11),
+    gmv_unit_price decimal(17,6),
+    payment_type varchar(5),
+    estimated_delivery_date date,
+    user_risk_level varchar(5),
+    branches varchar(200),
+    delivery_center varchar(200),
+    datawarehouse varchar(200),
+    sales_assistant varchar(200),
+    buyer varchar(200),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_jd_b2b_order_his_id primary key( son_order_id,  store_sku_id)
+    )
+    distributed by (son_order_id, store_sku_id);
+
+  insert_edw_from_ods_query:
+    insert into edw.f_jd_b2b_order_dtl_his(
+      son_order_id,
+      store_sku_id,
+      store_sku_name,
+      order_create_time,
+      order_status,
+      actual_amount,
+      pieces_cnt,
+      gmv_unit_price,
+      payment_type,
+      estimated_delivery_date,
+      user_risk_level,
+      branches,
+      delivery_center,
+      datawarehouse,
+      sales_assistant,
+      buyer,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      parent_order_id ,
+      store_sku_id ,
+      store_sku_name ,
+      TO_TIMESTAMP(order_create_time, 'YYYY-MM-DD HH24:MI:SS') ,
+      order_status,
+      actual_amount::decimal(17,6),
+      pieces_cnt::decimal(11),
+      gmv_unit_price::decimal(17,6),
+      payment_type,
+      case when estimated_delivery_date ~ E'[0-9]{4}-[0-9]{2}-[0-9]{2}' then to_date(estimated_delivery_date, 'YYYY-MM-DD') else null end,
+      user_risk_level,
+      branches,
+      delivery_center,
+      datawarehouse,
+      sales_assistant,
+      buyer,
+      dl_batch_date,
+      now()
+    from ods.r_jd_b2b_order_dtl_his;

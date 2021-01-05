@@ -1,0 +1,412 @@
+entities:
+  jd_b2b_order_dtl:
+    edw_prefix: f
+    stg_suffix: di
+    key: id
+    update_type: F
+    dm_dependicies: jd_b2b_order,jd_pop_order_dtl,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper,jd_member
+  
+  jd_member:
+    edw_prefix: d_dl
+    stg_suffix: di
+    key: member_id
+    update_type: SCD2
+    dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper
+    
+  jd_pop_order:
+    edw_prefix: f
+    stg_suffix: di
+    key: id
+    update_type: F
+    dm_dependicies: jd_pop_order_dtl,jd_member,jd_b2b_order,jd_b2b_order_dtl,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper
+
+  jd_pop_order_dtl:
+    edw_prefix: f
+    stg_suffix: di
+    key: id
+    update_type: F
+    dm_dependicies: jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper
+
+  jd_pop_consignee:
+    edw_prefix: f
+    stg_suffix: di
+    key: id
+    update_type: SCD2
+    dm_dependicies: jd_pop_order
+    dm_sync: False
+    encrypted_columns: telephone,mobile
+    to_encrypt_columns: telephone,mobile
+
+  bu_jd_pop_sku_map:
+    edw_prefix: d
+    stg_suffix: di
+    key: store_sku_id
+    update_type: F
+    dm_sync: False
+    dm_dependicies: jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper
+    
+
+  bu_jd_b2b_sku_map:
+    edw_prefix: d
+    stg_suffix: di
+    key: store_sku_id
+    update_type: F
+    dm_sync: False
+    dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper
+
+  bu_tm_sku_map:
+    edw_prefix: d
+    stg_suffix: di
+    key: store_sku_id
+    update_type: F
+    dm_sync: False
+    dm_dependicies: dl_product_info,oms_order_dtl,dl_dly_sales_rpt,dl_tm_shopper
+
+  bu_mly_jd_traffic:
+    edw_prefix: a
+    stg_suffix: di
+    key: store,yearmonth
+    update_type: F
+
+  bu_mly_tm_traffic:
+    edw_prefix: a
+    stg_suffix: di
+    key: store,yearmonth
+    update_type: F
+
+  bu_dly_jd_traffic:
+    edw_prefix: a
+    stg_suffix: di
+    key: store,date
+    update_type: F
+    dm_dependicies: dl_dly_sales_rpt
+
+  bu_dly_tm_traffic:
+    edw_prefix: a
+    stg_suffix: di
+    key: store,date
+    update_type: F
+    dm_dependicies: dl_dly_sales_rpt
+
+  dl_product_info:
+    edw_prefix: d
+    stg_suffix: df
+    key: material_id,year_version
+    update_type: F
+    dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,oms_order_dtl,dl_jd_shopper,dl_tm_shopper
+
+  bu_tm_gwp:
+    edw_prefix: d
+    stg_suffix: df
+    key: store_sku_id
+    update_type: F
+    dm_sync: False
+    dm_dependicies: oms_order_dtl,dl_dly_sales_rpt,dl_tm_shopper
+  
+  bu_jd_b2b_gwp:
+    edw_prefix: d
+    stg_suffix: df
+    key: store_sku_id
+    update_type: F
+    dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper
+    dm_sync: False
+
+  bu_jd_pop_gwp:
+    edw_prefix: d
+    stg_suffix: df
+    key: store_sku_id
+    update_type: F
+    dm_dependicies: jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper
+    dm_sync: False
+
+  dl_calendar:
+    edw_prefix: d
+    stg_suffix: yf
+    key: date_id
+    update_type: F
+  
+  dl_city_tier:
+    edw_prefix: d
+    stg_suffix: yf
+    key: city_chn,year
+    update_type: F
+
+  wc_mini_member_info:
+    edw_prefix: f
+    stg_suffix: yf
+    key: unionid
+    update_type: F
+    encrypted_columns: mobile,unionid,openid
+    to_encrypt_columns: mobile
+
+  cs_consumer_info:
+    edw_prefix: f
+    stg_suffix: di
+    key: partner
+    update_type: F
+
+  jd_pop_order_dtl_his:
+    edw_prefix: f
+    stg_suffix: mi
+    key: parent_order_id,store_sku_id
+    update_type: F
+    to_encrypt_columns: cosignee_contact,taxpayer_phone
+
+  jd_order_his:
+    edw_prefix: f
+    stg_suffix: mi
+    key: parent_order_id,shopper_nickname
+    update_type: F
+
+  jd_order_dtl_his:
+    edw_prefix: f
+    stg_suffix: mi
+    key: parent_order_id,store_sku_id
+    update_type: F
+  
+  jd_b2b_order_dtl_his:
+    edw_prefix: f
+    stg_suffix: mi
+    key: parent_order_id,store_sku_id
+    update_type: F
+
+  oms_order:
+    edw_prefix: f
+    stg_suffix: di
+    key: id
+    update_type: F
+    dm_dependicies: dl_dly_sales_rpt,oms_order_dtl,dl_tm_shopper
+    
+
+  oms_order_dtl:
+    edw_prefix: f
+    stg_suffix: di
+    key: id
+    update_type: F
+    dm_dependicies: dl_dly_sales_rpt,oms_order,dl_tm_shopper
+
+  oms_return_order:
+    edw_prefix: f
+    stg_suffix: di
+    key: id
+    update_type: F
+
+  oms_return_order_dtl:
+    edw_prefix: f
+    stg_suffix: di
+    key: id
+    update_type: F
+
+  tm_order_dtl_his:
+    edw_prefix: f
+    stg_suffix: mi
+    key: parent_order_id,external_sku_id
+    update_type: F
+
+  tm_order_his:
+    edw_prefix: f
+    stg_suffix: mi
+    key: parent_order_id
+    update_type: F
+    to_encrypt_columns: consinee_mobile,consinee_telephone
+
+  tm_order_dtl_2018_his:
+    edw_prefix: f
+    stg_suffix: mi
+    key: parent_order_id,son_order_id
+    update_type: F
+
+  dl_scv:
+    key: consumer_id
+    update_type: F
+
+  dl_mly_sales_rpt:
+    key: yearmonth,kpi_name,store
+    dm_dependicies: dl_mly_sales_rpt
+    
+  tm_member_his:
+    edw_prefix: d_dl
+    update_type: SCD2-MD5
+    stg_suffix: mi
+    key: shopperid
+    to_encrypt_columns: mobile
+  
+  tm_member_1st_purchase_his:
+    edw_prefix: d_dl
+    update_type: F
+    stg_suffix: mi
+    key: shopperid
+    to_encrypt_columns: mobile
+
+  tm_member:
+    edw_prefix: d
+    update_type: F
+    key: shopperid
+    dm_dependicies: dl_dly_sales_rpt,oms_order_dtl
+    dm_sync: False
+  
+  qbt_sku_monitor:
+    edw_prefix: f
+    update_type: SCD3
+    stg_suffix: mi
+    key: year,month,week,start_time,end_time,brand,lego_sku_id,sku_cn_name,platform,shop
+    dm_sync: False
+
+  qbt_store_sales:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: mi
+    key: platform,year,month,shop,shopkeeper_name
+    dm_sync: False
+
+  qbt_brand_sales:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: mi
+    key:  year,month,platform,primary_category,brand
+    dm_sync: False
+
+  qbt_tmall_global:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: mi
+    key: year,month,shop,store_sku_name,category,link
+    dm_sync: False
+
+  qbt_toy_industry_sales:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: mi
+    key: platform,year,month,primary_category,second_category
+    dm_sync: False
+    
+  qbt_building_toy_industry_sales:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: mi
+    key: platform,year,month,primary_category,second_category,third_category
+    dm_sync: False
+
+  phy_store_order:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,distributor_store_code,parent_order_id
+    dm_sync: False
+  
+  phy_store_order_dtl:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,distributor_store_code,parent_order_id,son_order_id
+    dm_sync: False
+
+  phy_store_order_payment_dtl:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,distributor_store_code,parent_order_id,payment_type
+    dm_sync: False
+
+  phy_store_order_coupon_dtl:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,distributor_store_code,parent_order_id,coupon_code
+    dm_sync: False
+
+  phy_store_return_order:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,distributor_store_code,return_order_id
+    dm_sync: False
+
+  phy_store_return_order_dtl:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,return_order_id,lego_sku_id
+    dm_sync: False
+
+  phy_store:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,lego_store_code
+    dm_sync: False
+  
+  phy_store_handwork:
+    edw_prefix: f
+    update_type: SCD2
+    stg_suffix: di
+    key: distributor,lego_store_code
+    dm_sync: False
+
+  phy_store_warehouse_inventory:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,stats_time,lego_sku_id
+    dm_sync: False
+
+  phy_store_inventory:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,distributor_store_code,lego_store_code,stats_time,lego_sku_id
+    dm_sync: False
+
+  phy_store_traffic:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,distributor_store_code,lego_store_code,stats_time
+    dm_sync: False
+
+  phy_store_member:
+    edw_prefix: f
+    update_type: SCD2
+    stg_suffix: di
+    key: distributor,member_id
+    dm_sync: False
+
+  phy_store_member_point:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,member_id,stats_time
+    dm_sync: False
+
+  phy_store_point_transaction:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,member_id,trans_id
+    dm_sync: False
+
+  phy_store_coupon:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: distributor,coupon_code
+    dm_sync: False
+
+  oms_income_expense:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: id
+    dm_dependicies: oms_promotion_info
+
+  oms_income_statement:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: id
+
+  oms_expense_statement:
+    edw_prefix: f
+    update_type: F
+    stg_suffix: di
+    key: id

@@ -1,0 +1,44 @@
+Staging:
+  src_columns:
+    store_sku_id text,
+    lego_sku_id text,
+    store_sku_name text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.d_bu_jd_b2b_sku_map(
+    store_sku_id varchar(50),
+    lego_sku_id varchar(50),
+    store_sku_name varchar(255),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_jd_b2b_sku_map_id primary key( store_sku_id )
+    )distributed by (store_sku_id)
+  
+  insert_edw_from_ods_query:
+    insert into edw.d_bu_jd_b2b_sku_map(
+    store_sku_id,
+    lego_sku_id,
+    store_sku_name,
+    dl_batch_date,
+    dl_load_time
+    )
+    select
+        store_sku_id,
+        lego_sku_id,
+        store_sku_name,
+        dl_batch_date,
+        now()
+    from (
+      select *, row_number() over(partition by store_sku_id ) rk from ods.r_bu_jd_b2b_sku_map 
+    )a
+    where a.rk=1;
+
+  # post_update_other_edw:
+  #   update edw.d_dl_product_info a
+  #   set jd_b2b_sku_id = b.store_sku_id
+  #   FROM edw.d_bu_jd_b2b_sku_map b
+  #   where a.lego_sku_id = b.lego_sku_id;
+

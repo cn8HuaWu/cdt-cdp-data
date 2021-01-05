@@ -1,0 +1,89 @@
+Staging:
+  src_columns:
+    id text,
+    fullname  text,
+    telephone  text,
+    mobile  text,
+    full_address  text,
+    province  text,
+    province_id  text,
+    city  text,
+    city_id  text,
+    county  text,
+    county_id  text,
+    town  text,
+    town_id  text,
+    create_date  text,
+    update_date  text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_jd_pop_consignee(
+    id varchar(255),
+    fullname varchar(255),
+    telephone varchar(50),
+    mobile varchar(50),
+    full_address varchar(500),
+    province varchar(50),
+    province_id varchar(50),
+    city varchar(50),
+    city_id varchar(50),
+    county varchar(50),
+    county_id varchar(50),
+    town varchar(50),
+    town_id varchar(50),
+    create_date timestamp,
+    update_date timestamp, 
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_pop_consignee_id primary key( id )
+    )distributed by (id)
+
+  insert_edw_from_ods_query:
+    insert into edw.f_jd_pop_consignee(
+    id,
+    fullname,
+    telephone,
+    mobile,
+    full_address,
+    province,
+    province_id,
+    city,
+    city_id,
+    county,
+    county_id,
+    town,
+    town_id,
+    create_date,
+    update_date,
+    dl_batch_date,
+    dl_load_time
+    )
+    select 
+    id,
+    fullname,
+    telephone,
+    mobile,
+    full_address,
+    province,
+    province_id,
+    city,
+    city_id,
+    county,
+    county_id,
+    town,
+    town_id,
+    to_timestamp(create_date,'YYYY-MM-DD HH24:MI:SS'),
+    to_timestamp(update_date,'YYYY-MM-DD HH24:MI:SS'),
+    dl_batch_date,
+    now()
+    from ods.r_jd_pop_consignee
+
+  # post_update_other_edw:
+  #   update edw.f_jd_pop_order a
+  #   set province = b.province,
+  #       city = b.city
+  #   from edw.f_jd_pop_consignee b
+  #   where a.consignee_info_id = b.id;

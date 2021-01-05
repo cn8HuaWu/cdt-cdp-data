@@ -1,0 +1,133 @@
+EDW:
+  create_table_query:
+    create table if not exists edw.d_dl_jd_shopper(
+      shopperid varchar(255),
+      openid varchar(255),
+      pin varchar(255),
+      member_id varchar(255),
+      register_date date,
+      sex varchar(10),
+      birthday date,
+      member_cluster varchar(50),
+      member_grade varchar(50),
+      shopper_cluster  varchar(50),
+      contribute_amt decimal(17,6),
+      jd_pop_1st_purchase_id varchar(100),
+      jd_pop_1st_purchase_date date,
+      jd_pop_1st_purchase_order_amt  decimal(17,6),
+      jd_pop_last_purchase_id  varchar(100),
+      jd_pop_last_purchase_date date,
+      jd_pop_last_purchase_order_amt  decimal(17,6),
+      jd_b2b_1st_purchase_id varchar(100),
+      jd_b2b_1st_purchase_date date,
+      jd_b2b_1st_purchase_order_amt decimal(17,6),
+      jd_b2b_last_purchase_id varchar(100),
+      jd_b2b_last_purchase_date date,
+      jd_b2b_last_purchase_order_amt decimal(17,6),
+      dl_batch_date varchar(8),
+      dl_load_time timestamp,
+      constraint pk_dl_jd_shopper_id primary key(shopperid)
+    )distributed by (shopperid);
+
+  sync_to_rds_dm:
+    create table if not exists dm.d_dl_jd_shopper (like frn.d_dl_jd_shopper);
+    delete from dm.d_dl_jd_shopper;
+    delete from dm.d_dl_jd_shopper;
+    insert into dm.d_dl_jd_shopper  select *   from frn.d_dl_jd_shopper;
+
+  update_by_jd_order:
+      delete from edw.d_dl_jd_shopper;
+      insert into edw.d_dl_jd_shopper(
+             shopperid,
+             openid,
+             pin,
+             shopper_cluster,
+             contribute_amt,
+             jd_pop_1st_purchase_id,
+             jd_pop_1st_purchase_date,
+             jd_pop_1st_purchase_order_amt,
+             jd_pop_last_purchase_id,
+             jd_pop_last_purchase_date,
+             jd_pop_last_purchase_order_amt,
+             jd_b2b_1st_purchase_id,
+             jd_b2b_1st_purchase_date,
+             jd_b2b_1st_purchase_order_amt,
+             jd_b2b_last_purchase_id,
+             jd_b2b_last_purchase_date,
+             jd_b2b_last_purchase_order_amt,
+             dl_batch_date,
+             dl_load_time,
+             member_id,
+             register_date,
+             sex,
+             birthday,
+             member_cluster,
+             member_grade
+      )
+      select a.*,
+             b.member_id,
+             b.register_date,
+             b.sex,
+             b.birthday,
+             b.member_cluster,
+             b.member_grade
+      from (SELECT shopperid,
+                   max(openid) openid,
+                   max(pin) pin,
+                   case when count(distinct date_id) = 1 then 'New Shopper' else 'Exist Shopper' end shopper_cluster,
+                   sum(case when lego_sku_gmv_price >= 10 and is_gwp = 'N' then order_gmv_amount end) contribute_amt,
+                   max(case when store = 'JD POP' and is_1st_order_ever = 'Y' then parent_order_id end) jd_pop_1st_purchase_id,
+                   max(case when store = 'JD POP' and is_1st_order_ever = 'Y' then date_id end) jd_pop_1st_purchase_date,
+                   sum(case when store = 'JD POP' and is_1st_order_ever = 'Y' and lego_sku_gmv_price >= 10 and is_gwp = 'N' then order_gmv_amount end) jd_pop_1st_purchase_order_amt,
+                   max(case when store = 'JD POP' and max_order_date = order_start_date then parent_order_id end) jd_pop_last_purchase_id,
+                   max(case when store = 'JD POP' and max_order_date = order_start_date then date_id end) jd_pop_last_purchase_date,
+                   sum(case when store = 'JD POP' and max_order_date = order_start_date and lego_sku_gmv_price >= 10 and is_gwp = 'N' then order_gmv_amount end) jd_pop_last_purchase_order_amt,
+                   max(case when store = 'JD B2B' and is_1st_order_ever = 'Y' then parent_order_id end) jd_b2b_1st_purchase_id,
+                   max(case when store = 'JD B2B' and is_1st_order_ever = 'Y' then date_id end) jd_b2b_1st_purchase_date,
+                   sum(case when store = 'JD B2B' and is_1st_order_ever = 'Y' and lego_sku_gmv_price >= 10 and is_gwp = 'N' then order_gmv_amount end) jd_b2b_1st_purchase_order_amt,
+                   max(case when store = 'JD B2B' and max_order_date = order_start_date then parent_order_id end) jd_b2b_last_purchase_id,
+                   max(case when store = 'JD B2B' and max_order_date = order_start_date then date_id end) jd_b2b_last_purchase_date,
+                   sum(case when store = 'JD B2B' and max_order_date = order_start_date and lego_sku_gmv_price >= 10 and is_gwp = 'N' then order_gmv_amount end) jd_b2b_last_purchase_order_amt,
+                   to_char(now(),'yyyymmdd') dl_batch_date,
+                   now() dl_load_time
+          FROM (select 'JD POP' store,
+                       shopperid,
+                       openid,
+                       pin,
+                       parent_order_id,
+                       order_start_date,
+                       date_id,
+                       lego_sku_gmv_price,
+                       order_gmv_amount,
+                       is_gwp,
+                       is_1st_order_ever,
+                       max(order_start_date) over(partition by shopperid) max_order_date
+                  from edw.f_jd_pop_order_dtl
+                  union all
+                select 'JD B2B' store,
+                       shopperid,
+                       openid,
+                       null pin,
+                       parent_order_id,
+                       order_start_date,
+                       date_id,
+                       lego_sku_gmv_price,
+                       order_gmv_amount,
+                       is_gwp,
+                       is_1st_order_ever,
+                       max(order_start_date) over(partition by shopperid) max_order_date
+                  from edw.f_jd_b2b_order_dtl) a
+          group by shopperid) a left join edw.d_dl_jd_member b on a.shopperid = b.openid and b.current_row = 'Y'
+          where a.shopperid is not null;
+          
+  update_by_member:
+      update edw.d_dl_jd_shopper a
+      set member_id = b.member_id,
+          register_date = b.register_date,
+          sex = b.sex,
+          birthday = b.birthday,
+          member_cluster = b.member_cluster,
+          member_grade = b.member_grade
+      from edw.d_dl_jd_member b
+      where a.shopperid = b.openid and b.current_row = 'Y'
+  

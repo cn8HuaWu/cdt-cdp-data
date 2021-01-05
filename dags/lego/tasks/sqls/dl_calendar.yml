@@ -1,0 +1,83 @@
+Staging:
+  src_columns:
+    date_id text,
+    day text,
+    week text,
+    month text,
+    year text,
+    fiscal_year text,
+    wk_year text,
+    is_chinese_holiday text,
+    is_holiday text,
+    lego_day text,
+    lego_week text,
+    lego_month text,
+    lego_year text
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.d_dl_calendar(
+    date_id date,
+    day decimal(4),
+    week decimal(2),
+    month decimal(2),
+    year decimal(4),
+    fiscal_year decimal(4),
+    wk_year decimal(4),
+    is_chinese_holiday varchar(1),
+    is_holiday varchar(1),
+    lego_day varchar(10),
+    lego_week varchar(10),
+    lego_month varchar(10),
+    lego_year varchar(10),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_calendar_id primary key( date_id)
+    )distributed by (date_id)
+  
+  insert_edw_from_ods_query:
+    insert into edw.d_dl_calendar(
+    date_id,
+    day,
+    week,
+    month,
+    year,
+    fiscal_year,
+    wk_year,
+    is_chinese_holiday,
+    is_holiday,
+    lego_day ,
+    lego_week ,
+    lego_month ,
+    lego_year ,
+    dl_batch_date,
+    dl_load_time
+    )
+    select
+    to_date(date_id,'yyyy-mm-dd'),
+    day::decimal(3),
+    week::decimal(2),
+    month::decimal(2),
+    year::decimal(4),
+    case when fiscal_year='' then null::decimal(4) else fiscal_year::decimal(4) end as fiscal_year ,
+    wk_year::decimal(4),
+    is_chinese_holiday,
+    is_holiday,
+    lego_day ,
+    lego_week ,
+    lego_month ,
+    lego_year ,
+    dl_batch_date,
+    now()
+    from ods.r_dl_calendar;
+
+  sync_to_rds_dm:
+    create table if not exists dm.d_dl_calendar (like frn.d_dl_calendar);
+
+    delete from dm.d_dl_calendar;
+    delete from dm.d_dl_calendar;
+    
+    insert into dm.d_dl_calendar  select *   from frn.d_dl_calendar;
+    
+

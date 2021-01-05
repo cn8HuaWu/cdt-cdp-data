@@ -1,0 +1,284 @@
+Staging:
+  src_columns:
+    shopperid text,
+    is_control_group text,
+    platform text,
+    name text,
+    gender text,
+    birth_year text,
+    birthday text,
+    age text,
+    province text,
+    city text,
+    county text,
+    mobile text,
+    email text,
+    address text,
+    job text,
+    zip_code text,
+    member_grade text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.d_dl_tm_member_his (
+      shopperid varchar(255) NULL,
+      is_control_group varchar(255) NULL,
+      platform varchar(255) NULL,
+      name varchar(255) NULL,
+      gender varchar(10) NULL,
+      birth_year numeric(4) NULL,
+      birthday varchar(10) NULL,
+      age numeric(4) NULL,
+      province varchar(255) NULL,
+      city varchar(255) NULL,
+      county varchar(255) NULL,
+      mobile varchar(255) NULL,
+      email varchar(255) NULL,
+      address varchar(500) NULL,
+      job varchar(255) NULL,
+      zip_code varchar(255) NULL,
+      member_grade varchar(255) NULL,
+      tm_1st_purchase_date timestamp NULL,
+      sumchk varchar(32),
+      current_row varchar(1),
+      valid_time timestamp,
+      expire_time timestamp,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )
+     distributed by (shopperid)
+
+  updated_by_1st_purchase_date:
+    INSERT INTO edw.d_dl_tm_member_his
+    (
+      shopperid, 
+      is_control_group, 
+      platform, 
+      name, 
+      gender, 
+      birth_year, 
+      birthday, 
+      age, 
+      province, 
+      city, 
+      county,
+      mobile, 
+      email, 
+      address, 
+      job, 
+      zip_code, 
+      tm_1st_purchase_date,
+      member_grade,
+      sumchk, 
+      current_row, 
+      valid_time,
+      expire_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      shopperid, 
+      is_control_group, 
+      platform, 
+      name, 
+      gender, 
+      birth_year,
+      birthday, 
+      age,
+      province, 
+      city, 
+      county,
+      mobile, 
+      email, 
+      address, 
+      job, 
+      zip_code, 
+      tm_1st_purchase_date,
+      'ENTRY' as member_grade,
+      md5(concat(shopperid, is_control_group, platform, name, gender, birth_year, birthday, age, province, city, county,mobile, email, address, job, zip_code,'ENTRY')),
+      'Y' as current_row ,
+      tm_1st_purchase_date as valid_time,
+      to_timestamp('2099-12-31','YYYY-MM-DD') expire_time,
+      dl_batch_date,
+      dl_load_time
+    from edw.d_dl_tm_member_1st_purchase_his  tmh
+    where not exists(select 1 from edw.d_dl_tm_member_his etm where tmh.shopperid = etm.shopperid);
+
+    update edw.d_dl_tm_member_his tm
+      set tm_1st_purchase_date = tmh.tm_1st_purchase_date,
+        valid_time = COALESCE(valid_time, tmh.tm_1st_purchase_date)
+    from edw.d_dl_tm_member_1st_purchase_his  tmh
+    where tm.shopperid = tmh.shopperid
+      and tm.current_row='Y';
+
+  scd2_md5_update_query:
+    INSERT INTO edw.d_dl_tm_member_his
+    (
+      shopperid, 
+      is_control_group, 
+      platform, 
+      name, 
+      gender, 
+      birth_year, 
+      birthday, 
+      age, 
+      province, 
+      city, 
+      county,
+      mobile, 
+      email, 
+      address, 
+      job, 
+      zip_code, 
+      member_grade,
+      sumchk, 
+      current_row, 
+      expire_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      shopperid, 
+      is_control_group, 
+      platform, 
+      name, 
+      gender, 
+      case when birth_year ~ E'^\\d+$' then birth_year::decimal(4,0) else null end,
+      birthday, 
+      case when age ~ E'^\\d+$' then age::decimal(4,0) else null end,
+      province, 
+      city, 
+      county,
+      mobile, 
+      email, 
+      address, 
+      job, 
+      zip_code, 
+      upper(member_grade),
+      md5(concat(shopperid, is_control_group, platform, name, gender, birth_year, birthday, age, province, city, county,mobile, email, address, job, zip_code,upper(member_grade))),
+      'Y' as current_row ,
+      to_timestamp('2099-12-31','YYYY-MM-DD') expire_time,
+      dl_batch_date,
+      dl_load_time
+    from (
+      select 
+        *,
+        row_number() over(partition by shopperid order by case when member_grade ='VVIP' then 4 
+          when member_grade ='VIP' then 3 
+          when member_grade ='MEMBER' then 2
+          when member_grade ='ENTRY' then 1
+          else 0 end desc ) as rk
+      from ods.r_tm_member_his
+    ) tmh 
+    where not exists(select 1 from edw.d_dl_tm_member_his etm where tmh.shopperid = etm.shopperid)
+         and trim(tmh.shopperid) <> ''
+         and tmh.rk =1;
+
+    create temporary table t1 as
+    select *, md5(sumchk_raw) as sumchk
+    from (
+      select 
+          tmh.* , 
+          concat(tmh.shopperid, tmh.is_control_group, tmh.platform, tmh.name, tmh.gender, tmh.birth_year, tmh.birthday, tmh.age, tmh.province, tmh.city, tmh.county, tmh.mobile, tmh.email, tmh.address, tmh.job, tmh.zip_code, upper(tmh.member_grade)) as sumchk_raw,
+          etm.sumchk as pre_sumchk
+        from (
+          select 
+            *,
+            row_number() over(partition by shopperid order by case when member_grade ='VVIP' then 4 
+              when member_grade ='VIP' then 3 
+              when member_grade ='MEMBER' then 2
+              when member_grade ='ENTRY' then 1
+              else 0 end desc ) as rk
+          from ods.r_tm_member_his
+        ) tmh inner join edw.d_dl_tm_member_his etm on tmh.shopperid = etm.shopperid 
+        where etm.current_row ='Y' and trim(tmh.shopperid) <> ''
+        and tmh.rk = 1
+      )a;
+
+    update edw.d_dl_tm_member_his  tmh
+    set current_row ='N',
+        expire_time = now()
+    from  t1 etm 
+    where tmh.shopperid = etm.shopperid 
+    and tmh.sumchk <> etm.sumchk
+    and current_row = 'Y';
+
+    insert into edw.d_dl_tm_member_his
+    (
+      shopperid, 
+      is_control_group, 
+      platform, 
+      "name", 
+      gender, 
+      birth_year, 
+      birthday, 
+      age, 
+      province, 
+      city, 
+      county,
+      mobile, 
+      email, 
+      address, 
+      job, 
+      zip_code, 
+      member_grade,
+      sumchk, 
+      current_row, 
+      valid_time,
+      expire_time,
+      dl_batch_date, 
+      dl_load_time
+    )
+    select 
+      shopperid, 
+      is_control_group, 
+      platform, 
+      name, 
+      gender, 
+      case when birth_year ~ E'^\\d+$' then birth_year::decimal(4,0) else null end,
+      birthday, 
+      case when age ~ E'^\\d+$' then age::decimal(4,0) else null end, 
+      province, 
+      city, 
+      county,
+      mobile, 
+      email, 
+      address, 
+      job, 
+      zip_code, 
+      upper(member_grade),
+      sumchk,
+      'Y' as current_row ,
+      now() as valid_time,
+      to_timestamp('2099-12-31','YYYY-MM-DD') expire_time,
+      dl_batch_date,
+      dl_load_time
+    from t1
+    where pre_sumchk <> sumchk;
+    
+    
+    update edw.d_dl_tm_member_his b
+    set mobile = case when b.mobile is null or trim(b.mobile) = '' then c.mobile else b.mobile end,
+        birthday = case when b.birthday is null or trim(b.birthday) = '' then c.birthday else b.birthday end
+    from 
+    (
+      select * from (
+        select a.shopperid, a.mobile, a.birthday, a.rk
+        from (
+          select *, row_number() over(partition by shopperid order by expire_time desc) as rk from edw.d_dl_tm_member_his
+          where current_row = 'N'  
+        ) a 
+        where  (mobile is not null and trim(mobile) <> '')
+          or (birthday is not null and trim(birthday) <> '')
+      )d where d.rk=1
+    )c
+    where b.shopperid = c.shopperid 
+        and b.current_row = 'Y' 
+        and ( b.mobile <> c.mobile or b.birthday <> c.birthday);
+
+    update edw.d_dl_tm_member_his
+    set sumchk = md5(concat(shopperid, is_control_group, platform, name, gender, cast(birth_year as text), birthday, cast(age as text), province, city, county,mobile, email, address, job, zip_code,upper(member_grade)))
+    where current_row='Y';
+    

@@ -1,0 +1,263 @@
+{
+    "b2b_historical_file_list": "jd_b2b_20200501.xls,jd_b2b_20200502.xls,jd_b2b_20200503.xls,jd_b2b_20200504.xls,jd_b2b_20200505.xls,jd_b2b_20200506.xls,jd_b2b_20200507.xls,jd_b2b_20200508.xls,jd_b2b_20200509.xls,jd_b2b_20200510.xls,jd_b2b_20200511.xls,jd_b2b_20200512.xls,jd_b2b_20200513.xls,jd_b2b_20200514.xls,jd_b2b_20200515.xls,jd_b2b_20200516.xls,jd_b2b_20200517.xls,jd_b2b_20200518.xls,jd_b2b_20200519.xls,jd_b2b_20200520.xls,jd_b2b_20200521.xls,jd_b2b_20200522.xls,jd_b2b_20200523.xls,jd_b2b_20200524.xls,jd_b2b_20200525.xls,jd_b2b_20200526.xls,jd_b2b_20200527.xls,jd_b2b_20200528.xls,jd_b2b_20200529.xls,jd_b2b_20200530.xls,jd_b2b_20200531.xls",
+    "b2b_historical_path": "/data/sftpcdp/data/input/historical/JD_B2B/202005",
+    "calendar_path": "/data/sftpcdp/data/input/LEGO/calendar.xlsx",
+    "city_tier_path": "/data/sftpcdp/data/input/LEGO/city_tier_20200417.xlsx",
+    "dag_home": "/cdp/airflow/dags/lego",
+    "dag_start_date": "2020-05-19 00:00:00",
+    "email_to_list": "zhxie@deloitte.com.cn,spwei@deloitte.com.cn,jamzeng@deloitte.com.cn",
+    "filename_2_dag_map": {
+        "B2B_ORDER_DTL": {
+            "dag": "jd_b2b_order_dtl_his_dag",
+            "delta_days": "1",
+            "entity": "b2b_order_dtl_his",
+            "history": "Y"
+        },
+        "JD_B2B_GWP_LIST": {
+            "dag": "bu_jd_b2b_gwp_dag",
+            "delta_days": "1",
+            "entity": "jd_b2b_gwp",
+            "history": "0"
+        },
+        "JD_B2B_SKU_LIST": {
+            "dag": "bu_jd_b2b_sku_map_dag",
+            "delta_days": "1",
+            "entity": "jd_b2b_sku_map",
+            "history": "0"
+        },
+        "JD_POP_GWP_LIST": {
+            "dag": "bu_jd_pop_gwp_dag",
+            "delta_days": "1",
+            "entity": "jd_pop_gwp",
+            "history": "0"
+        },
+        "JD_POP_SKU_LIST": {
+            "dag": "bu_jd_pop_sku_map_dag",
+            "delta_days": "1",
+            "entity": "jd_pop_sku_map",
+            "history": "0"
+        },
+        "JD_TRAFFIC_DAILY": {
+            "dag": "bu_dly_jd_traffic_dag",
+            "delta_days": "1",
+            "entity": "dly_jd_traffic",
+            "history": "0"
+        },
+        "JD_TRAFFIC_MONTHLY": {
+            "dag": "bu_mly_jd_traffic_dag",
+            "delta_days": "M",
+            "entity": "mly_jd_traffic",
+            "history": "0"
+        },
+        "LEGO_MEMBERS": {
+            "dag": "mini_member_info_dag",
+            "delta_days": "1",
+            "entity": "mini_member_info",
+            "history": "Y"
+        },
+        "LEGO_PRODUCT_MASTER": {
+            "dag": "dl_product_info_dag",
+            "delta_days": "1",
+            "entity": "product_info",
+            "history": "0"
+        },
+        "MEMBERINFO": {
+            "dag": "jd_member_dag",
+            "delta_days": "1",
+            "entity": "member",
+            "history": "Y"
+        },
+        "OMS_ORDER": {
+            "dag": "oms_order_dag",
+            "delta_days": "1",
+            "entity": "order",
+            "history": "0"
+        },
+        "OMS_ORDER_DTL": {
+            "dag": "oms_order_dtl_dag",
+            "delta_days": "1",
+            "entity": "order_dtl",
+            "history": "0"
+        },
+        "OMS_RETURN_ORDER": {
+            "dag": "oms_return_order_dag",
+            "delta_days": "1",
+            "entity": "return_order",
+            "history": "0"
+        },
+        "OMS_RETURN_ORDER_DTL": {
+            "dag": "oms_return_order_dtl_dag",
+            "delta_days": "1",
+            "entity": "return_order_dtl",
+            "history": "0"
+        },
+        "ORDERINFO": {
+            "dag": "jd_b2b_order_dtl_dag",
+            "delta_days": "2",
+            "entity": "b2b_order_dtl",
+            "history": "Y"
+        },
+        "POPCONSIGNEEINFO": {
+            "dag": "jd_pop_consignee_dag",
+            "delta_days": "2",
+            "entity": "pop_consignee",
+            "history": "Y"
+        },
+        "POPDETAILINFO": {
+            "dag": "jd_pop_order_dtl_dag",
+            "delta_days": "2",
+            "entity": "pop_order_dtl",
+            "history": "Y"
+        },
+        "POPINFO": {
+            "dag": "jd_pop_order_dag",
+            "delta_days": "2",
+            "entity": "pop_order",
+            "history": "Y"
+        },
+        "QBT_BRAND_SALES": {
+            "dag": "qbt_brand_sales_dag",
+            "delta_days": "1",
+            "entity": "brand_sales",
+            "history": "Y"
+        },
+        "QBT_BUILDING_TOY_INDUSTRY_SALES": {
+            "dag": "qbt_building_toy_industry_sales_dag",
+            "delta_days": "1",
+            "entity": "building_toy_industry_sales",
+            "history": "Y"
+        },
+        "QBT_SKU_MONITOR": {
+            "dag": "qbt_sku_monitor_dag",
+            "delta_days": "1",
+            "entity": "sku_monitor",
+            "history": "Y"
+        },
+        "QBT_TB_STORE_SALES": {
+            "dag": "qbt_store_sales_dag",
+            "delta_days": "1",
+            "entity": "store_sales",
+            "history": "Y"
+        },
+        "QBT_TMALL_GLOBAL": {
+            "dag": "qbt_tmall_global_dag",
+            "delta_days": "1",
+            "entity": "tmall_global",
+            "history": "Y"
+        },
+        "QBT_TM_STORE_SALES": {
+            "dag": "qbt_store_sales_dag",
+            "delta_days": "1",
+            "entity": "store_sales",
+            "history": "Y"
+        },
+        "QBT_TOY_INDUSTRY_SALES": {
+            "dag": "qbt_toy_industry_sales_dag",
+            "delta_days": "1",
+            "entity": "toy_industry_sales",
+            "history": "Y"
+        },
+        "TMALL_GWP_LIST": {
+            "dag": "bu_tm_gwp_dag",
+            "delta_days": "1",
+            "entity": "tm_gwp",
+            "history": "0"
+        },
+        "TMALL_SKU_LIST": {
+            "dag": "bu_tm_sku_map_dag",
+            "delta_days": "1",
+            "entity": "tm_sku_map",
+            "history": "0"
+        },
+        "TM_MEMBER_1ST_PURCHASE_HIS": {
+            "dag": "tm_member_1st_purchase_his_dag",
+            "delta_days": "1",
+            "entity": "tm_member_1st_purchase_his",
+            "history": "Y"
+        },
+        "TM_MEMBER_HIS": {
+            "dag": "tm_member_his_dag",
+            "delta_days": "1",
+            "entity": "tm_member_his",
+            "history": "Y"
+        },
+        "TM_TRAFFIC_DAILY": {
+            "dag": "bu_dly_tm_traffic_dag",
+            "delta_days": "1",
+            "entity": "dly_tm_traffic",
+            "history": "0"
+        },
+        "TM_TRAFFIC_MONTHLY": {
+            "dag": "bu_mly_tm_traffic_dag",
+            "delta_days": "M",
+            "entity": "mly_tm_traffic",
+            "history": "0"
+        }
+    },
+    "filename_pattern": {
+        "^B2B_ORDER_DTL_\\d+$": "B2B_ORDER_DTL",
+        "^JD_B2B_GWP_LIST_\\d+$": "JD_B2B_GWP_LIST",
+        "^JD_B2B_SKU_MAP_\\d+$": "JD_B2B_SKU_LIST",
+        "^JD_POP_GWP_LIST_\\d+$": "JD_POP_GWP_LIST",
+        "^JD_POP_SKU_MAP_\\d+$": "JD_POP_SKU_LIST",
+        "^JD_TRAFFIC_DAILY_\\d+$": "JD_TRAFFIC_DAILY",
+        "^JD_TRAFFIC_MONTHLY_\\d+$": "JD_TRAFFIC_MONTHLY",
+        "^LEGO_MEMBERS_\\d+-\\d+-\\d+$": "LEGO_MEMBERS",
+        "^QBT_BRAND_SALES_\\d+$": "QBT_BRAND_SALES",
+        "^QBT_BUILDING_TOY_INDUSTRY_SALES_\\d+$": "QBT_BUILDING_TOY_INDUSTRY_SALES",
+        "^QBT_TB_STORE_SALES_\\d+$": "QBT_TB_STORE_SALES",
+        "^QBT_TMALL_GLOBAL_\\d+$": "QBT_TMALL_GLOBAL",
+        "^QBT_TM_STORE_SALES_\\d+$": "QBT_TM_STORE_SALES",
+        "^QBT_TOY_INDUSTRY_SALES_\\d+$": "QBT_TOY_INDUSTRY_SALES",
+        "^TMALL_GWP_LIST_\\d+$": "TMALL_GWP_LIST",
+        "^TMALL_SKU_MAP_\\d+$": "TMALL_SKU_LIST",
+        "^TM_MEMBER_1ST_PURCHASE_HIS_\\d+$": "TM_MEMBER_1ST_PURCHASE_HIS",
+        "^TM_MEMBER_HIS_\\d+$": "TM_MEMBER_HIS",
+        "^TM_TRAFFIC_DAILY_\\d+$": "TM_TRAFFIC_DAILY",
+        "^TM_TRAFFIC_MONTHLY_\\d+$": "TM_TRAFFIC_MONTHLY"
+    },
+    "interval_cs_consumer": "*/30 * * * *",
+    "interval_jd_api": "0 2 * * *",
+    "interval_jd_pop_detail_api": "10 2 * * *",
+    "interval_maintenance": "0 0 * * *",
+    "interval_oms_order": "0 3 * * *",
+    "interval_oms_order_dtl": "10 3 * * *",
+    "interval_oms_report": "*/30 * * * *",
+    "interval_oms_return_order": "15 3 * * *",
+    "interval_oms_return_order_dtl": "20 3 * * *",
+    "interval_phy_store": "30 2 * * *",
+    "interval_phy_store_coupon": "30 2 * * *",
+    "interval_phy_store_inventory": "30 2 * * *",
+    "interval_phy_store_member": "30 2 * * *",
+    "interval_phy_store_member_point": "30 2 * * *",
+    "interval_phy_store_order": "30 2 * * *",
+    "interval_phy_store_order_coupon_dtl": "30 2 * * *",
+    "interval_phy_store_order_dtl": "30 2 * * *",
+    "interval_phy_store_order_payment_dtl": "30 2 * * *",
+    "interval_phy_store_point_transaction": "30 2 * * *",
+    "interval_phy_store_return_order": "30 2 * * *",
+    "interval_phy_store_return_order_dtl": "30 2 * * *",
+    "interval_product": "0 1 * * *",
+    "interval_refresh_monthly_tables": "0 0 10 * *",
+    "interval_scv": "30 6 * * *",
+    "jd_data_timedelta": 2,
+    "jd_load_timedelta": 0,
+    "jd_member_data_timedelta": 1,
+    "jd_member_load_timedelta": 1,
+    "lego_hr_html_content": "has been loaded",
+    "lego_hr_mail_to": "zhxie@deloitte.com.cn,spwei@deloitte.com.cn,jamzeng@deloitte.com.cn",
+    "lego_hr_subject": "OMS REPORT",
+    "lego_lewin_html_content": "Failed to push data to datahub.",
+    "lego_lewin_mail_to": "zhxie@deloitte.com.cn,jamzeng@deloitte.com.cn,spwei@deloitte.com.cn",
+    "lego_lewin_subject": "Lewin failed to push data to Datahub",
+    "max_retries": 3,
+    "monitor_path": "/data/sftpcdp/data",
+    "oms_data_timedelta": 1,
+    "phy_store_data_timedelta": 1,
+    "pop_historical_path": "/data/sftpcdp/data/input/historical/JD_POP/",
+    "product_info_path": "/data/sftpcdp/data/input/LEGO/product_20201204.xlsx",
+    "tm_2018_historical_path": "tmall_order_dtl_0621-0807_1.xlsx",
+    "tm_historical_detail_files": "TM_detail_201912.xlsx",
+    "tm_historical_order_files": "TM_order_0526-0807_1.xlsx",
+    "tm_historical_path": "/data/sftpcdp/data/input/historical/TMALL"
+}

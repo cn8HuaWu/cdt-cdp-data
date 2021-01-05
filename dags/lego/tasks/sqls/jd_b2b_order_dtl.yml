@@ -1,0 +1,330 @@
+Staging:
+  src_columns:
+    id text,
+    parent_ord_id text,
+    son_ord_id text,
+    shop_id text,
+    openid text,
+    ord_start_date text,
+    ord_end_date text,
+    sku_id text,
+    good_name text,
+    goods_qtty text,
+    ord_amt text,
+    ord_status text,
+    create_date text,
+    update_date text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_jd_b2b_order_dtl(
+    id varchar(50),
+    parent_order_id varchar(50) ,
+    shopperid varchar(100),
+    son_order_id varchar(50) ,
+    date_id date,
+    openid varchar(255) ,
+    order_start_date timestamp,
+    order_end_date timestamp,
+    store_sku_id varchar(50) ,
+    store_sku_name varchar(200),
+    son_order_amt decimal(17,6),
+    son_order_status varchar(100),
+    piece_cnt decimal(15),
+    is_gwp varchar(1),
+    lego_sku_rrp_price decimal(17,6),
+    lego_sku_gmv_price decimal(17,6),
+    order_gmv_amount decimal(17,6),
+    order_rrp_amount decimal(17,6),
+    lego_sku_id varchar(50),
+    lego_sku_name_en varchar(100),
+    lego_sku_line varchar(100),
+    lego_sku_status varchar(100),
+    cn_product_substatus varchar(5),
+    cn_store_product_substatus varchar(5),
+    cn_launchdate date,
+    cn_store_launchdate date,
+    is_newshopper_ever varchar(1),
+    is_newshopper_365 varchar(1),
+    is_member varchar(1),
+    is_new_member varchar(1), 
+    member_grade varchar(5),
+    create_date timestamp,
+    update_date timestamp,
+    is_1st_order_ever varchar(5),
+    is_1st_order_365 varchar(5),
+    is_member_1st_order varchar(5),
+    is_delivered varchar(100),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_jd_b2b_order_dtl_id primary key(id)
+    )distributed by (id)
+  
+  # including 2 parts of data
+  # part1: daily loading
+  # part2: historica data
+  insert_edw_from_ods_query:
+    # MUST CREATE THE 2 SEQUENECE ahead
+    # create sequence sequence_his_b2b_order_dtl_id increment by 1 minvalue 1 no maxvalue start with 1;
+    # create sequence sequence_his_b2b_order_dtl_parent_id increment by 1 minvalue 1 no maxvalue start with 1;
+    insert into edw.f_jd_b2b_order_dtl(
+    id,
+    parent_order_id,
+    shopperid,
+    son_order_id,
+    date_id,
+    openid,
+    order_start_date,
+    order_end_date,
+    store_sku_id,
+    store_sku_name,
+    son_order_amt,
+    son_order_status,
+    piece_cnt,
+    lego_sku_gmv_price,
+    order_gmv_amount,
+    create_date,
+    update_date,
+    is_delivered,
+    dl_batch_date,
+    dl_load_time,
+    is_newshopper_ever,
+    is_newshopper_365,
+    is_new_member,
+    is_member_1st_order,
+    is_member,
+    is_1st_order_ever,
+    is_1st_order_365
+    )
+    select
+    id,
+    parent_ord_id,
+    openid as shopperid,
+    son_ord_id,
+    date(TO_TIMESTAMP(ord_end_date, 'YYYY-MM-DD HH24:MI:SS')) as date_id,
+    openid,
+    TO_TIMESTAMP(ord_start_date, 'YYYY-MM-DD HH24:MI:SS'),
+    TO_TIMESTAMP(ord_end_date, 'YYYY-MM-DD HH24:MI:SS'),
+    sku_id,
+    good_name,
+    ord_amt::decimal(17,6),
+    case ord_status when '1' then '完成' else ord_status end son_order_status,
+    goods_qtty::decimal(15),
+    ord_amt::decimal(17,6) / goods_qtty::decimal(15) as lego_sku_gmv_price,
+    ord_amt::decimal(17,6) as order_gmv_amount,
+    TO_TIMESTAMP(create_date,'YYYY-MM-DD HH24:MI:SS'),
+    TO_TIMESTAMP(update_date,'YYYY-MM-DD HH24:MI:SS'),
+    case when  ord_status='1'  then 'Y' else 'N' end as is_delivered,
+    dl_batch_date,
+    now(),
+    'N',
+    'N',
+    'N',
+    'N',
+    'N',
+    'N',
+    'N'
+    from ods.r_jd_b2b_order_dtl
+    ;
+
+    insert into edw.f_jd_b2b_order_dtl
+    (
+      id,
+      parent_order_id,
+      son_order_id,
+      order_start_date,
+      order_end_date,
+      store_sku_id,
+      store_sku_name,
+      son_order_status,
+      piece_cnt,
+      lego_sku_gmv_price,
+      order_gmv_amount,
+      date_id,
+      is_delivered,
+      dl_batch_date,
+      dl_load_time,
+      is_newshopper_ever,
+      is_newshopper_365,
+      is_new_member,
+      is_member_1st_order,
+      is_member,
+      is_1st_order_ever,
+      is_1st_order_365
+    )
+    select 
+      'his_'|| nextval('sequence_his_b2b_order_dtl_id'),
+      'his_'|| nextval('sequence_his_b2b_order_dtl_parent_id')  parent_order_id,
+      son_order_id,
+      order_create_time order_start_date,
+      estimated_delivery_date order_end_date,
+      store_sku_id store_sku_id,
+      store_sku_name store_sku_name,
+      order_status son_order_status,
+      pieces_cnt piece_cnt,
+      gmv_unit_price lego_sku_gmv_price,
+      gmv_unit_price*pieces_cnt,
+      estimated_delivery_date date_id,
+      case when order_status in('等待付款', '取消') or store_sku_name ~ '^ROOM.*'  then 'N' else 'Y' end as is_delivered,
+      dl_batch_date ,
+      now(),
+      'N',
+      'N',
+      'N',
+      'N',
+      'N',
+      'N',
+      'N'
+    from edw.f_jd_b2b_order_dtl_his a
+    where  not exists (
+      select 1 from edw.f_jd_b2b_order_dtl b where b.son_order_id = a.son_order_id and a.store_sku_id = b.store_sku_id
+    );
+    
+    create temporary table t3 as
+    select 
+        parent_order_id,
+        max(order_end_date) max_order_end_date,
+        lag(max(order_end_date)) over(partition by shopperid order by max(order_end_date)) last_order_date
+    from edw.f_jd_b2b_order_dtl
+    where order_end_date is not null
+      and shopperid is not null
+    group by parent_order_id,shopperid
+    distributed by (parent_order_id)
+    ;
+
+    update edw.f_jd_b2b_order_dtl a
+    set is_1st_order_ever = case when last_order_date is null then 'Y' else 'N' end,
+        is_1st_order_365  = case when last_order_date is null or extract('day' from (max_order_end_date - last_order_date)) >= 365 then 'Y' else 'N' end
+    from t3  b
+    where a.parent_order_id = b.parent_order_id
+    ;
+
+    update edw.f_jd_b2b_order_dtl a
+    set is_newshopper_ever = 'Y'
+    where exists (select 1 from edw.f_jd_b2b_order_dtl b
+        where a.shopperid = b.shopperid
+          and a.date_id = b.date_id
+          and b.is_1st_order_ever = 'Y')
+    ;
+
+    update edw.f_jd_b2b_order_dtl a
+    set is_newshopper_365 = 'Y'
+    where exists (select 1 from edw.f_jd_b2b_order_dtl b
+        where a.shopperid = b.shopperid
+          and a.date_id = b.date_id
+          and b.is_1st_order_365 = 'Y')
+    ;
+    
+  
+  sync_to_rds_dm:
+    create table if not exists dm.f_jd_b2b_order_dtl (like frn.f_jd_b2b_order_dtl);
+
+    delete from dm.f_jd_b2b_order_dtl;
+    delete from dm.f_jd_b2b_order_dtl;
+
+    insert into dm.f_jd_b2b_order_dtl
+    select * from frn.f_jd_b2b_order_dtl
+    where date_id >'2020-02-10';
+  
+  # gwp(store_sku_id), sku_map(store_sku_id)
+  # ->
+  # b2b_order_dtl(is_gwp,lego_sku_id)
+  update_by_b2b_gwp_and_sku_map:
+    update edw.f_jd_b2b_order_dtl a
+    set is_gwp = case when t1.gwp_store_sku_id is not null then 'Y'
+                  when t1.lego_sku_id ~ '.*\+.*' or t1.lego_sku_id ~ '.*/.*' or t1.lego_sku_id is null or product_lego_sku_id is null then 'Y'
+                else 'N' end,
+        lego_sku_id = t1.lego_sku_id
+    from (
+      select id,
+          c.store_sku_id gwp_store_sku_id,
+          d.lego_sku_id,
+          e.lego_sku_id product_lego_sku_id
+      from edw.f_jd_b2b_order_dtl b
+      left join edw.d_bu_jd_b2b_gwp c on b.store_sku_id = c.store_sku_id
+      left join edw.d_bu_jd_b2b_sku_map d on b.store_sku_id = d.store_sku_id
+      left join (select lego_sku_id from edw.d_dl_product_info group by lego_sku_id) e on d.lego_sku_id = e.lego_sku_id
+    ) t1
+    where a.id = t1.id
+    ;
+
+  # product_info(lego_sku_id,sku_name_en,RSP,cn_line,product_status,bu_cn_launch_date,bu_cn_launch_date)
+  # ->
+  # b2b_order_dtl(lego_sku_name_en,lego_sku_rrp_price,order_rrp_amount,lego_sku_line,lego_sku_status,cn_launchdate,cn_store_launchdate,cn_product_substatus,cn_store_product_substatus)
+  update_by_product_info:
+    create temp table t1 as 
+    select * from 
+        (select *,row_number() over(partition by lego_sku_id,year_version order by bu_cn_launch_date desc) rn from edw.d_dl_product_info) a 
+     where rn = 1;
+    
+    create temp table t2 as 
+    SELECT 1 priority,year_version::float8 as year,lego_sku_id,sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_b2b_launch_date FROM t1
+        union all
+    SELECT 10 priority,year_version::float8 - 1,lego_sku_id,sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_b2b_launch_date FROM t1
+        union all
+    SELECT y.year - t1.year_version::FLOAT8 + 100 priority,y.year,lego_sku_id,sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_b2b_launch_date FROM t1
+            join (select distinct year_version::float8 as year from edw.d_dl_product_info) y on t1.year_version::float8 < y.year
+    ;
+  
+    update edw.f_jd_b2b_order_dtl a
+    set lego_sku_name_en = b.sku_name_en,
+        lego_sku_rrp_price = b.RSP,
+        order_rrp_amount = b.RSP * piece_cnt,
+        lego_sku_line = coalesce(case when trim( b.top_theme )='' then null else b.top_theme end , b.cn_line),
+        lego_sku_status = b.product_status,
+        cn_launchdate = b.bu_cn_launch_date,
+        cn_store_launchdate = coalesce(b.cn_jd_b2b_launch_date,b.bu_cn_launch_date),
+        cn_product_substatus = case when b.product_status = 'N' then
+                                case when a.date_id - b.bu_cn_launch_date <= 90 then 'N0-3'
+                                when a.date_id - b.bu_cn_launch_date <= 180 then 'N3-6' 
+                                when a.date_id - b.bu_cn_launch_date <= 270 then 'N6-9' 
+                                when a.date_id - b.bu_cn_launch_date > 270 then 'N9-12' end end,
+        cn_store_product_substatus  = case when b.product_status = 'N' then
+                                case when a.date_id - coalesce(b.cn_jd_b2b_launch_date,b.bu_cn_launch_date) <= 90 then 'N0-3'
+                                when a.date_id - coalesce(b.cn_jd_b2b_launch_date,b.bu_cn_launch_date) <= 180 then 'N3-6' 
+                                when a.date_id - coalesce(b.cn_jd_b2b_launch_date,b.bu_cn_launch_date) <= 270 then 'N6-9' 
+                                when a.date_id - coalesce(b.cn_jd_b2b_launch_date,b.bu_cn_launch_date) > 270 then 'N9-12' end end
+    from (select *,row_number() over(partition by year,lego_sku_id order by priority) rn2 from t2) b
+    where a.lego_sku_id = b.lego_sku_id
+      and date_part('year',coalesce(a.date_id,a.order_start_date::date)) = b.year
+      and b.rn2 = 1;
+
+  # jd_member(openid,register_date,member_grade)
+  # ->
+  # b2b_order_dtl(is_member,is_new_member,member_grade)
+  update_by_jd_member:
+    update edw.f_jd_b2b_order_dtl a
+    set is_member = case when a.date_id >= date_trunc('day',b.register_date) then 'Y' else 'N' end,
+        member_grade = b.member_grade
+    from edw.d_dl_jd_member b
+    where a.shopperid = b.openid
+      and a.date_id between b.valid_date and b.expire_date-1
+      ;
+    
+    update edw.f_jd_b2b_order_dtl a
+    set is_member_1st_order = 'Y'
+    from (select parent_order_id, 
+                 shopperid,
+                 max(order_end_date) order_end_date,
+                 row_number() over(partition by shopperid order by max(order_end_date)) rn
+            from edw.f_jd_b2b_order_dtl 
+           where is_member = 'Y' 
+           group by shopperid, parent_order_id)b
+    where b.rn = 1
+      and a.shopperid = b.shopperid
+      and a.parent_order_id = b.parent_order_id
+    ;
+    
+    update edw.f_jd_b2b_order_dtl a
+    set is_new_member = 'Y'
+    from (select a.shopperid,a.parent_order_id
+            from (select shopperid,max(order_end_date)::date order_end_date from edw.f_jd_b2b_order_dtl where is_member_1st_order = 'Y' group by shopperid)b,
+                  edw.f_jd_b2b_order_dtl a
+            where a.shopperid = b.shopperid
+              and a.order_end_date::date = b.order_end_date
+            group by a.shopperid,a.parent_order_id)b
+    where a.shopperid = b.shopperid
+      and a.parent_order_id = b.parent_order_id
+    ;

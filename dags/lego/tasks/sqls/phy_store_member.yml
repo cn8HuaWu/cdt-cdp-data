@@ -1,0 +1,171 @@
+Staging:
+  src_columns:
+    member_id text,
+    card_code text,
+    distributor text,
+    mobile text,
+    full_name text,
+    gender text,
+    child1_gender text,
+    child2_gender text,
+    child1_birthday text,
+    child2_birthday text,
+    province text,
+    city text,
+    county text,
+    birthday text,
+    source text,
+    register_time text,
+    email text,
+    address text,
+    job text,
+    zip_code text,
+    member_grade text,
+    update_time text,
+    sendout_time text 
+
+ODS:    
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_phy_store_member (
+      member_id varchar(255) NOT NULL,
+      card_code varchar(255) NULL,
+      distributor varchar(255) NOT NULL,
+      mobile varchar(255) NULL,
+      full_name varchar(255) NULL,
+      gender varchar(255) NULL,
+      child1_gender varchar(255) NULL,
+      child2_gender varchar(255) NULL,
+      child1_birthday date,
+      child2_birthday date,
+      province varchar(255) NULL,
+      city varchar(255) NULL,
+      county varchar(255) NULL,
+      birthday date,
+      source varchar(255) NULL,
+      register_time timestamp,
+      email varchar(255) NULL,
+      address varchar(255) NULL,
+      job varchar(255) NULL,
+      zip_code varchar(255) NULL,
+      member_grade varchar(255) NULL,
+      update_time timestamp not null,
+      sendout_time timestamp NULL,
+      valid_date timestamp NULL,
+      expire_date timestamp NULL,
+      current_row varchar(255) NULL,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (distributor, member_id);
+
+  scd2_update_query:
+    create temporary table t1 as 
+    select 
+      omb.member_id,
+      emb.member_id as old_member_id,
+      omb.card_code,
+      upper(omb.distributor) as distributor,
+      case when omb.mobile is not null and trim(omb.mobile) != '' and omb.mobile ~ '[0-9A-E]+' then encode(encrypt_iv(decrypt_iv(decode(omb.mobile, '{AES_ENCODING}'), '{AES_KEY}','','aes-ecb'), '{DL_AES_KEY}','{DL_AES_IV}'::bytea,'aes-cbc'),'base64') else null end as mobile,
+      case when omb.full_name is not null and trim(omb.full_name) != '' and omb.full_name ~ '[0-9A-E]+' then convert_from(decrypt_iv(decode(omb.full_name, '{AES_ENCODING}'), '{AES_KEY}','','aes-ecb'),'utf-8') else null end as full_name,
+      omb.gender,
+      case when trim(omb.child1_gender) in('','null') then null else omb.child1_gender end as child1_gender,
+      case when trim(omb.child2_gender) in('','null') then null else omb.child2_gender end as child2_gender,
+      case when omb.child1_birthday in ('null','') then null else TIMESTAMP WITH TIME ZONE 'epoch' + omb.child1_birthday::decimal(13) * INTERVAL '1 s'end as child1_birthday,
+      case when omb.child2_birthday in ('null','') then null else TIMESTAMP WITH TIME ZONE 'epoch' + omb.child2_birthday::decimal(13) * INTERVAL '1 s'end as child2_birthday,
+      case when trim(omb.province) in('','null') then null else omb.province end as province,
+      case when trim(omb.city) in('','null') then null else omb.city end as city,
+      case when trim(omb.county) in('','null') then null else omb.county end as county,
+      case when omb.birthday in ('null','') then null else TIMESTAMP WITH TIME ZONE 'epoch' + omb.birthday::decimal(13) * INTERVAL '1 s'end as birthday,
+      case when trim(omb.source) in('','null') then null else omb.source end as source,
+      TIMESTAMP WITH TIME ZONE 'epoch' + omb.register_time::decimal(13) * INTERVAL '1 s' as register_time,
+      case when trim(omb.email) in('','null') then null else omb.email end as email,
+      case when trim(omb.address) in('','null') then null else omb.address end as address,
+      case when trim(omb.job) in('','null') then null else omb.job end as job,
+      case when trim(omb.zip_code) in('','null') then null else omb.zip_code end as zip_code,
+      omb.member_grade,
+      TIMESTAMP WITH TIME ZONE 'epoch' + omb.update_time::decimal(13) * INTERVAL '1 s' as update_time,
+      TIMESTAMP WITH TIME ZONE 'epoch' + omb.sendout_time::decimal(13) * INTERVAL '1 s' as sendout_time,
+      TIMESTAMP WITH TIME ZONE 'epoch' + omb.register_time::decimal(13) * INTERVAL '1 s' as valid_date,
+      TIMESTAMP WITH TIME ZONE 'epoch' + omb.update_time::decimal(13) * INTERVAL '1 s' as valid_date_new,
+      to_date('2099-12-31','YYYY-MM-DD') as  expire_date,
+      cast('Y' as text) as current_row,
+      omb.dl_batch_date,
+      now() as dl_load_time
+    from (
+        select * from (
+          select *, row_number() over(partition by upper(distributor), member_id order by update_time desc ) as rak
+          from ods.r_phy_store_member
+        )tp where tp.rak=1
+      ) omb left join edw.f_phy_store_member emb on omb.member_id = emb.member_id and  upper(omb.distributor) = emb.distributor
+    where omb.dl_batch_date = '{batch_date}'
+    and emb.member_id is null 
+    or ( emb.current_row = 'Y' and (TIMESTAMP WITH TIME ZONE 'epoch' + omb.update_time::decimal(13) * INTERVAL '1 s') > emb.valid_date );
+
+    update edw.f_phy_store_member emb 
+      set current_row='N',
+        expire_date = t1.valid_date_new 
+    from t1
+    where emb.member_id = t1.member_id
+      and emb.current_row='Y';
+
+    insert into edw.f_phy_store_member(
+      member_id,
+      card_code,
+      distributor,
+      mobile,
+      full_name,
+      gender,
+      child1_gender,
+      child2_gender,
+      child1_birthday,
+      child2_birthday,
+      province,
+      city,
+      county,
+      birthday,
+      source,
+      register_time,
+      email,
+      address,
+      job,
+      zip_code,
+      member_grade,
+      update_time,
+      sendout_time,
+      valid_date,
+      expire_date,
+      current_row,
+      dl_batch_date,
+      dl_load_time
+    )
+    select
+      member_id,
+      card_code,
+      distributor,
+      mobile,
+      full_name,
+      gender,
+      child1_gender,
+      child2_gender,
+      child1_birthday,
+      child2_birthday,
+      province,
+      city,
+      county,
+      birthday,
+      source,
+      register_time,
+      email,
+      address,
+      job,
+      zip_code,
+      member_grade,
+      update_time,
+      sendout_time,
+      case when old_member_id is null then register_time else valid_date_new end as valid_date,
+      expire_date,
+      current_row,
+      dl_batch_date,
+      dl_load_time
+    from t1;

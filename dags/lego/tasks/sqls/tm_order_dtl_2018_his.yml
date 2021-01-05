@@ -1,0 +1,122 @@
+Staging:
+  #source file list: tm_order_dtl_2018.csv,tm_order_dtl_2019.csv,TMALL_order_dtl_20200525.xlsx,tm_order_dtl_20200430.xlsx
+  src_columns:
+    shop_name text,
+    parent_order_id text,
+    son_order_id text,
+    shopper_nickname text,
+    order_create_time text,
+    order_payment_time text,
+    delivery_time text,
+    order_type text,
+    son_order_status text,
+    store_sku_id text,
+    sku text,
+    cnline text,
+    order_status text,
+    rsp text,
+    title text,
+    pieces_cnt text,
+    payable_amount text,
+    refund_status text,
+    refund_amount text,
+    actual_payment_amount text,
+    cosignee_province text,
+    cosignee_city text,
+    cosignee_region text,
+    cosignee_street text
+
+ODS:
+
+EDW:
+  create_table_query:
+    create table if not exists edw.f_tm_order_dtl_2018_his(
+      shop_name varchar(255),
+      parent_order_id varchar(255),
+      son_order_id varchar(255),
+      shopper_nickname varchar(255),
+      order_create_time timestamp,
+      order_payment_time timestamp,
+      delivery_time timestamp,
+      order_type varchar(255),
+      son_order_status varchar(255),
+      store_sku_id varchar(255),
+      sku varchar(255),
+      cnline varchar(255),
+      order_status varchar(255),
+      rsp decimal(17,6),
+      title varchar(255),
+      pieces_cnt decimal(11),
+      payable_amount decimal(17,6),
+      refund_status varchar(255),
+      refund_amount decimal(17,6),
+      actual_payment_amount decimal(17,6),
+      cosignee_province varchar(255),
+      cosignee_city varchar(255),
+      cosignee_region varchar(255),
+      cosignee_street varchar(255),
+      dl_batch_date varchar(8),
+      dl_load_time date,
+      constraint pk_tm_order_dtl_2018_his_id primary key( parent_order_id, store_sku_id)
+    )
+    distributed by (parent_order_id, store_sku_id);
+
+  insert_edw_from_ods_query:
+    insert into edw.f_tm_order_dtl_2018_his(
+      shop_name,
+      parent_order_id,
+      son_order_id,
+      shopper_nickname,
+      order_create_time,
+      order_payment_time,
+      delivery_time,
+      order_type,
+      son_order_status,
+      store_sku_id,
+      sku,
+      cnline,
+      order_status,
+      rsp,
+      title,
+      pieces_cnt,
+      payable_amount,
+      refund_status,
+      refund_amount,
+      actual_payment_amount,
+      cosignee_province,
+      cosignee_city,
+      cosignee_region,
+      cosignee_street,
+      dl_batch_date,
+      dl_load_time
+    )
+    select
+      shop_name, 
+      parent_order_id, 
+      son_order_id,
+      shopper_nickname, 
+      case when(order_create_time ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_timestamp(order_create_time, 'YYYY-MM-DD HH24:MI:SS') else null end as order_create_time_1,
+      case when(order_payment_time ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_timestamp(order_payment_time, 'YYYY-MM-DD HH24:MI:SS') else null end as order_payment_time,
+      case when(delivery_time ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_timestamp(delivery_time, 'YYYY-MM-DD HH24:MI:SS') else null end as delivery_time,
+      order_type, 
+      son_order_status, 
+      store_sku_id, 
+      sku, 
+      cnline, 
+      order_status, 
+      case when rsp ~ E'\\d+$' then rsp::decimal(17,6) else null end  as rsp, 
+      title, 
+      case when pieces_cnt ~ E'\\d+$' then pieces_cnt::decimal(11) else null end  as pieces_cnt, 
+      case when payable_amount ~ E'\\d+$' then payable_amount::decimal(17,6) else null end  as payable_amount, 
+      refund_status, 
+      case when refund_amount ~ E'\\d+$' then refund_amount::decimal(17,6) else null end  as refund_amount, 
+      case when actual_payment_amount ~ E'\\d+$' then actual_payment_amount::decimal(17,6) else null end  as actual_payment_amount,
+      cosignee_province, 
+      cosignee_city,
+      cosignee_region, 
+      cosignee_street, 
+      dl_batch_date, 
+      now() 
+    from ods.r_tm_order_dtl_2018_his;
+        
+    

@@ -1,0 +1,810 @@
+EDW:
+  sync_to_rds_dm:
+    create table if not exists dm.a_dl_mly_sales_rpt (like frn.a_dl_mly_sales_rpt);
+    delete from dm.a_dl_mly_sales_rpt;
+    delete from dm.a_dl_mly_sales_rpt;
+    
+    insert into dm.a_dl_mly_sales_rpt
+    select * from frn.a_dl_mly_sales_rpt where store not in ('JD', 'JD B2B') 
+    union
+    select * 
+    from frn.a_dl_mly_sales_rpt
+    where store  in ('JD', 'JD B2B') 
+    and yearmonth >= '202002';
+
+  update_by_jd_order_dtl:
+    SELECT set_config('v.batch_date', '{batch_date}', false);
+    SELECT set_config('v.yearmonth', to_char(current_setting('v.batch_date')::date - interval '1 month','yyyymm'), false);
+
+    delete from dm.a_dl_mly_sales_rpt
+    where consumer_cluster <> 'ALL'
+      and store in ('JD','JD B2B','JD POP')
+      and yearmonth = current_setting('v.yearmonth');
+
+    create temp table jd_all as
+    select a.*,
+          b.register_date,
+          lag(yearmonth) over(partition by store, a.shopperid order by yearmonth) last_order_yearmonth,
+          lag(parent_order_id) over(partition by store, a.shopperid order by yearmonth) last_order_id
+      from
+      (select 
+          'JD B2B' store,
+          to_char(date_id,'yyyymm') yearmonth,
+          parent_order_id,
+          date_id,
+          shopperid,
+          piece_cnt,
+          lego_sku_rrp_price,
+          lego_sku_gmv_price,
+          is_member,
+          member_grade,
+          is_1st_order_ever,
+          is_1st_order_365,
+          is_newshopper_ever,
+          is_newshopper_365,
+          is_new_member,
+          is_member_1st_order
+        from edw.f_jd_b2b_order_dtl where is_gwp = 'N' and lego_sku_gmv_price >= 10 and is_delivered = 'Y'
+        union all
+        select 
+          'JD POP' store,
+          to_char(date_id,'yyyymm') yearmonth,
+          parent_order_id,
+          date_id,
+          shopperid,
+          piece_cnt,
+          lego_sku_rrp_price,
+          lego_sku_gmv_price,
+          is_member,
+          member_grade,
+          is_1st_order_ever,
+          is_1st_order_365,
+          is_newshopper_ever,
+          is_newshopper_365,
+          is_new_member,
+          is_member_1st_order
+        from edw.f_jd_pop_order_dtl where is_gwp = 'N' and lego_sku_gmv_price >= 10 and is_delivered = 'Y'
+        union all
+        select 
+          'JD' store,
+          to_char(date_id,'yyyymm') yearmonth,
+          parent_order_id,
+          date_id,
+          shopperid,
+          piece_cnt,
+          lego_sku_rrp_price,
+          lego_sku_gmv_price,
+          is_member,
+          member_grade,
+          is_1st_order_ever,
+          is_1st_order_365,
+          is_newshopper_ever,
+          is_newshopper_365,
+          is_new_member,
+          is_member_1st_order
+        from dm.f_dl_jd_order_dtl where is_gwp = 'N' and lego_sku_gmv_price >= 10 and is_delivered = 'Y'
+        )a left join edw.d_dl_jd_member b on a.shopperid = b.openid
+                  and a.date_id between b.valid_date and b.expire_date-1
+    distributed by (shopperid)
+    ;
+
+    with jd_all_month as (
+        select * from jd_all where yearmonth = current_setting('v.yearmonth')
+    )
+    insert into dm.a_dl_mly_sales_rpt(
+        yearmonth,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    select 
+        current_setting('v.yearmonth') yearmonth,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+      from (select store,
+                  'Total Shopper' consumer_cluster,
+                  unnest(array['Total Shopper','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from jd_all_month group by store
+              union all 
+            select store,
+                  'New Shopper(1Y)' consumer_cluster,
+                  unnest(array['New Shopper(1Y)','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from jd_all_month where is_newshopper_365='Y' group by store
+              union all 
+            select store,
+                  'Total Member' consumer_cluster,
+                  unnest(array['Total Member','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from jd_all_month where is_member='Y' group by store
+              union all 
+            select store,
+                  'New Member' consumer_cluster,
+                  unnest(array['New Member','New Member(New)','New Member(Old)','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      count(distinct case when yearmonth = to_char(register_date,'yyyymm') then shopperid end),
+                      count(distinct case when yearmonth > to_char(register_date,'yyyymm') then shopperid end),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from jd_all_month where is_new_member='Y' group by store
+              union all 
+            select store,
+                  'Exist Member' consumer_cluster,
+                  unnest(array['Exist Member','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from jd_all_month where is_new_member is distinct from 'Y' and is_member='Y' group by store
+              union all 
+            select store,
+                  'Non-member' consumer_cluster,
+                  unnest(array['Non-member','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from jd_all_month where is_member is distinct from 'Y' group by store
+              union all 
+            select store,
+                  member_grade consumer_cluster,
+                  unnest(array[member_grade,'GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from jd_all_month where member_grade is not null group by store,member_grade)a
+      ;
+
+    insert into dm.a_dl_mly_sales_rpt(
+        yearmonth,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    with jd_all_year as (
+        select * from jd_all where yearmonth between to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm') and current_setting('v.yearmonth')
+    )
+    select 
+        current_setting('v.yearmonth') yearmonth,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+      from (select store,
+                  'Total Shopper' consumer_cluster,
+                  unnest(array['Total Shopper(2Y)','Total Shopper(Ever)']) kpi_name,
+                  unnest(array[
+                      count(distinct case when yearmonth between to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months','yyyymm') and current_setting('v.yearmonth') then shopperid end),
+                      count(distinct case when yearmonth <= current_setting('v.yearmonth') then shopperid end)
+                      ]) value_actual
+              from jd_all group by store
+              union all 
+            select store,
+                  'Total Shopper' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Total Shopper(1Y)','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct shopperid),
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from jd_all_year group by store
+              union all 
+            select store,
+                  'New Shopper(1Y)' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from jd_all_year where is_newshopper_365='Y' group by store
+              union all 
+            select store,
+                  'Total Member' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Total Member(1Y)','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct shopperid),
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from jd_all_year where is_member='Y' group by store
+              union all 
+            select store,
+                  'Total Member' consumer_cluster,
+                  unnest(array['Total Member(2Y)','Total Member(Ever)']) kpi_name,
+                  unnest(array[
+                      count(distinct case when yearmonth between to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months','yyyymm') and current_setting('v.yearmonth') then shopperid end),
+                      count(distinct case when yearmonth <= current_setting('v.yearmonth') then shopperid end)
+                      ]) value_actual
+              from jd_all where is_member='Y' group by store
+              union all 
+            select store,
+                  'New Member' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0) ,
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from jd_all_year where is_new_member='Y' group by store
+              union all 
+            select store,
+                  'Exist Member' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0) ,
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from jd_all_year where is_new_member is distinct from 'Y' and is_member='Y' group by store
+              union all 
+            select store,
+                  'Non-member' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0) ,
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from jd_all_year where is_member is distinct from 'Y' group by store
+              union all 
+            select store,
+                  member_grade consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from jd_all_year where member_grade is not null group by store,member_grade)a
+      ;
+            
+    update dm.a_dl_mly_sales_rpt a
+    set value_mom = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_mly_sales_rpt b
+    where a.consumer_cluster <> 'ALL'
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store in ('JD','JD B2B','JD POP')
+      and a.consumer_cluster = b.consumer_cluster
+      and to_date(a.yearmonth,'yyyymm') - interval '1 month' = to_date(b.yearmonth,'yyyymm')
+      and a.yearmonth = current_setting('v.yearmonth');
+            
+    update dm.a_dl_mly_sales_rpt a
+    set value_yoy = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_mly_sales_rpt b
+    where a.consumer_cluster <> 'ALL'
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store in ('JD','JD B2B','JD POP')
+      and a.consumer_cluster = b.consumer_cluster
+      and to_date(a.yearmonth,'yyyymm') - interval '1 year' = to_date(b.yearmonth,'yyyymm')
+      and a.yearmonth = current_setting('v.yearmonth');
+
+  update_by_jd_member:
+    SELECT set_config('v.batch_date', '{batch_date}', false);
+    SELECT set_config('v.yearmonth', to_char(current_setting('v.batch_date')::date - interval '1 month','yyyymm'), false);
+
+    delete from dm.a_dl_mly_sales_rpt
+    where kpi_name in ('New Register Member','Total Prospect','New Prospect')
+    and consumer_cluster = 'ALL'
+    and store ='JD'
+    and yearmonth = current_setting('v.yearmonth');
+    
+    insert into dm.a_dl_mly_sales_rpt(
+        yearmonth,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    select 
+        current_setting('v.yearmonth'),
+        unnest(array['New Register Member','Total Prospect','New Prospect']) kpi_name,
+        'JD' store,
+        'ALL' consumer_cluster,
+        unnest(array[
+            count(case when to_char(register_date,'yyyymm') = current_setting('v.yearmonth') then 1 end),
+            count(case when to_char(register_date,'yyyymm') <= current_setting('v.yearmonth') and b.shopperid is null then 1 end),
+            count(case when to_char(register_date,'yyyymm') = current_setting('v.yearmonth') and b.shopperid is null then 1 end)]) value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+    from edw.d_dl_jd_member a
+    left join (select shopperid 
+                 from dm.f_dl_jd_order_dtl 
+                where to_char(date_id,'yyyymm') <= current_setting('v.yearmonth') 
+                  and is_gwp = 'N' 
+                  and lego_sku_gmv_price >= 10 
+                  and is_delivered = 'Y'
+                group by shopperid) b on a.openid = b.shopperid
+    where current_row = 'Y'
+    ;
+
+    update dm.a_dl_mly_sales_rpt a
+    set value_mom = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_mly_sales_rpt b
+    where a.kpi_name in ('New Register Member','Total Prospect','New Prospect')
+    and a.consumer_cluster = 'ALL'
+    and a.kpi_name = b.kpi_name
+    and a.store = b.store
+    and a.store ='JD'
+    and a.consumer_cluster = b.consumer_cluster
+    and to_date(a.yearmonth,'yyyymm') - interval '1 month' = to_date(b.yearmonth,'yyyymm')
+    and a.yearmonth = current_setting('v.yearmonth');
+            
+    update dm.a_dl_mly_sales_rpt a
+    set value_yoy = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_mly_sales_rpt b
+    where a.kpi_name in ('New Register Member','Total Prospect','New Prospect')
+    and a.consumer_cluster = 'ALL'
+    and a.kpi_name = b.kpi_name
+    and a.store = b.store
+    and a.store ='JD'
+    and a.consumer_cluster = b.consumer_cluster
+    and to_date(a.yearmonth,'yyyymm') - interval '1 year' = to_date(b.yearmonth,'yyyymm')
+    and a.yearmonth = current_setting('v.yearmonth');
+    
+  update_by_jd_and_tm_traffic:
+    SELECT set_config('v.batch_date', '{batch_date}', false);
+    SELECT set_config('v.yearmonth', to_char(current_setting('v.batch_date')::date - interval '1 month','yyyymm'), false);
+
+    delete from dm.a_dl_mly_sales_rpt
+    where kpi_name in ('UV')
+    and consumer_cluster = 'ALL'
+    and yearmonth = current_setting('v.yearmonth');
+
+    insert into dm.a_dl_mly_sales_rpt(
+        yearmonth,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    select 
+        yearmonth,
+        'UV' kpi_name,
+        store,
+        'ALL' consumer_cluster,
+        uv value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+    from (select store,yearmonth,uv from edw.a_bu_mly_jd_traffic union all
+          select 'JD',yearmonth,sum(uv) from edw.a_bu_mly_jd_traffic group by yearmonth union all
+          select 'TMALL' store,yearmonth,uv from edw.a_bu_mly_tm_traffic) a
+    where yearmonth = current_setting('v.yearmonth');
+        
+    update dm.a_dl_mly_sales_rpt a
+    set value_mom = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_mly_sales_rpt b
+    where a.kpi_name in ('UV')
+    and a.consumer_cluster = 'ALL'
+    and a.kpi_name = b.kpi_name
+    and a.store = b.store
+    and a.consumer_cluster = b.consumer_cluster
+    and to_date(a.yearmonth,'yyyymm') - interval '1 month' = to_date(b.yearmonth,'yyyymm')
+    and a.yearmonth = current_setting('v.yearmonth');
+
+
+    update dm.a_dl_mly_sales_rpt a
+    set value_yoy = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_mly_sales_rpt b
+    where a.kpi_name in ('UV')
+    and a.consumer_cluster = 'ALL'
+    and a.kpi_name = b.kpi_name
+    and a.store = b.store
+    and a.consumer_cluster = b.consumer_cluster
+    and to_date(a.yearmonth,'yyyymm') - interval '1 year' = to_date(b.yearmonth,'yyyymm')
+    and a.yearmonth = current_setting('v.yearmonth');
+
+  update_by_oms_order_dtl:
+    SELECT set_config('v.batch_date', '{batch_date}', false);
+    SELECT set_config('v.yearmonth', to_char(current_setting('v.batch_date')::date - interval '1 month','yyyymm'), false);
+
+    delete from dm.a_dl_mly_sales_rpt
+    where consumer_cluster <> 'ALL'
+      and store = 'TMALL'
+      and yearmonth = current_setting('v.yearmonth');
+
+    create temp table tm as
+    select a.*,
+          null::date register_date,
+          lag(yearmonth) over(partition by a.shopperid order by yearmonth) last_order_yearmonth,
+          lag(parent_order_id) over(partition by a.shopperid order by yearmonth) last_order_id
+      from
+      (select 
+          to_char(date_id,'yyyymm') yearmonth,
+          parent_order_id,
+          date_id,
+          shopperid,
+          piece_cnt,
+          lego_sku_rrp_price,
+          lego_sku_gmv_price,
+          is_member,
+          member_grade,
+          is_1st_order_ever,
+          is_1st_order_365,
+          is_newshopper_ever,
+          is_newshopper_365,
+          is_new_member,
+          is_member_1st_order
+        from edw.f_oms_order_dtl where is_gwp = 'N' and lego_sku_gmv_price >= 19 and is_delivered = 'Y'
+        )a 
+    distributed by (shopperid)
+    ;
+
+    with tm_month as (
+        select * from tm where yearmonth = current_setting('v.yearmonth')
+    )
+    insert into dm.a_dl_mly_sales_rpt(
+        yearmonth,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    select 
+        current_setting('v.yearmonth') yearmonth,
+        kpi_name,
+        'TMALL' store,
+        consumer_cluster,
+        value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+      from (select 
+                  'Total Shopper' consumer_cluster,
+                  unnest(array['Total Shopper','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from tm_month
+              union all 
+            select 
+                  'New Shopper(1Y)' consumer_cluster,
+                  unnest(array['New Shopper(1Y)','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from tm_month where is_newshopper_365='Y'
+              union all 
+            select 
+                  'Total Member' consumer_cluster,
+                  unnest(array['Total Member','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from tm_month where is_member='Y'
+              union all 
+            select 
+                  'New Member' consumer_cluster,
+                  unnest(array['New Member','New Member(New)','New Member(Old)','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      count(distinct case when yearmonth = to_char(register_date,'yyyymm') then shopperid end),
+                      count(distinct case when yearmonth > to_char(register_date,'yyyymm') then shopperid end),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from tm_month where is_new_member='Y'
+              union all 
+            select 
+                  'Exist Member' consumer_cluster,
+                  unnest(array['Exist Member','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from tm_month where is_new_member is distinct from 'Y' and is_member='Y'
+              union all 
+            select 
+                  'Non-member' consumer_cluster,
+                  unnest(array['Non-member','GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from tm_month where is_member is distinct from 'Y'
+              union all 
+            select 
+                  member_grade consumer_cluster,
+                  unnest(array[member_grade,'GMV','RRP','Pieces','Transaction']) kpi_name,
+                  unnest(array[
+                      count(distinct shopperid),
+                      sum(lego_sku_gmv_price*piece_cnt),
+                      sum(lego_sku_rrp_price*piece_cnt),
+                      sum(piece_cnt),
+                      count(distinct parent_order_id)
+                      ]) value_actual
+              from tm_month where member_grade is not null group by member_grade)a
+      ;
+
+    insert into dm.a_dl_mly_sales_rpt(
+        yearmonth,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    with tm_year as (
+        select * from tm where yearmonth between to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm') and current_setting('v.yearmonth')
+    )
+    select 
+        current_setting('v.yearmonth') yearmonth,
+        kpi_name,
+        'TMALL' store,
+        consumer_cluster,
+        value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+      from (select 
+                  'Total Shopper' consumer_cluster,
+                  unnest(array['Total Shopper(2Y)','Total Shopper(Ever)']) kpi_name,
+                  unnest(array[
+                      count(distinct case when yearmonth between to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months','yyyymm') and current_setting('v.yearmonth') then shopperid end),
+                      count(distinct case when yearmonth <= current_setting('v.yearmonth') then shopperid end)
+                      ]) value_actual
+              from tm
+              union all 
+            select 
+                  'Total Shopper' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Total Shopper(1Y)','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct shopperid),
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from tm_year
+              union all 
+            select 
+                  'New Shopper(1Y)' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from tm_year where is_newshopper_365='Y'
+              union all 
+            select 
+                  'Total Member' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Total Member(1Y)','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct shopperid),
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from tm_year where is_member='Y'
+              union all 
+            select 
+                  'Total Member' consumer_cluster,
+                  unnest(array['Total Member(2Y)','Total Member(Ever)']) kpi_name,
+                  unnest(array[
+                      count(distinct case when yearmonth between to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months','yyyymm') and current_setting('v.yearmonth') then shopperid end),
+                      count(distinct case when yearmonth <= current_setting('v.yearmonth') then shopperid end)
+                      ]) value_actual
+              from tm where is_member='Y'
+              union all 
+            select 
+                  'New Member' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid),0) ,
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from tm_year where is_new_member='Y'
+              union all 
+            select 
+                  'Exist Member' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid) ,0),
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from tm_year where is_new_member is distinct from 'Y' and is_member='Y'
+              union all 
+            select 
+                  'Non-member' consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif(count(distinct shopperid) ,0),
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from tm_year where is_member is distinct from 'Y'
+              union all 
+            select 
+                  member_grade consumer_cluster,
+                  unnest(array['YoY Retention','Yearly Frequency','Yearly Repeat']) kpi_name,
+                  unnest(array[
+                      count(distinct case when to_date(last_order_yearmonth,'yyyymm') between (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '23 months') and (to_date(current_setting('v.yearmonth'),'yyyymm') - interval '12 months') then shopperid end)::float /
+                          nullif(count(distinct shopperid),0),
+                      count(distinct parent_order_id)::float /
+                          nullif( count(distinct shopperid) ,0),
+                      count(distinct case when last_order_id <> parent_order_id and last_order_yearmonth >= to_char(to_date(current_setting('v.yearmonth'),'yyyymm') - interval '11 months','yyyymm')  then shopperid end)::float / nullif(count(distinct shopperid),0)
+                      ]) value_actual
+              from tm_year where member_grade is not null group by member_grade)a
+      ;
+            
+    update dm.a_dl_mly_sales_rpt a
+    set value_mom = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_mly_sales_rpt b
+    where a.consumer_cluster <> 'ALL'
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store = 'TMALL'
+      and a.consumer_cluster = b.consumer_cluster
+      and to_date(a.yearmonth,'yyyymm') - interval '1 month' = to_date(b.yearmonth,'yyyymm')
+      and a.yearmonth = current_setting('v.yearmonth');
+            
+    update dm.a_dl_mly_sales_rpt a
+    set value_yoy = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_mly_sales_rpt b
+    where a.consumer_cluster <> 'ALL'
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store = 'TMALL'
+      and a.consumer_cluster = b.consumer_cluster
+      and to_date(a.yearmonth,'yyyymm') - interval '1 year' = to_date(b.yearmonth,'yyyymm')
+      and a.yearmonth = current_setting('v.yearmonth');
+
+  update_by_tm_member:
+    SELECT set_config('v.batch_date', '{batch_date}', false);
+    SELECT set_config('v.yearmonth', to_char(current_setting('v.batch_date')::date - interval '1 month','yyyymm'), false);
+
+    delete from dm.a_dl_mly_sales_rpt
+    where kpi_name in ('New Register Member','Total Prospect','New Prospect')
+    and consumer_cluster = 'ALL'
+    and store ='TMALL'
+    and yearmonth = current_setting('v.yearmonth');
+    
+    insert into dm.a_dl_mly_sales_rpt(
+        yearmonth,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    select 
+        current_setting('v.yearmonth'),
+        unnest(array['New Register Member','Total Prospect','New Prospect']) kpi_name,
+        'TMALL' store,
+        'ALL' consumer_cluster,
+        unnest(array[
+            count(case when to_char(tm_1st_purchase_date ,'yyyymm') = current_setting('v.yearmonth') then 1 end),
+            count(case when to_char(tm_1st_purchase_date,'yyyymm') <= current_setting('v.yearmonth') and b.shopperid is null then 1 end),
+            count(case when to_char(tm_1st_purchase_date,'yyyymm') = current_setting('v.yearmonth') and b.shopperid is null then 1 end)]) value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+    from edw.d_tm_member a
+    left join (select shopperid 
+                 from edw.f_oms_order_dtl food 
+                where to_char(date_id,'yyyymm') <= current_setting('v.yearmonth') 
+                  and is_gwp = 'N' 
+                  and lego_sku_gmv_price >= 10 
+                  and is_delivered = 'Y'
+                group by shopperid) b on a.shopperid = b.shopperid
+    where current_row = 'Y'
+    ;
+
+    update dm.a_dl_mly_sales_rpt a
+    set value_mom = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_mly_sales_rpt b
+    where a.kpi_name in ('New Register Member','Total Prospect','New Prospect')
+    and a.consumer_cluster = 'ALL'
+    and a.kpi_name = b.kpi_name
+    and a.store = b.store
+    and a.store ='TMALL'
+    and a.consumer_cluster = b.consumer_cluster
+    and to_date(a.yearmonth,'yyyymm') - interval '1 month' = to_date(b.yearmonth,'yyyymm')
+    and a.yearmonth = current_setting('v.yearmonth');
+            
+    update dm.a_dl_mly_sales_rpt a
+    set value_yoy = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_mly_sales_rpt b
+    where a.kpi_name in ('New Register Member','Total Prospect','New Prospect')
+    and a.consumer_cluster = 'ALL'
+    and a.kpi_name = b.kpi_name
+    and a.store = b.store
+    and a.store ='TMALL'
+    and a.consumer_cluster = b.consumer_cluster
+    and to_date(a.yearmonth,'yyyymm') - interval '1 year' = to_date(b.yearmonth,'yyyymm')
+    and a.yearmonth = current_setting('v.yearmonth');

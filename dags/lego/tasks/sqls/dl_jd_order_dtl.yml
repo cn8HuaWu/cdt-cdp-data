@@ -1,0 +1,411 @@
+EDW:
+  sync_to_rds_dm:
+    create table if not exists dm.f_dl_jd_order_dtl (like frn.f_dl_jd_order_dtl);
+    delete from dm.f_dl_jd_order_dtl;
+    delete from dm.f_dl_jd_order_dtl;
+
+    insert into dm.f_dl_jd_order_dtl  
+    select *   from frn.f_dl_jd_order_dtl
+    where date_id >'2020-02-10';
+
+  update_by_jd_order_dtl:
+    create temporary table tmp_f_dl_jd_order_dtl (like dm.f_dl_jd_order_dtl );
+
+    insert into tmp_f_dl_jd_order_dtl(
+        store,
+        parent_order_id,
+        id,
+        date_id,
+        shopperid,
+        son_order_id,
+        pin,
+        openid,
+        order_start_date,
+        order_end_date,
+        store_sku_id,
+        store_sku_name,
+        piece_cnt,
+        is_gwp,
+        lego_sku_id,
+        lego_sku_name_en,
+        lego_sku_rrp_price,
+        lego_sku_gmv_price,
+        order_gmv_amount,
+        order_rrp_amount,
+        lego_sku_line,
+        lego_sku_status,
+        cn_product_substatus,
+        cn_store_product_substatus,
+        cn_launchdate,
+        cn_store_launchdate,
+        is_member,
+        member_grade,
+        is_delivered,
+        is_newshopper_ever,
+        is_newshopper_365,
+        is_new_member,
+        is_member_1st_order,
+        is_1st_order_ever,
+        is_1st_order_365
+    )
+    select 
+        'JD POP' store,
+        parent_order_id,
+        id,
+        date_id,
+        shopperid,
+        null son_order_id,
+        pin,
+        openid,
+        order_start_date,
+        order_end_date,
+        store_sku_id,
+        store_sku_name,
+        piece_cnt,
+        is_gwp,
+        lego_sku_id,
+        lego_sku_name_en,
+        lego_sku_rrp_price,
+        lego_sku_gmv_price,
+        order_gmv_amount,
+        order_rrp_amount,
+        lego_sku_line,
+        lego_sku_status,
+        cn_product_substatus,
+        cn_store_product_substatus,
+        cn_launchdate,
+        cn_store_launchdate,
+        is_member,
+        member_grade,
+        is_delivered,
+        'N',
+        'N',
+        'N',
+        'N',
+        'N',
+        'N'
+    from edw.f_jd_pop_order_dtl
+    where date_id is not null;
+
+    insert into tmp_f_dl_jd_order_dtl(
+        store,
+        parent_order_id,
+        id,
+        date_id,
+        shopperid,
+        son_order_id,
+        openid,
+        order_start_date,
+        order_end_date,
+        store_sku_id,
+        store_sku_name,
+        piece_cnt,
+        is_gwp,
+        lego_sku_id,
+        lego_sku_name_en,
+        lego_sku_rrp_price,
+        lego_sku_gmv_price,
+        order_gmv_amount,
+        order_rrp_amount,
+        lego_sku_line,
+        lego_sku_status,
+        cn_product_substatus,
+        cn_store_product_substatus,
+        cn_launchdate,
+        cn_store_launchdate,
+        is_member,
+        member_grade,
+        is_delivered,
+        is_newshopper_ever,
+        is_newshopper_365,
+        is_new_member,
+        is_member_1st_order,
+        is_1st_order_ever,
+        is_1st_order_365
+    )
+    select 
+        'JD B2B' store,
+        parent_order_id,
+        id,
+        date_id,
+        shopperid,
+        son_order_id,
+        openid,
+        order_start_date,
+        order_end_date,
+        store_sku_id,
+        store_sku_name,
+        piece_cnt,
+        is_gwp,
+        lego_sku_id,
+        lego_sku_name_en,
+        lego_sku_rrp_price,
+        lego_sku_gmv_price,
+        order_gmv_amount,
+        order_rrp_amount,
+        lego_sku_line,
+        lego_sku_status,
+        cn_product_substatus,
+        cn_store_product_substatus,
+        cn_launchdate,
+        cn_store_launchdate,
+        is_member,
+        member_grade,
+        is_delivered,
+        'N',
+        'N',
+        'N',
+        'N',
+        'N',
+        'N'
+    from edw.f_jd_b2b_order_dtl
+    ;
+
+    create temporary table t1 as
+    select 
+        parent_order_id,
+        order_end_date main_order_end_date,
+        lag(order_end_date) over(partition by openid order by order_end_date) last_order_date
+    from dm.f_dl_jd_order
+    group by parent_order_id,order_end_date,openid
+    distributed by (parent_order_id)
+    ;
+
+    update tmp_f_dl_jd_order_dtl a
+    set is_1st_order_ever = case when last_order_date is null then 'Y' else 'N' end,
+        is_1st_order_365  = case when last_order_date is null or extract('day' from (main_order_end_date - last_order_date)) >= 365 then 'Y' else 'N' end
+    from t1 b
+    where a.parent_order_id = b.parent_order_id
+    ;
+
+    update tmp_f_dl_jd_order_dtl a
+    set is_newshopper_ever = 'Y'
+    where exists (select 1 from tmp_f_dl_jd_order_dtl b
+        where a.openid = b.openid
+        and a.date_id = b.date_id
+        and b.is_1st_order_ever = 'Y')
+    ;
+
+    update tmp_f_dl_jd_order_dtl a
+    set is_newshopper_365 = 'Y'
+    where exists (select 1 from tmp_f_dl_jd_order_dtl b
+        where a.openid = b.openid
+        and a.date_id = b.date_id
+        and b.is_1st_order_365 = 'Y') ;
+    
+    update tmp_f_dl_jd_order_dtl a
+    set is_member_1st_order = 'Y'
+    from (select parent_order_id, 
+                 shopperid,
+                 max(order_end_date) order_end_date,
+                 row_number() over(partition by shopperid order by max(order_end_date)) rn
+            from tmp_f_dl_jd_order_dtl
+           where is_member = 'Y' 
+           group by shopperid, parent_order_id)b
+    where b.rn = 1
+      and a.shopperid = b.shopperid
+      and a.parent_order_id = b.parent_order_id
+    ;
+    
+    update tmp_f_dl_jd_order_dtl a
+    set is_new_member = 'Y'
+    from (select a.shopperid,a.parent_order_id
+            from (select shopperid,max(order_end_date)::date order_end_date from tmp_f_dl_jd_order_dtl where is_member_1st_order = 'Y' group by shopperid)b,
+                  tmp_f_dl_jd_order_dtl a
+            where a.shopperid = b.shopperid
+              and a.order_end_date::date = b.order_end_date
+            group by a.shopperid,a.parent_order_id)b
+    where a.shopperid = b.shopperid
+      and a.parent_order_id = b.parent_order_id
+    ;
+
+    update dm.f_dl_jd_order_dtl set store='del';
+    insert into dm.f_dl_jd_order_dtl select * from tmp_f_dl_jd_order_dtl;
+    delete from dm.f_dl_jd_order_dtl where store='del';
+
+  update_by_jd_order_dtl_now:
+    delete from dm.f_dl_jd_order_dtl;
+
+    insert into dm.f_dl_jd_order_dtl(
+        store,
+        parent_order_id,
+        id,
+        date_id,
+        shopperid,
+        son_order_id,
+        pin,
+        openid,
+        order_start_date,
+        order_end_date,
+        store_sku_id,
+        store_sku_name,
+        piece_cnt,
+        is_gwp,
+        lego_sku_id,
+        lego_sku_name_en,
+        lego_sku_rrp_price,
+        lego_sku_gmv_price,
+        order_gmv_amount,
+        order_rrp_amount,
+        lego_sku_line,
+        lego_sku_status,
+        cn_product_substatus,
+        cn_store_product_substatus,
+        cn_launchdate,
+        cn_store_launchdate,
+        is_member,
+        member_grade,
+        is_delivered
+    )
+    select 
+        'JD POP' store,
+        parent_order_id,
+        id,
+        date_id,
+        shopperid,
+        null son_order_id,
+        pin,
+        openid,
+        order_start_date,
+        order_end_date,
+        store_sku_id,
+        store_sku_name,
+        piece_cnt,
+        is_gwp,
+        lego_sku_id,
+        lego_sku_name_en,
+        lego_sku_rrp_price,
+        lego_sku_gmv_price,
+        order_gmv_amount,
+        order_rrp_amount,
+        lego_sku_line,
+        lego_sku_status,
+        cn_product_substatus,
+        cn_store_product_substatus,
+        cn_launchdate,
+        cn_store_launchdate,
+        is_member,
+        member_grade,
+        is_delivered
+    from edw.f_jd_pop_order_dtl;
+
+    insert into dm.f_dl_jd_order_dtl(
+        store,
+        parent_order_id,
+        id,
+        date_id,
+        shopperid,
+        son_order_id,
+        openid,
+        order_start_date,
+        order_end_date,
+        store_sku_id,
+        store_sku_name,
+        piece_cnt,
+        is_gwp,
+        lego_sku_id,
+        lego_sku_name_en,
+        lego_sku_rrp_price,
+        lego_sku_gmv_price,
+        order_gmv_amount,
+        order_rrp_amount,
+        lego_sku_line,
+        lego_sku_status,
+        cn_product_substatus,
+        cn_store_product_substatus,
+        cn_launchdate,
+        cn_store_launchdate,
+        is_member,
+        member_grade,
+        is_delivered
+    )
+    select 
+        'JD B2B' store,
+        parent_order_id,
+        id,
+        date_id,
+        shopperid,
+        son_order_id,
+        openid,
+        order_start_date,
+        order_end_date,
+        store_sku_id,
+        store_sku_name,
+        piece_cnt,
+        is_gwp,
+        lego_sku_id,
+        lego_sku_name_en,
+        lego_sku_rrp_price,
+        lego_sku_gmv_price,
+        order_gmv_amount,
+        order_rrp_amount,
+        lego_sku_line,
+        lego_sku_status,
+        cn_product_substatus,
+        cn_store_product_substatus,
+        cn_launchdate,
+        cn_store_launchdate,
+        is_member,
+        member_grade,
+        is_delivered
+    from edw.f_jd_b2b_order_dtl
+    ;
+
+    create temporary table t1 as
+    select 
+        parent_order_id,
+        order_end_date main_order_end_date,
+        lag(order_end_date) over(partition by openid order by order_end_date) last_order_date
+    from dm.f_dl_jd_order
+    group by parent_order_id,order_end_date,openid
+    distributed by (parent_order_id)
+    ;
+
+    update dm.f_dl_jd_order_dtl a
+    set is_1st_order_ever = case when last_order_date is null then 'Y' end,
+        is_1st_order_365  = case when last_order_date is null or extract('day' from (main_order_end_date - last_order_date)) >= 365 then 'Y' end
+    from t1 b
+    where a.parent_order_id = b.parent_order_id
+    ;
+
+    update dm.f_dl_jd_order_dtl a
+    set is_newshopper_ever = 'Y'
+    where exists (select 1 from dm.f_dl_jd_order_dtl b
+        where a.openid = b.openid
+        and a.date_id = b.date_id
+        and b.is_1st_order_ever = 'Y')
+    ;
+
+    update dm.f_dl_jd_order_dtl a
+    set is_newshopper_365 = 'Y'
+    where exists (select 1 from dm.f_dl_jd_order_dtl b
+        where a.openid = b.openid
+        and a.date_id = b.date_id
+        and b.is_1st_order_365 = 'Y') ;
+    
+    update dm.f_dl_jd_order_dtl a
+    set is_member_1st_order = 'Y'
+    from (select parent_order_id, 
+                 shopperid,
+                 max(order_end_date) order_end_date,
+                 row_number() over(partition by shopperid order by max(order_end_date)) rn
+            from dm.f_dl_jd_order_dtl
+           where is_member = 'Y' 
+           group by shopperid, parent_order_id)b
+    where b.rn = 1
+      and a.shopperid = b.shopperid
+      and a.parent_order_id = b.parent_order_id
+    ;
+    
+    update dm.f_dl_jd_order_dtl a
+    set is_new_member = 'Y'
+    from (select a.shopperid,a.parent_order_id
+            from (select shopperid,max(order_end_date)::date order_end_date from dm.f_dl_jd_order_dtl where is_member_1st_order = 'Y' group by shopperid)b,
+                  dm.f_dl_jd_order_dtl a
+            where a.shopperid = b.shopperid
+              and a.order_end_date::date = b.order_end_date
+            group by a.shopperid,a.parent_order_id)b
+    where a.shopperid = b.shopperid
+      and a.parent_order_id = b.parent_order_id
+    ;
+

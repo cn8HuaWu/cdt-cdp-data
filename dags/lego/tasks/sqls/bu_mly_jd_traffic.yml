@@ -1,0 +1,42 @@
+Staging:
+  src_columns:
+    store text,
+    uv text,
+    yearmonth text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.a_bu_mly_jd_traffic(
+    store varchar(50),
+    yearmonth varchar(20),
+    uv decimal(15),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_mly_jd_traffic_id primary key( store, yearmonth )
+    )distributed by (store)
+  
+  insert_edw_from_ods_query:
+    insert into edw.a_bu_mly_jd_traffic(
+    store,
+    yearmonth,
+    uv,
+    dl_batch_date,
+    dl_load_time
+    )
+    select
+    store,
+    yearmonth,
+    case when uv ~ E'^\\d+$' then uv::decimal(15) else null end  as uv,
+    dl_batch_date,
+    now() as dl_load_time
+    from ods.r_bu_mly_jd_traffic;
+
+  sync_to_rds_dm:
+    create table if not exists dm.a_bu_mly_jd_traffic (like frn.a_bu_mly_jd_traffic);
+    delete from dm.a_bu_mly_jd_traffic;
+    delete from dm.a_bu_mly_jd_traffic;
+    insert into dm.a_bu_mly_jd_traffic
+    select * 
+    from frn.a_bu_mly_jd_traffic;

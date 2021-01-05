@@ -1,0 +1,104 @@
+Staging:
+  src_columns:
+    
+
+ODS:
+
+EDW:
+  create_table_query:
+    create table if not exists edw.d_tm_member(
+      shopperid varchar(255) NULL,
+      is_control_group varchar(255) NULL,
+      platform varchar(255) NULL,
+      name varchar(255) NULL,
+      gender varchar(10) NULL,
+      birth_year numeric(4) NULL,
+      birthday varchar(10) NULL,
+      age numeric(4) NULL,
+      province varchar(255) NULL,
+      city varchar(255) NULL,
+      county varchar(255) NULL,
+      mobile varchar(255) NULL,
+      email varchar(255) NULL,
+      address varchar(500) NULL,
+      job varchar(255) NULL,
+      zip_code varchar(255) NULL,
+      member_grade varchar(255) NULL,
+      tm_1st_purchase_date timestamp NULL,
+      seller_name varchar(255),
+      type varchar(255),
+      open_id varchar(255),
+      unionid varchar(255),
+      store_id varchar(255),
+      source varchar(255),
+      saler_id varchar(255),
+      baby_birthday date,
+      employee_no varchar(255),
+      flight_mode varchar(255),
+      flight_join_time varchar(255),
+      sumchk varchar(32),
+      current_row varchar(1),
+      valid_time timestamp,
+      expire_time timestamp,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (shopperid)
+  
+  insert_edw_from_ods_query:
+    insert into edw.d_tm_member(
+      shopperid,
+      is_control_group,
+      platform,
+      name,
+      gender,
+      birth_year,
+      birthday,
+      age,
+      province,
+      city,
+      county,
+      mobile,
+      email,
+      address,
+      job,
+      zip_code,
+      member_grade,
+      tm_1st_purchase_date,
+      current_row ,
+      valid_time ,
+      expire_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      shopperid,
+      is_control_group,
+      platform,
+      name,
+      gender,
+      birth_year,
+      birthday,
+      age,
+      province,
+      city,
+      county,
+      mobile,
+      email,
+      address,
+      job,
+      zip_code,
+      member_grade,
+      tm_1st_purchase_date,
+      current_row ,
+      valid_time ,
+      expire_time,
+      dl_batch_date,
+      dl_load_time
+    from edw.d_dl_tm_member_his ;
+
+  updated_by_1st_purchase_date:
+    
+
+  scd2_md5_update_query:
+    
+    

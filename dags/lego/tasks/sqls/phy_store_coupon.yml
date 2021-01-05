@@ -1,0 +1,65 @@
+Staging:
+  src_columns:
+    coupon_code text,
+    distributor text,
+    use_rule text,
+    use_limit text,
+    start_time text,
+    expire_time text,
+    coupon_type text,
+    source text,
+    value text,
+    sendout_time text 
+
+ODS:    
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_phy_store_coupon (
+      coupon_code varchar(255) not null,
+      distributor varchar(255) not null,
+      use_rule varchar(255) null,
+      use_limit varchar(255) null,
+      start_time timestamp NULL,
+      expire_time timestamp NULL,
+      coupon_type varchar(255) null,
+      source varchar(255) null,
+      value decimal(15,0) null,
+      sendout_time timestamp NULL,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (distributor,coupon_code);
+
+  insert_edw_from_ods_query:
+    insert into edw.f_phy_store_coupon(
+      coupon_code,
+      distributor,
+      use_rule,
+      use_limit,
+      start_time,
+      expire_time,
+      coupon_type,
+      source,
+      value,
+      sendout_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      coupon_code,
+      upper(distributor),
+      case when trim(use_rule) in ('','null') then null else use_rule end as use_rule,
+      case when trim(use_limit) in ('','null') then null else use_limit end as use_limit,
+      case when start_time in ('null','') then null else TIMESTAMP WITH TIME ZONE 'epoch' + start_time::decimal(13) * INTERVAL '1 s'end,
+      case when expire_time in ('null','') then null else TIMESTAMP WITH TIME ZONE 'epoch' + expire_time::decimal(13) * INTERVAL '1 s'end,
+      case when trim(coupon_type) in ('','null') then null else coupon_type end as coupon_type,
+      case when trim(source) in ('','null') then null else source end as source,
+      case when value in ('null','') then null else value::decimal(15,0) end,
+      TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s',
+      dl_batch_date,
+      dl_load_time
+    from (
+      select * , row_number() over( partition by upper(distributor), coupon_code order by (TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s') desc ) rk
+      from ods.r_phy_store_coupon
+    )ab
+    where rk=1;

@@ -1,0 +1,191 @@
+create_datahub_stg_saved_table:
+  create table edw.a_dl_datahub_checkpoint(
+    id serial NOT NULL,
+    topic_name varchar(255) not null,
+    record_count numeric(15,0) not null,
+    state varchar(255) not null,
+    datasource varchar(255) null,
+    update_ts timestamp not null
+  );
+
+# begin queries for datahub sensor for oms_income_expense
+oms_income_expense_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='oms_income_expense' order by id desc limit 1;
+
+oms_income_expense_new:
+  select count(1) from stg.r_oms_income_expense_di;
+
+oms_income_expense_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state) values('oms_income_expense', ?, now(), 'running');
+
+oms_income_expense_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='oms_income_expense' and state='running';  
+# end queries for datahub sensor for oms_income_expense
+
+#begin
+oms_income_statement_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='oms_income_statement' order by id desc limit 1;
+
+oms_income_statement_new:
+  select count(1) from stg.r_oms_income_statement_di;
+
+oms_income_statement_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state) values('oms_income_statement', ?, now(), 'running');
+
+oms_income_statement_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='oms_income_statement' and state='running';
+#end
+
+#begin
+oms_expense_statement_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='oms_expense_statement' order by id desc limit 1;
+
+oms_expense_statement_new:
+  select count(1) from stg.r_oms_expense_statement_di;
+
+oms_expense_statement_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state) values('oms_expense_statement', ?, now(), 'running');
+
+oms_expense_statement_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='oms_expense_statement' and state='running';
+#end
+
+#begin phy_store_inventory
+phy_store_inventory_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='phy_store_inventory' and datasource='lewin' order by id desc limit 1;
+
+phy_store_inventory_new:
+  select count(1) from stg.r_phy_store_inventory_di where upper(distributor)='LEWIN';
+
+phy_store_inventory_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state, datasource) values('phy_store_inventory', ?, now(), 'running', 'lewin');
+
+phy_store_inventory_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='phy_store_inventory' and state='running' and datasource='lewin';
+#end
+
+#begin phy_store_member
+phy_store_member_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='phy_store_member' and datasource='lewin' order by id desc limit 1;
+
+phy_store_member_new:
+  select count(1) from stg.r_phy_store_member_di where upper(distributor)='LEWIN';
+
+phy_store_member_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state, datasource) values('phy_store_member', ?, now(), 'running', 'lewin');
+
+phy_store_member_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='phy_store_member' and state='running' and datasource='lewin';
+#end
+
+#begin phy_store_member_point
+phy_store_member_point_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='phy_store_member_point' and datasource='lewin' order by id desc limit 1;
+
+phy_store_member_point_new:
+  select count(1) from stg.r_phy_store_member_point_di where upper(distributor)='LEWIN';
+
+phy_store_member_point_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state, datasource) values('phy_store_member_point', ?, now(), 'running', 'lewin');
+
+phy_store_member_point_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='phy_store_member_point' and state='running' and datasource='lewin';
+#end
+
+#begin phy_store_order_coupon_dtl
+phy_store_order_coupon_dtl_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='phy_store_order_coupon_dtl' and datasource='lewin' order by id desc limit 1;
+
+phy_store_order_coupon_dtl_new:
+  select count(1) from stg.r_phy_store_order_coupon_dtl_di where upper(distributor)='LEWIN';
+
+phy_store_order_coupon_dtl_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state, datasource) values('phy_store_order_coupon_dtl', ?, now(), 'running', 'lewin');
+
+phy_store_order_coupon_dtl_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='phy_store_order_coupon_dtl' and state='running' and datasource='lewin';
+#end
+
+#begin phy_store_order
+phy_store_order_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='phy_store_order' and datasource='lewin' order by id desc limit 1;
+
+phy_store_order_new:
+  select count(1) from stg.r_phy_store_order_di where upper(distributor)='LEWIN';
+
+phy_store_order_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state, datasource) values('phy_store_order', ?, now(), 'running', 'lewin');
+
+phy_store_order_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='phy_store_order' and state='running' and datasource='lewin';
+#end
+
+#begin phy_store_order_dtl
+phy_store_order_dtl_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='phy_store_order_dtl' and datasource='lewin' order by id desc limit 1;
+
+phy_store_order_dtl_new:
+  select count(1) from stg.r_phy_store_order_dtl_di where upper(distributor)='LEWIN';
+
+phy_store_order_dtl_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state, datasource) values('phy_store_order_dtl', ?, now(), 'running', 'lewin');
+
+phy_store_order_dtl_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='phy_store_order_dtl' and state='running' and datasource='lewin';
+#end
+
+#begin phy_store_order_payment_dtl
+phy_store_order_payment_dtl_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='phy_store_order_payment_dtl' and datasource='lewin' order by id desc limit 1;
+
+phy_store_order_payment_dtl_new:
+  select count(1) from stg.r_phy_store_order_payment_dtl_di where upper(distributor)='LEWIN';
+
+phy_store_order_payment_dtl_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state, datasource) values('phy_store_order_payment_dtl', ?, now(), 'running', 'lewin');
+
+phy_store_order_payment_dtl_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='phy_store_order_payment_dtl' and state='running' and datasource='lewin';
+#end
+
+#begin phy_store_point_transaction
+phy_store_point_transaction_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='phy_store_point_transaction' and datasource='lewin' order by id desc limit 1;
+
+phy_store_point_transaction_new:
+  select count(1) from stg.r_phy_store_point_transaction_di where upper(distributor)='LEWIN';
+
+phy_store_point_transaction_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state, datasource) values('phy_store_point_transaction', ?, now(), 'running', 'lewin');
+
+phy_store_point_transaction_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='phy_store_point_transaction' and state='running' and datasource='lewin';
+#end
+
+#begin phy_store_return_order
+phy_store_return_order_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='phy_store_return_order' and datasource='lewin' order by id desc limit 1;
+
+phy_store_return_order_new:
+  select count(1) from stg.r_phy_store_return_order_di where upper(distributor)='LEWIN';
+
+phy_store_return_order_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state, datasource) values('phy_store_return_order', ?, now(), 'running', 'lewin');
+
+phy_store_return_order_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='phy_store_return_order' and state='running' and datasource='lewin';
+#end
+
+#begin phy_store_return_order_dtl
+phy_store_return_order_dtl_saved:
+  select record_count from edw.a_dl_datahub_checkpoint where state in ('done', 'running') and topic_name='phy_store_return_order_dtl' and datasource='lewin' order by id desc limit 1;
+
+phy_store_return_order_dtl_new:
+  select count(1) from stg.r_phy_store_return_order_dtl_di where upper(distributor)='LEWIN';
+
+phy_store_return_order_dtl_update:
+  insert into edw.a_dl_datahub_checkpoint(topic_name, record_count, update_ts, state, datasource) values('phy_store_return_order_dtl', ?, now(), 'running', 'lewin');
+
+phy_store_return_order_dtl_update_state:
+  update edw.a_dl_datahub_checkpoint set state = '?' where topic_name='phy_store_return_order_dtl' and state='running' and datasource='lewin';
+#end

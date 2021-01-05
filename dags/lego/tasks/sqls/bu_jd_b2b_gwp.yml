@@ -1,0 +1,34 @@
+Staging:
+  src_columns:
+    store_sku_id text,
+    lego_sku_id text,
+    store_sku_name text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.d_bu_jd_b2b_gwp(
+    store_sku_id varchar(50),
+    lego_sku_id varchar(50),
+    store_sku_name varchar(255),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_jd_b2b_gwp_id primary key( store_sku_id )
+    )distributed by (store_sku_id)
+  
+  insert_edw_from_ods_query:
+    insert into edw.d_bu_jd_b2b_gwp(
+    store_sku_id,
+    lego_sku_id,
+    store_sku_name,
+    dl_batch_date,
+    dl_load_time
+    )
+    select
+    store_sku_id,
+    lego_sku_id,
+    store_sku_name,
+    dl_batch_date,
+    now()
+    from ods.r_bu_jd_b2b_gwp;

@@ -1,0 +1,373 @@
+EDW:
+  sync_to_rds_dm:
+    create table if not exists dm.a_dl_dly_sales_rpt (like frn.a_dl_dly_sales_rpt);
+    delete from dm.a_dl_dly_sales_rpt;
+    delete from dm.a_dl_dly_sales_rpt;
+    
+    insert into dm.a_dl_dly_sales_rpt
+    select * from frn.a_dl_dly_sales_rpt  where store not in ('JD', 'JD B2B')
+    union 
+    select * 
+    from frn.a_dl_dly_sales_rpt
+    where store  in ('JD', 'JD B2B') 
+    and date_id > '20200210';
+
+  update_by_jd_order_dtl:
+    SELECT set_config('v.batch_date', '{batch_date}', false);
+
+    delete from dm.a_dl_dly_sales_rpt
+    where kpi_name in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member','GMV','RRP', 'order')
+      and consumer_cluster in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member')
+      and store in ('JD','JD B2B','JD POP')
+      and date_id = current_setting('v.batch_date')::date;
+
+    create temp table jd_all as
+    select * from dm.f_dl_jd_order_dtl 
+    where is_gwp = 'N'
+      and lego_sku_gmv_price >= 10
+      and is_delivered = 'Y'
+      and date_id = current_setting('v.batch_date')::date
+    distributed by (shopperid);
+      
+    insert into dm.a_dl_dly_sales_rpt(
+        date_id,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    select 
+        date_id,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+      from (select date_id,
+                  store,
+                  'Total Shopper' consumer_cluster,
+                  unnest(array['Total Shopper','GMV','RRP', 'order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from jd_all group by date_id,store
+              union all 
+            select date_id,
+                  'JD' store,
+                  'Total Shopper' consumer_cluster,
+                  unnest(array['Total Shopper','GMV','RRP', 'order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from jd_all group by date_id
+              union all 
+            select date_id,
+                  'JD' store,
+                  'New Shopper(Ever)' consumer_cluster,
+                  unnest(array['New Shopper(Ever)','GMV','RRP', 'order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from jd_all where is_newshopper_ever = 'Y' group by date_id
+              union all 
+            select date_id,
+                  'JD' store,
+                  'New Shopper(1Y)' consumer_cluster,
+                  unnest(array['New Shopper(1Y)','GMV','RRP', 'order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from jd_all where is_newshopper_365 = 'Y' group by date_id
+              union all 
+            select date_id,
+                  'JD' store,
+                  'Total Member' consumer_cluster,
+                  unnest(array['Total Member','GMV','RRP', 'order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from jd_all where is_member = 'Y' group by date_id
+              union all 
+            select date_id,
+                  'JD' store,
+                  'New Member' consumer_cluster,
+                  unnest(array['New Member','GMV','RRP', 'order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from jd_all where is_new_member = 'Y' group by date_id
+              union all 
+            select date_id,
+                  'JD' store,
+                  'Exist Member' consumer_cluster,
+                  unnest(array['Exist Member','GMV','RRP', 'order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from jd_all where is_member = 'Y' and is_new_member is distinct from 'Y' group by date_id) a
+      ;
+            
+    update dm.a_dl_dly_sales_rpt a
+    set value_mom = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_dly_sales_rpt b
+    where a.kpi_name in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member','GMV','RRP','order')
+      and a.consumer_cluster in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member')
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store in ('JD','JD B2B','JD POP')
+      and a.consumer_cluster = b.consumer_cluster
+      and a.date_id - interval '1 month' = b.date_id
+      and a.date_id = current_setting('v.batch_date')::date;
+            
+    update dm.a_dl_dly_sales_rpt a
+    set value_yoy = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_dly_sales_rpt b
+    where a.kpi_name in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member','GMV','RRP','order')
+      and a.consumer_cluster in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member')
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store in ('JD','JD B2B','JD POP')
+      and a.consumer_cluster = b.consumer_cluster
+      and a.date_id - interval '1 year' = b.date_id
+      and a.date_id = current_setting('v.batch_date')::date;
+
+  update_by_jd_member:
+    SELECT set_config('v.batch_date', '{batch_date}', false);
+
+    delete from dm.a_dl_dly_sales_rpt
+    where kpi_name in ('New Register Member')
+      and consumer_cluster = 'ALL'
+      and store ='JD'
+      and date_id = current_setting('v.batch_date')::date;
+
+    insert into dm.a_dl_dly_sales_rpt(
+        date_id,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    select 
+        register_date::date,
+        'New Register Member' kpi_name,
+        'JD' store,
+        'ALL' consumer_cluster,
+        count(1) value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+      from edw.d_dl_jd_member
+    where current_row = 'Y'
+      and register_date::date = current_setting('v.batch_date')::date
+      group by register_date::date;
+            
+    update dm.a_dl_dly_sales_rpt a
+    set value_mom = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_dly_sales_rpt b
+    where a.kpi_name in ('New Register Member')
+      and a.consumer_cluster = 'ALL'
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store = 'JD'
+      and a.consumer_cluster = b.consumer_cluster
+      and a.date_id - interval '1 month' = b.date_id
+      and a.date_id = current_setting('v.batch_date')::date;
+            
+    update dm.a_dl_dly_sales_rpt a
+    set value_yoy = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_dly_sales_rpt b
+    where a.kpi_name in ('New Register Member')
+      and a.consumer_cluster = 'ALL'
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store ='JD'
+      and a.consumer_cluster = b.consumer_cluster
+      and a.date_id - interval '1 year' = b.date_id
+      and a.date_id = current_setting('v.batch_date')::date;
+    
+  update_by_jd_and_tm_traffic:
+    SELECT set_config('v.batch_date', '{batch_date}', false);
+
+    delete from dm.a_dl_dly_sales_rpt
+    where kpi_name in ('PV','UV','New Fans')
+      and consumer_cluster = 'ALL'
+      and date_id = current_setting('v.batch_date')::date;
+
+    insert into dm.a_dl_dly_sales_rpt(
+        date_id,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    select 
+        date_id,
+        unnest(array['PV','UV','New Fans']) kpi_name,
+        store,
+        'ALL' consumer_cluster,
+        unnest(array[pv,uv,new_fans]) value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+      from (select store,date_id,pv,uv,new_fans from edw.a_bu_dly_jd_traffic union all
+            select 'JD',date_id,sum(pv),sum(uv),sum(new_fans) from edw.a_bu_dly_jd_traffic group by date_id union all
+            select 'TMALL' store,date_id,pv,uv,new_fans from edw.a_bu_dly_tm_traffic) a
+    where date_id = current_setting('v.batch_date')::date;
+          
+    update dm.a_dl_dly_sales_rpt a
+    set value_mom = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_dly_sales_rpt b
+    where a.kpi_name in ('PV','UV','New Fans')
+      and a.consumer_cluster = 'ALL'
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.consumer_cluster = b.consumer_cluster
+      and a.date_id - interval '1 month' = b.date_id
+      and a.date_id = current_setting('v.batch_date')::date;
+            
+    update dm.a_dl_dly_sales_rpt a
+    set value_yoy = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_dly_sales_rpt b
+    where a.kpi_name in ('PV','UV','New Fans')
+      and a.consumer_cluster = 'ALL'
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.consumer_cluster = b.consumer_cluster
+      and a.date_id - interval '1 year' = b.date_id
+      and a.date_id = current_setting('v.batch_date')::date;
+      
+  update_by_oms_order_dtl:
+    SELECT set_config('v.batch_date', '{batch_date}', false);
+
+    delete from dm.a_dl_dly_sales_rpt
+    where kpi_name in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member','GMV','RRP','order')
+      and consumer_cluster in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member')
+      and store = 'TMALL'
+      and date_id = current_setting('v.batch_date')::date;
+
+    create temp table tm as
+    select * from edw.f_oms_order_dtl 
+    where is_gwp = 'N'
+      and lego_sku_gmv_price >= 19
+      and is_delivered = 'Y'
+      and date_id = current_setting('v.batch_date')::date
+    distributed by (shopperid);
+      
+    insert into dm.a_dl_dly_sales_rpt(
+        date_id,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    select 
+        date_id,
+        kpi_name,
+        'TMALL' store,
+        consumer_cluster,
+        value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+      from (select date_id,
+                  'Total Shopper' consumer_cluster,
+                  unnest(array['Total Shopper','GMV','RRP','order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from tm group by date_id
+              union all 
+            select date_id,
+                  'New Shopper(Ever)' consumer_cluster,
+                  unnest(array['New Shopper(Ever)','GMV','RRP','order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from tm where is_newshopper_ever = 'Y' group by date_id
+              union all 
+            select date_id,
+                  'New Shopper(1Y)' consumer_cluster,
+                  unnest(array['New Shopper(1Y)','GMV','RRP', 'order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from tm where is_newshopper_365 = 'Y' group by date_id
+              union all 
+            select date_id,
+                  'Total Member' consumer_cluster,
+                  unnest(array['Total Member','GMV','RRP','order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from tm where is_member = 'Y' group by date_id
+              union all 
+            select date_id,
+                  'New Member' consumer_cluster,
+                  unnest(array['New Member','GMV','RRP','order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from tm where is_new_member = 'Y' group by date_id
+              union all 
+            select date_id,
+                  'Exist Member' consumer_cluster,
+                  unnest(array['Exist Member','GMV','RRP','order']) kpi_name,
+                  unnest(array[count(distinct shopperid),sum(lego_sku_gmv_price*piece_cnt),sum(lego_sku_rrp_price*piece_cnt), count(distinct parent_order_id)]) value_actual
+              from tm where is_member = 'Y' and is_new_member is distinct from 'Y' group by date_id) a
+      ;
+            
+    update dm.a_dl_dly_sales_rpt a
+    set value_mom = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_dly_sales_rpt b
+    where a.kpi_name in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member','GMV','RRP','order')
+      and a.consumer_cluster in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member')
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store = 'TMALL'
+      and a.consumer_cluster = b.consumer_cluster
+      and a.date_id - interval '1 month' = b.date_id
+      and a.date_id = current_setting('v.batch_date')::date;
+            
+    update dm.a_dl_dly_sales_rpt a
+    set value_yoy = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_dly_sales_rpt b
+    where a.kpi_name in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member','GMV','RRP','order')
+      and a.consumer_cluster in ('Total Shopper','New Shopper(Ever)','New Shopper(1Y)','Total Member','New Member','Exist Member')
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store = 'TMALL'
+      and a.consumer_cluster = b.consumer_cluster
+      and a.date_id - interval '1 year' = b.date_id
+      and a.date_id = current_setting('v.batch_date')::date;
+
+  update_by_tm_member:
+    SELECT set_config('v.batch_date', '{batch_date}', false);
+
+    delete from dm.a_dl_dly_sales_rpt
+    where kpi_name in ('New Register Member')
+      and consumer_cluster = 'ALL'
+      and store ='TMALL'
+      and date_id = current_setting('v.batch_date')::date;
+
+    insert into dm.a_dl_dly_sales_rpt(
+        date_id,
+        kpi_name,
+        store,
+        consumer_cluster,
+        value_actual, 
+        dl_batch_date,
+        dl_load_time)
+    select 
+        tm_1st_purchase_date::date,
+        'New Register Member' kpi_name,
+        'TMALL' store,
+        'ALL' consumer_cluster,
+        count(1) value_actual,
+        to_char(current_date,'yyyymmdd') dl_batch_date,
+        now() dl_load_time
+      from edw.d_tm_member dtm 
+    where current_row = 'Y'
+      and tm_1st_purchase_date =  current_setting('v.batch_date')::date
+      group by tm_1st_purchase_date::date;
+            
+    update dm.a_dl_dly_sales_rpt a
+    set value_mom = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_dly_sales_rpt b
+    where a.kpi_name in ('New Register Member')
+      and a.consumer_cluster = 'ALL'
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store ='TMALL'
+      and a.consumer_cluster = b.consumer_cluster
+      and a.date_id - interval '1 month' = b.date_id
+      and a.date_id = current_setting('v.batch_date')::date;
+            
+    update dm.a_dl_dly_sales_rpt a
+    set value_yoy = (a.value_actual - b.value_actual) / nullif(b.value_actual,0)
+    from dm.a_dl_dly_sales_rpt b
+    where a.kpi_name in ('New Register Member')
+      and a.consumer_cluster = 'ALL'
+      and a.kpi_name = b.kpi_name
+      and a.store = b.store
+      and a.store ='TMALL'
+      and a.consumer_cluster = b.consumer_cluster
+      and a.date_id - interval '1 year' = b.date_id
+      and a.date_id = current_setting('v.batch_date')::date;

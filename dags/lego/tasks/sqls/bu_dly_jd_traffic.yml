@@ -1,0 +1,50 @@
+Staging:
+  src_columns:
+    store text,
+    pv text,
+    uv text,
+    new_fans text,
+    date text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.a_bu_dly_jd_traffic(
+    store  varchar(50),
+    date_id date,
+    pv decimal(15),
+    uv decimal(15),
+    new_fans decimal(15),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_dly_jd_traffic_id primary key(store, date_id)
+    )distributed by (store)
+  
+  insert_edw_from_ods_query:
+    insert into edw.a_bu_dly_jd_traffic(
+    store,
+    pv,
+    uv,
+    new_fans,
+    date_id,
+    dl_batch_date,
+    dl_load_time
+    )
+    select
+    store,
+    case when pv ~ E'^\\d+$' then pv::decimal(15) else null end  as pv,
+    case when uv ~ E'^\\d+$' then uv::decimal(15) else null end  as uv,
+    case when new_fans ~ E'^\\d+$' then new_fans::decimal(15) else null end  as new_fans,
+    to_date(date,'yyyy-mm-dd'),
+    dl_batch_date,
+    now() as dl_load_time
+    from ods.r_bu_dly_jd_traffic;
+
+  sync_to_rds_dm:
+    create table if not exists dm.a_bu_dly_jd_traffic (like frn.a_bu_dly_jd_traffic);
+    delete from dm.a_bu_dly_jd_traffic;
+    delete from dm.a_bu_dly_jd_traffic;
+    insert into dm.a_bu_dly_jd_traffic
+    select * 
+    from frn.a_bu_dly_jd_traffic;

@@ -1,0 +1,114 @@
+Staging:
+  src_columns:
+    distributor text,
+    lego_store_code text,
+    distributor_store_code text,
+    store_name text,
+    province text,
+    city text,
+    province_cn text,
+    city_cn text,
+    County text,
+    open_date text,
+    address text,
+    sendout_time text
+    
+ODS:    
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_phy_store (
+      distributor varchar(255) not NULL,
+      lego_store_code varchar(255) NOT NULL,
+      distributor_store_code varchar(255) NOT NULL,
+      store_name varchar(255) NULL,
+      province varchar(255) NULL,
+      city varchar(255) NULL,
+      province_cn varchar(255) NULL,
+      city_cn varchar(255) NULL,
+      county varchar(255) NULL,
+      open_date date NULL,
+      address varchar(500) NULL,
+      sendout_time timestamp NULL,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (distributor,lego_store_code);
+
+  insert_edw_from_ods_query:
+    insert into edw.f_phy_store(
+      distributor,
+      lego_store_code,
+      distributor_store_code,
+      store_name,
+      province,
+      city,
+      province_cn,
+      city_cn,
+      County,
+      open_date,
+      address,
+      sendout_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      upper(distributor),
+      lego_store_code,
+      distributor_store_code,
+      store_name,
+      province,
+      city,
+      (string_to_array(edw.func_parse_address(province_cn),','))[1] province_cn,
+      (string_to_array(edw.func_parse_address(city_cn),','))[2] city_cn,
+      County,
+      case when open_date in ('null','') then null else to_date(open_date, 'yyyymmdd') end,
+      address,
+      TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s',
+      dl_batch_date,
+      dl_load_time
+    from (
+      select * , row_number() over( partition by upper(distributor), distributor_store_code, lego_store_code order by (TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s') desc ) rk
+      from ods.r_phy_store
+    )ab
+    where rk=1;
+
+  updated_by_store_handwork:
+    delete from edw.f_phy_store a 
+    where exists (
+      select 1 from edw.f_phy_store_handwork b 
+      where a.distributor = b.distributor 
+        and a.distributor_store_code = b.distributor_store_code 
+        and b.current_row ='Y' 
+    );
+
+    insert into edw.f_phy_store(
+      distributor,
+      lego_store_code,
+      distributor_store_code,
+      store_name,
+      province,
+      city,
+      province_cn,
+      city_cn,
+      County,
+      open_date,
+      address,
+      dl_batch_date,
+      dl_load_time
+    )
+    select
+      distributor,
+      lego_store_code,
+      distributor_store_code,
+      store_name,
+      province,
+      city,
+      province_cn,
+      city_cn,
+      County,
+      open_date,
+      address,
+      dl_batch_date,
+      dl_load_time
+    from edw.f_phy_store_handwork
+    where current_row = 'Y';

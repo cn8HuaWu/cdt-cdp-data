@@ -1,0 +1,251 @@
+Staging:
+  src_columns:
+    id text,
+    platformid text,
+    shopid text,
+    tmall_order_id text,
+    order_type text,
+    parent_order_id text,
+    pin text,
+    consignee_name text,
+    consignee_phone text,
+    consignee_mobile text,
+    Province  text,
+    City text,
+    County text,
+    delivery_address text,
+    order_total_price text,
+    discount text,
+    freight text,
+    actual_order_amt text,
+    payment_method text,
+    order_source text,
+    order_deliver_status text,
+    order_recall_status text,
+    is_exchanged text,
+    is_delivery_confirmed text,
+    payment_confirm_time text,
+    ship_out_time text,
+    delivery_confirm_time text,
+    order_create_time text,
+    order_update_time text
+
+
+ODS:
+
+EDW:
+  create_table_query:
+    create table if not exists edw.f_oms_order(
+    id varchar(255),
+    order_start_date timestamp, 
+    shopperid varchar(255),
+    tmall_order_id varchar(255),
+    platformid varchar(50), 
+    shopid varchar(50), 
+    date_id date,
+    order_type varchar(50), 
+    parent_order_id varchar(255), 
+    pin varchar(255), 
+    consignee_name varchar(255), 
+    consignee_phone varchar(100), 
+    consignee_mobile varchar(100), 
+    Province  varchar(100), 
+    City varchar(100), 
+    County varchar(100), 
+    delivery_address varchar(1000), 
+    order_total_price decimal(17,6),
+    discount decimal(17,6),
+    freight decimal(17,6),
+    order_amt decimal(17,6),
+    actual_order_amt decimal(17,6),
+    payment_method varchar(255), 
+    order_source varchar(255), 
+    order_deliver_status varchar(50), 
+    order_recall_status varchar(50), 
+    is_exchanged varchar(50),
+    is_delivery_confirmed varchar(50), 
+    payment_confirm_time timestamp, 
+    ship_out_time timestamp,
+    delivery_confirm_time timestamp,
+    order_update_time timestamp, 
+    is_gwp_include varchar(5), 
+    is_delivered varchar(100), 
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_oms_order_id primary key(id)
+    )distributed by (id);
+    
+  
+  insert_edw_from_ods_query:
+    insert into edw.f_oms_order(
+      id,
+      platformid,
+      shopid,
+      tmall_order_id,
+      date_id,
+      order_type,
+      parent_order_id,
+      pin,
+      consignee_name,
+      consignee_phone,
+      consignee_mobile,
+      Province ,
+      City,
+      County,
+      delivery_address,
+      order_total_price,
+      discount,
+      freight,
+      order_amt ,
+      actual_order_amt,
+      payment_method,
+      order_source,
+      order_deliver_status,
+      order_recall_status,
+      is_exchanged,
+      is_delivery_confirmed,
+      payment_confirm_time,
+      ship_out_time,
+      delivery_confirm_time,
+      order_start_date,
+      order_update_time,
+      shopperid,
+      dl_batch_date,
+      dl_load_time
+    ) 
+    select 
+       id,
+      platformid,
+      shopid,
+      tmall_order_id,
+      case when(payment_confirm_time ~ E'^\\d+-\\d+-\\d+ \\d+:\\d+:\\d+') then to_date(payment_confirm_time, 'YYYY-MM-DD HH24:MI:SS') else null end as date_id,
+      order_type,
+      parent_order_id,
+      pin,
+      consignee_name,
+      case when consignee_phone is not null and trim(consignee_phone) != '' and consignee_phone ~ '[0-9A-E]+' then encode(encrypt_iv(decrypt_iv(decode(consignee_phone, '{AES_ENCODING}'), '{AES_KEY}','','aes-ecb'), '{DL_AES_KEY}','{DL_AES_IV}'::bytea,'aes-cbc'),'base64') else null end as consignee_phone,
+      case when consignee_mobile is not null and trim(consignee_mobile) != '' and consignee_mobile ~ '[0-9A-E]+' then encode(encrypt_iv(decrypt_iv(decode(consignee_mobile, '{AES_ENCODING}'), '{AES_KEY}','','aes-ecb'), '{DL_AES_KEY}','{DL_AES_IV}'::bytea,'aes-cbc'),'base64') else null end as consignee_mobile,
+      Province ,
+      City,
+      County,
+      delivery_address,
+      order_total_price::decimal(17,6),
+      discount::decimal(17,6),
+      freight::decimal(17,6),
+      order_total_price::decimal(17,6),
+      actual_order_amt::decimal(17,6),
+      payment_method,
+      order_source,
+      order_deliver_status,
+      order_recall_status,
+      is_exchanged,
+      is_delivery_confirmed,
+      case when(payment_confirm_time ~ E'^\\d+-\\d+-\\d+ \\d+:\\d+:\\d+') then to_date(payment_confirm_time, 'YYYY-MM-DD HH24:MI:SS') else null end ,
+      case when(ship_out_time ~ E'^\\d+-\\d+-\\d+ \\d+:\\d+:\\d+') then to_date(ship_out_time, 'YYYY-MM-DD HH24:MI:SS') else null end,
+      case when(delivery_confirm_time ~ E'^\\d+-\\d+-\\d+ \\d+:\\d+:\\d+') then to_date(delivery_confirm_time, 'YYYY-MM-DD HH24:MI:SS') else null end ,
+      case when(order_create_time ~ E'^\\d+-\\d+-\\d+ \\d+:\\d+:\\d+') then to_date(order_create_time, 'YYYY-MM-DD HH24:MI:SS') else null end ,
+      case when(order_update_time ~ E'^\\d+-\\d+-\\d+ \\d+:\\d+:\\d+') then to_date(order_update_time, 'YYYY-MM-DD HH24:MI:SS') else null end ,
+      pin as shopperid,
+      dl_batch_date,
+      now()
+    from (select  row_number() over(partition by id order by order_update_time desc)  as rk , * from ods.r_oms_order where payment_confirm_time >= '2020-08-08 00:00:00') b 
+    where b.rk=1;
+
+    drop sequence if exists sequence_his_tm_order_id;
+    create sequence sequence_his_tm_order_id increment by 1 minvalue 1 no maxvalue start with 1;
+    insert into edw.f_oms_order
+    (
+      id,
+      order_type,
+      parent_order_id,
+      pin,
+      Province ,
+      City,
+      County,
+      delivery_address,
+      order_total_price,
+      actual_order_amt,
+      ship_out_time,
+      order_start_date ,
+      date_id,
+      payment_confirm_time,
+      shopperid
+    )
+    select 
+      'his_'|| nextval('sequence_his_tm_order_id'),
+      order_type,
+      parent_order_id,
+      shopper_nickname pin,
+      cosignee_province,
+      cosignee_city,
+      cosignee_region,
+      cosignee_street,
+      sum(payable_amount) order_total_price,
+      sum(actual_payment_amount) actual_order_amt,
+      max(delivery_time) as delivery_time ,
+      order_create_time ,
+      order_payment_time::date date_id,
+      order_payment_time,
+      shopper_nickname 
+    from edw.f_tm_order_dtl_2018_his b 
+    group by order_type, 
+      parent_order_id, 
+      shopper_nickname,
+      cosignee_province,
+      cosignee_city,
+      cosignee_region,
+      cosignee_street,
+      order_create_time,
+      order_payment_time;
+    
+    update edw.f_oms_order a
+      set consignee_mobile  = b.consinee_mobile ,
+      consignee_phone = b.consinee_telephone 
+    from edw.f_tm_order_his b
+    where a.parent_order_id = b.parent_order_id 
+      and a.id ~ 'his.*';
+
+    create temporary table tmp_his_oms_status as
+      select  * from (
+        select parent_order_id , son_order_status ,row_number() over(partition by parent_order_id order by pior asc) rk
+        from (
+          select 
+            parent_order_id , 
+            son_order_status,
+            case when son_order_status ='交易成功' then 1 
+              when son_order_status ='等待买家确认收货,即:卖家已发货' then 2
+              when son_order_status ='等待卖家发货,即:买家已付款' then 3 
+              when son_order_status ='付款以后用户退款成功，交易自动关闭' then 4 
+                  else 5 end as pior
+          from edw.f_tm_order_dtl_2018_his
+        ) a 
+      ) b where b.rk =1;
+      
+    update edw.f_oms_order a
+      set order_deliver_status = t1.son_order_status
+    from tmp_his_oms_status t1 
+    where a.parent_order_id = t1.parent_order_id;
+    
+
+  sync_to_rds_dm:
+    create table if not exists dm.f_oms_order (like frn.f_oms_order);
+    delete from dm.f_oms_order;
+    delete from dm.f_oms_order;
+    insert into dm.f_oms_order
+    select * 
+    from frn.f_oms_order;
+  
+  update_by_oms_order_dtl:
+    update edw.f_oms_order a
+    set is_gwp_include = case when b.agg ~ '.*Y.*' then 'Y' else 'N' end,
+    is_delivered = case when b.dlv_agg ~ '.*Y.*' then 'Y' else 'N' end,
+    order_amt = b.order_amt
+    from (select 
+            parent_order_id,
+            string_agg(is_gwp,'') agg ,
+            string_agg(is_delivered ,'') dlv_agg ,
+            sum(order_gmv_amount) order_amt
+          from edw.f_oms_order_dtl 
+          group by parent_order_id) b
+    where a.parent_order_id = b.parent_order_id ;
+    

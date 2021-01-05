@@ -1,0 +1,69 @@
+Staging:
+  src_columns:
+    year text,
+    month text,
+    shop text,
+    store_sku_name text,
+    category text,
+    link text,
+    rrp_price text,
+    avg_gmv_price text,
+    piece_cnt text,
+    gmv_amt text
+    
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_qbt_tmall_global(
+      year decimal(4),
+      month decimal(2),
+      platform varchar(255),
+      shop varchar(255),
+      store_sku_name varchar(255),
+      category varchar(255),
+      link varchar(255),
+      rrp_price decimal(17,2),
+      avg_gmv_price  decimal(17,2),
+      piece_cnt decimal(15),
+      gmv_amt decimal(17,2),
+      dl_batch_date varchar(8),
+      dl_load_time timestamp,
+      constraint pk_tmall_global_id primary key( year, month, shop, store_sku_name, category, link )
+    )distributed by (year, month, shop, store_sku_name, category, link);
+
+  
+  insert_edw_from_ods_query:
+    delete from edw.f_qbt_tmall_global;
+    insert into edw.f_qbt_tmall_global
+    (
+      year, 
+      month, 
+      platform, 
+      shop, 
+      store_sku_name, 
+      category, 
+      link, 
+      rrp_price, 
+      avg_gmv_price, 
+      piece_cnt, 
+      gmv_amt, 
+      dl_batch_date, 
+      dl_load_time
+    )
+    select
+      year::decimal(4,0) as year,
+      month::decimal(4,0) as month,
+      'tmall global' as platform ,
+      shop,
+      store_sku_name,
+      category,
+      link,
+      case when rrp_price ~ E'\\d+' then replace(trim(rrp_price),',','')::decimal(17,2) else null end  as rrp_price,
+      case when avg_gmv_price ~ E'^\\d+' then replace(trim(avg_gmv_price),',','')::decimal(17,2) else null end  as avg_gmv_price,
+      case when piece_cnt ~ E'^\\d+' then replace(trim(piece_cnt),',','')::decimal(15) else null end  as piece_cnt,
+      case when gmv_amt ~ E'^\\d+' then replace(trim(gmv_amt),',','')::decimal(17,2) else null end  as gmv_amt,
+      dl_batch_date,
+      now()
+    from ods.r_qbt_tmall_global
+    

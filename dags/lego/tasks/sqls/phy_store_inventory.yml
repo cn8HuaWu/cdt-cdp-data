@@ -1,0 +1,83 @@
+Staging:
+  src_columns:
+    stats_time text,
+    distributor text,
+    lego_store_code text,
+    distributor_store_code text,
+    store_name text,
+    lego_sku_id text,
+    lego_sku_name text,
+    transporting_cnt text,
+    piece_cnt text,
+    is_gwp text,
+    gwp_type text,
+    sendout_time text
+
+ODS:    
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_phy_store_inventory (
+      stats_time timestamp not null,
+      distributor varchar(255) not NULL,
+      lego_store_code varchar(255) NULL,
+      distributor_store_code varchar(255) NULL,
+      store_name varchar(255) NULL,
+      lego_sku_id varchar(255) NULL,
+      lego_sku_name varchar(255) NULL,
+      transporting_cnt decimal(15,0),
+      piece_cnt decimal(15,0),
+      is_gwp  varchar(255) NULL,
+      gwp_type varchar(255) NULL,
+      sendout_time timestamp NULL,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (distributor,stats_time,lego_store_code,lego_sku_id);
+
+  insert_edw_from_ods_query:
+    insert into edw.f_phy_store_inventory(
+      stats_time,
+      distributor,
+      lego_store_code,
+      distributor_store_code,
+      store_name,
+      lego_sku_id,
+      lego_sku_name,
+      transporting_cnt,
+      piece_cnt,
+      is_gwp,
+      gwp_type,
+      sendout_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      TIMESTAMP WITH TIME ZONE 'epoch' + stats_time::decimal(13) * INTERVAL '1 s',
+      upper(distributor),
+      case when trim(lego_store_code) in ('','null') then null else lego_store_code end as lego_store_code,
+      distributor_store_code,
+      store_name,
+      lego_sku_id,
+      lego_sku_name,
+      case when trim(transporting_cnt) in ('','null') then null else transporting_cnt::decimal(15,0) end as transporting_cnt,
+      piece_cnt::decimal(15,0),
+      case when trim(is_gwp) in ('','null') then null else is_gwp end as is_gwp,
+      case when trim(gwp_type) in ('','null') then null else gwp_type end as gwp_type,
+      TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s',
+      dl_batch_date,
+      dl_load_time
+    from (
+      select * , row_number() over( partition by upper(distributor), distributor_store_code , stats_time,lego_sku_id order by (TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s') desc ) rk
+      from ods.r_phy_store_inventory
+    )ab
+    where rk=1;
+
+  update_by_phy_store:
+    update edw.f_phy_store_inventory o
+    set lego_store_code = s.lego_store_code 
+    from edw.f_phy_store s
+    where o.distributor_store_code  = s.distributor_store_code 
+    and o.distributor = s.distributor 
+    and lower(o.distributor) ='lewin'
+    and (o.lego_store_code is null or trim(o.lego_store_code) ='')
+    and s.lego_store_code is not null;

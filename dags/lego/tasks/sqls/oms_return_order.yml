@@ -1,0 +1,116 @@
+Staging:
+
+  src_columns:
+    id text,
+    platform_id text,
+    shopid text,
+    tmall_order_id text,
+    order_type text,
+    return_order_id text,
+    related_order_id text,
+    return_order_type text,
+    pin text,
+    consignee_name text,
+    consignee_phone text,
+    consignee_mobile text,
+    province  text,
+    city text,
+    county text,
+    delivery_addres text,
+    return_amt text,
+    order_status text,
+    return_confirm_time text,
+    order_create_time text,
+    order_update_time text
+ODS:
+
+EDW:
+  create_table_query:
+    create table if not exists edw.f_oms_return_order(
+    id varchar(255),
+    return_order_id varchar(255),
+    platform_id varchar(255),
+    tmall_order_id varchar(255),
+    shopid varchar(255),
+    order_type varchar(255),
+    related_order_id varchar(255),
+    return_order_type varchar(255),
+    pin varchar(255),
+    consignee_name varchar(255),
+    consignee_phone varchar(255),
+    consignee_mobile varchar(255),
+    province  varchar(255),
+    city varchar(255),
+    county varchar(255),
+    delivery_addres varchar(255),
+    return_amt decimal(17,6),
+    order_status varchar(255),
+    return_confirm_time timestamp,
+    order_create_time timestamp,
+    order_update_time timestamp,
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_oms_return_order_id primary key(id)
+    )distributed by (id);
+
+  
+  insert_edw_from_ods_query:
+    insert into edw.f_oms_return_order
+    (
+      id, 
+      platform_id,
+      shopid,
+      tmall_order_id, 
+      order_type,
+      return_order_id,
+      related_order_id,
+      return_order_type,
+      pin,
+      consignee_name,
+      consignee_phone,
+      consignee_mobile,
+      province, 
+      city,
+      county,
+      delivery_addres,
+      return_amt,
+      order_status,
+      return_confirm_time,
+      order_create_time,
+      order_update_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select  
+      id,
+      platform_id,
+      shopid,
+      tmall_order_id,
+      order_type,
+      return_order_id,
+      related_order_id,
+      return_order_type,
+      pin,
+      consignee_name,
+      case when consignee_phone is not null and trim(consignee_phone) != '' and consignee_phone ~ '[0-9A-E]+' then encode(encrypt_iv(decrypt_iv(decode(consignee_phone, '{AES_ENCODING}'), '{AES_KEY}','','aes-ecb'), '{DL_AES_KEY}','{DL_AES_IV}'::bytea,'aes-cbc'),'base64') else null end as consignee_phone,
+      case when consignee_mobile is not null and trim(consignee_mobile) != '' and consignee_mobile ~ '[0-9A-E]+' then encode(encrypt_iv(decrypt_iv(decode(consignee_mobile, '{AES_ENCODING}'), '{AES_KEY}','','aes-ecb'), '{DL_AES_KEY}','{DL_AES_IV}'::bytea,'aes-cbc'),'base64') else null end as consignee_mobile,
+      province,
+      city,
+      county,
+      delivery_addres,
+      return_amt::decimal(17,6),
+      order_status,
+      case when trim(return_confirm_time) is null or trim(return_confirm_time) = '' then null else to_timestamp(trim(return_confirm_time),'yyyy-mm-dd HH24:MI:SS') end ,
+      to_timestamp(order_create_time,'YYYY-MM-DD HH24:MI:SS'),
+      to_timestamp(order_update_time,'YYYY-MM-DD HH24:MI:SS'),
+      dl_batch_date,
+      now()
+    from (
+      select *, row_number() over(partition by id order by order_update_time desc ) as rk from  ods.r_oms_return_order
+    )a where a.rk=1;
+
+  # merge the b2b order dtl to order table
+  post_update_other_edw:
+    
+    
+    

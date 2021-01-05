@@ -1,0 +1,90 @@
+Staging:
+  src_columns:
+    partner text,
+    name_first text,
+    name_last text,
+    country text,
+    city text,
+    street text,
+    zip_code text,
+    legoid_name text,
+    fax text,
+    email text,
+    telephone text,
+    mobile text,
+    vip_card text,
+    region text,
+    change_date text,
+    deletion_mark text
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_cs_consumer_info(
+    partner varchar(255),
+    name_first varchar(255),
+    name_last varchar(255),
+    country varchar(50),
+    city varchar(255),
+    street varchar(500),
+    zip_code varchar(100),
+    legoid_name varchar(255),
+    fax varchar(255),
+    email varchar(255),
+    telephone varchar(255),
+    mobile varchar(255),
+    vip_card varchar(255),
+    region varchar(255),
+    change_date timestamp,
+    deletion_mark varchar(1),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_cs_consumer_id primary key(partner)
+    )distributed by (partner);
+
+  insert_edw_from_ods_query:
+    insert into  edw.f_cs_consumer_info
+    (
+      partner ,
+      name_first ,
+      name_last ,
+      country ,
+      city ,
+      street ,
+      zip_code ,
+      legoid_name ,
+      fax ,
+      email ,
+      telephone ,
+      mobile ,
+      vip_card ,
+      region ,
+      change_date ,
+      deletion_mark , 
+      dl_batch_date,
+      dl_load_time
+    )
+     select
+      partner ,
+      name_first ,
+      name_last ,
+      country ,
+      city ,
+      street ,
+      zip_code ,
+      legoid_name ,
+      fax ,
+      case when email is not null and trim(email) != '' and email ~ '[0-9A-F]+' then  encode(decrypt_iv(decode(email, '{AES_ENCODING}'), decode('{AES_KEY}','{AES_ENCODING}'),'','aes-cbc') ,'escape') else null end as email ,
+      case when telephone is not null and trim(telephone) != '' and telephone ~ '[0-9A-F]+' then encode(encrypt_iv(decrypt_iv(decode(telephone, '{AES_ENCODING}'), decode('{AES_KEY}','{AES_ENCODING}'),'','aes-cbc'), '{DL_AES_KEY}','{DL_AES_IV}'::bytea,'aes-cbc'),'base64') else null end as telephone,
+      case when mobile is not null and trim(mobile) != '' and mobile ~ '[0-9A-F]+' then encode(encrypt_iv(decrypt_iv(decode(mobile, '{AES_ENCODING}'), decode('{AES_KEY}','{AES_ENCODING}'),'','aes-cbc'), '{DL_AES_KEY}','{DL_AES_IV}'::bytea,'aes-cbc'),'base64') else null end as mobile,
+      vip_card ,
+      region ,
+      TO_TIMESTAMP(change_date,'yyyyMMddhh24miss'),
+      deletion_mark ,
+      dl_batch_date,
+      now()
+    from (
+      select row_number() over(partition by partner order by change_date desc)  as rk, * from ods.r_cs_consumer_info
+    )b where rk=1;
+    
+  sync_to_rds_dm:
+    

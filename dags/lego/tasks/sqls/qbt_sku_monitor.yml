@@ -1,0 +1,115 @@
+Staging:
+  src_columns:
+    year text,
+    month text,
+    week text,
+    start_time text,
+    end_time text,
+    brand text,
+    lego_sku_id text,
+    sku_cn_name text,
+    platform text,
+    shop text,
+    gmv_amt text,
+    piece_cnt text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_qbt_sku_monitor(
+      year decimal(4),
+      month decimal(2),
+      week decimal(2),
+      start_time date,
+      end_time date,
+      brand varchar(255),
+      lego_sku_id varchar(255),
+      sku_cn_name varchar(255),
+      platform varchar(255),
+      shop varchar(255),
+      gmv_amt decimal(17,2),
+      piece_cnt decimal(15),
+      current_row varchar(255),
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (year, month, week, start_time, end_time,brand,lego_sku_id,sku_cn_name,platform,shop );
+
+  
+  scd3_update_query:
+    create temporary table t1 as 
+    select 
+      year::decimal(4),
+      month::decimal(2),
+      week::decimal(2),
+      case when(start_time ~ E'^\\d+-\\d+-\\d+ \\d+:\\d+:\\d+') then to_date(start_time, 'yyyy-mm-dd') else null end as start_time,
+      case when(end_time ~ E'^\\d+-\\d+-\\d+ \\d+:\\d+:\\d+') then to_date(end_time, 'yyyy-mm-dd') else null end as end_time,
+      brand,
+      lego_sku_id,
+      sku_cn_name,
+      lower(platform) as platform,
+      shop,
+      sum(case when gmv_amt ~ E'\\d+' then replace(trim(gmv_amt),',','')::decimal(17,2) else null end) as gmv_amt,
+      sum(case when piece_cnt ~ E'\\d+' then replace(trim(piece_cnt),',','')::decimal(15) else null end) as piece_cnt,
+      'Y' as current_row,
+      dl_batch_date,
+      now()
+    from ods.r_qbt_sku_monitor
+    where dl_batch_date = '{batch_date}'
+    group by year, month, week, start_time, end_time,brand,lego_sku_id,sku_cn_name,platform,shop,dl_batch_date;
+
+    update edw.f_qbt_sku_monitor a
+      set current_row = 'N'
+    from t1 b
+    where 
+      a.year = b.year
+      and a.shop = b.shop
+      and a.month = b.month
+      and a.week = b.week
+      and a.start_time =  b.start_time
+      and a.end_time = b.end_time
+      and a.brand = b.brand
+      and a.lego_sku_id = b.lego_sku_id
+      and a.sku_cn_name = b.sku_cn_name
+      and a.platform = b.platform;
+
+    INSERT INTO edw.f_qbt_sku_monitor(
+      year, 
+      month, 
+      week, 
+      start_time, 
+      end_time, 
+      brand, 
+      lego_sku_id, 
+      sku_cn_name, 
+      platform, 
+      shop,  
+      gmv_amt, 
+      piece_cnt,
+      current_row,
+      dl_batch_date,
+      dl_load_time
+    ) 
+    select * from t1;
+    
+  # updated_by_sku_monitor:
+  #   delete from dm.a_dl_qbt_sku_monitor;
+
+  #   insert into dm.a_dl_qbt_sku_monitor
+  #   select 
+  #     year, 
+  #     month, 
+  #     week, 
+  #     start_time, 
+  #     end_time,
+  #     brand,
+  #     lego_sku_id,
+  #     sku_cn_name,
+  #     platform,
+  #     shop,
+  #     sum(gmv_amt) as gmv_amt,
+  #     sum(piece_cnt) as piece_cnt,
+  #     now()
+  #   from edw.f_qbt_sku_monitor 
+  #   where current_row='Y'
+  #   group by year, month, week, start_time, end_time,brand,lego_sku_id,sku_cn_name,platform,shop;

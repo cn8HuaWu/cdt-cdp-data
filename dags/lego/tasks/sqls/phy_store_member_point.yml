@@ -1,0 +1,49 @@
+Staging:
+  src_columns:
+    stats_time text,
+    distributor text,
+    card_code text,
+    member_id text,
+    value text,
+    sendout_time text
+
+ODS:    
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_phy_store_member_point (
+      stats_time timestamp NOT NULL,
+      distributor varchar(255) NOT NULL,
+      card_code varchar(255)  NULL,
+      member_id varchar(255) NOT NULL,
+      value decimal(15,0) NOT NULL,
+      sendout_time timestamp NOT NULL,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (stats_time,distributor);
+
+  insert_edw_from_ods_query:
+    insert into edw.f_phy_store_member_point(
+      stats_time,
+      distributor,
+      card_code,
+      member_id,
+      value,
+      sendout_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select
+      TIMESTAMP WITH TIME ZONE 'epoch' + stats_time::decimal(13) * INTERVAL '1 s',
+      upper(distributor),
+      card_code,
+      member_id,
+      value::decimal(15,0),
+      TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s',
+      dl_batch_date,
+      dl_load_time
+    from (
+      select * , row_number() over( partition by upper(distributor), member_id,stats_time order by (TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s') desc ) rk
+      from ods.r_phy_store_member_point
+    )ab
+    where rk=1;

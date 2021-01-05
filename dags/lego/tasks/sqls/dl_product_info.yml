@@ -1,0 +1,353 @@
+Staging:
+  src_columns:
+    year_version text,
+    lego_sku_id text,
+    material_id text,
+    version text,
+    lego_sku_name_en text,
+    lego_sku_name_cn text,
+    RSP text,
+    global_launch_date text,
+    global_delete_date text,
+    embargo_date text,
+    is_bu_d2c_launch text,
+    bu_d2c_launch_date text,
+    bu_d2c_delete_date text,
+    is_bu_cn_launch text,
+    bu_cn_launch_date text,
+    cn_lcs_launch_date text,
+    cn_ldc_launch_date text,
+    cn_tm_launch_date text,
+    cn_jd_b2b_launch_date text,
+    cn_jd_pop_launch_date text,
+    cn_tru_launch_date text,
+    cn_b2b2f_launch_date text,
+    cn_dsp_launch_date text,
+    cn_dls_ds_launch_date text,
+    cn_hamleys_launch_date text,
+    cn_kl_Indirect_launch_date text,
+    cn_kidsland_online_b2c_launch_date text,
+    cn_wc_mini_Program_launch_date text,
+    cn_kidswant_launch_date text,
+    exclusive_products text,
+    bu_cn_delete_date text,
+    product_status text,
+    in_and_out text,
+    super_segment text,
+    prod_cat text,
+    product_bu text,
+    theme text,
+    product_group text,
+    cn_line text,
+    top_theme text,
+    product_class text,
+    material_group text,
+    is_batteries_included text,
+    age_mark text,
+    piece_count text,
+    case_pack text,
+    lbs_size text,
+    net_weight_kg text,
+    length_mm text,
+    width_mm text,
+    height_mm text,
+    product_ean_code text,
+    carton_ean_code text,
+    new_List_price_pricelist_ab_china text,
+    new_ldc_extended_line_list_price text 
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.d_dl_product_info(
+    year_version varchar(4),
+    lego_sku_id varchar(50),
+    material_id varchar(50),
+    version varchar(50),
+    sku_name_en varchar(500),
+    sku_name_cn varchar(500),
+    rsp decimal(17,6),
+    global_launch_date date,
+    global_delete_date date,
+    embargo_date date,
+    is_bu_d2c_launch varchar(1),
+    bu_d2c_launch_date date,
+    bu_d2c_delete_date date,
+    is_bu_cn_launch varchar(1),
+    bu_cn_launch_date date,
+    cn_lcs_launch_date date,
+    cn_ldc_launch_date date,
+    cn_tm_launch_date date,
+    cn_jd_b2b_launch_date date,
+    cn_jd_pop_launch_date date,
+    cn_tm_substatus varchar(10),
+    cn_jd_b2b_substatus varchar(10),
+    cn_jd_pop_substatus varchar(10),
+    cn_jd_substatus varchar(10),
+    cn_tru_launch_date date,
+    cn_b2b2f_launch_date date,
+    cn_dsp_launch_date date,
+    cn_dls_ds_launch_date date,
+    cn_hamleys_launch_date date,
+    cn_kl_Indirect_launch_date date,
+    cn_kidsland_online_b2c_launch_date date,
+    cn_wc_mini_Program_launch_date date,
+    cn_kidswant_launch_date date,
+    exclusive_products varchar(255),
+    bu_cn_delete_date date,
+    product_status varchar(1),
+    in_and_out varchar(1),
+    super_segment varchar(255),
+    prod_cat varchar(255),
+    product_bu varchar(255),
+    theme varchar(255),
+    product_group varchar(255),
+    cn_line varchar(255),
+    top_theme varchar(255),
+    product_class varchar(255),
+    material_group varchar(255),
+    is_batteries_included varchar(1),
+    age_mark varchar(50),
+    piece_count decimal(15),
+    case_pack varchar(255),
+    lbs_size varchar(255),
+    net_weight_kg decimal(17,6),
+    length_mm decimal(17,6),
+    width_mm decimal(17,6),
+    height_mm decimal(17,6),
+    product_ean_code varchar(255),
+    carton_ean_code varchar(255),
+    new_List_price_pricelist_ab_china decimal(17,6),
+    new_ldc_extended_line_list_price decimal(17,6),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_product_info_id primary key( year_version,material_id )
+    )distributed by (year_version,material_id)
+  
+  insert_edw_from_ods_query:
+    insert into edw.d_dl_product_info(
+    year_version,
+    lego_sku_id,
+    material_id,
+    version,
+    sku_name_en,
+    sku_name_cn,
+    rsp,
+    global_launch_date,
+    global_delete_date,
+    embargo_date,
+    is_bu_d2c_launch,
+    bu_d2c_launch_date,
+    bu_d2c_delete_date,
+    is_bu_cn_launch,
+    bu_cn_launch_date,
+    cn_lcs_launch_date,
+    cn_ldc_launch_date,
+    cn_tm_launch_date,
+    cn_jd_b2b_launch_date,
+    cn_jd_pop_launch_date,
+    cn_tru_launch_date,
+    cn_b2b2f_launch_date,
+    cn_dsp_launch_date,
+    cn_dls_ds_launch_date,
+    cn_hamleys_launch_date,
+    cn_kl_Indirect_launch_date,
+    cn_kidsland_online_b2c_launch_date,
+    cn_wc_mini_Program_launch_date,
+    cn_kidswant_launch_date,
+    exclusive_products,
+    bu_cn_delete_date,
+    product_status,
+    in_and_out,
+    super_segment,
+    prod_cat,
+    product_bu,
+    theme,
+    product_group,
+    cn_line,
+    top_theme,
+    product_class,
+    material_group,
+    is_batteries_included,
+    age_mark,
+    piece_count,
+    case_pack,
+    lbs_size,
+    net_weight_kg,
+    length_mm,
+    width_mm,
+    height_mm,
+    product_ean_code,
+    carton_ean_code,
+    new_List_price_pricelist_ab_china,
+    new_ldc_extended_line_list_price,
+    dl_batch_date,
+    dl_load_time
+    )
+    select
+      trim(year_version),
+      trim(lego_sku_id),
+      trim(material_id),
+      trim(version),
+      trim(lego_sku_name_en),
+      trim(lego_sku_name_cn),
+      case when rsp ~ E'\\d+' then rsp::decimal(17,6) else null end  as rsp, 
+      case when(global_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(global_launch_date, 'yyyy-mm-dd') else null end as global_launch_date,
+      case when(global_delete_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(global_delete_date, 'yyyy-mm-dd') else null end as global_delete_date,
+      case when(embargo_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(embargo_date, 'yyyy-mm-dd') else null end as embargo_date,
+      trim(is_bu_d2c_launch),
+      case when(bu_d2c_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(bu_d2c_launch_date, 'yyyy-mm-dd') else null end as bu_d2c_launch_date,
+      case when(bu_d2c_delete_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(bu_d2c_delete_date, 'yyyy-mm-dd') else null end as bu_d2c_delete_date,
+      trim(is_bu_cn_launch),
+      case when(bu_cn_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(bu_cn_launch_date, 'yyyy-mm-dd') else null end as bu_cn_launch_date,
+      case when(cn_lcs_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_lcs_launch_date, 'yyyy-mm-dd') else null end as cn_lcs_launch_date,
+      case when(cn_ldc_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_ldc_launch_date, 'yyyy-mm-dd') else null end as cn_ldc_launch_date,
+      case when(cn_tm_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_tm_launch_date, 'yyyy-mm-dd') else null end as cn_tm_launch_date,
+      case when(cn_jd_b2b_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_jd_b2b_launch_date, 'yyyy-mm-dd') else null end as cn_jd_b2b_launch_date,
+      case when(cn_jd_pop_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_jd_pop_launch_date, 'yyyy-mm-dd') else null end as cn_jd_pop_launch_date,
+      case when(cn_tru_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_tru_launch_date, 'yyyy-mm-dd') else null end as cn_tru_launch_date,
+      case when(cn_b2b2f_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_b2b2f_launch_date, 'yyyy-mm-dd') else null end as cn_b2b2f_launch_date,
+      case when(cn_dsp_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_dsp_launch_date, 'yyyy-mm-dd') else null end as cn_dsp_launch_date,
+      case when(cn_dls_ds_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_dls_ds_launch_date, 'yyyy-mm-dd') else null end as cn_dls_ds_launch_date,
+      case when(cn_hamleys_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_hamleys_launch_date, 'yyyy-mm-dd') else null end as cn_hamleys_launch_date,
+      case when(cn_kl_Indirect_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_kl_Indirect_launch_date, 'yyyy-mm-dd') else null end as cn_kl_Indirect_launch_date,
+      case when(cn_kidsland_online_b2c_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_kidsland_online_b2c_launch_date, 'yyyy-mm-dd') else null end as cn_kidsland_online_b2c_launch_date,
+      case when(cn_wc_mini_Program_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_wc_mini_Program_launch_date, 'yyyy-mm-dd') else null end as cn_wc_mini_Program_launch_date,
+      case when(cn_kidswant_launch_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(cn_kidswant_launch_date, 'yyyy-mm-dd') else null end as cn_kidswant_launch_date,
+      trim(exclusive_products),
+      case when(bu_cn_delete_date ~ E'^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}') then to_date(bu_cn_delete_date, 'yyyy-mm-dd') else null end as bu_cn_delete_date,
+      trim(product_status),
+      trim(in_and_out),
+      trim(super_segment),
+      trim(prod_cat),
+      trim(product_bu),
+      trim(theme),
+      trim(product_group),
+      upper(trim(cn_line)),
+      trim(top_theme),
+      trim(product_class),
+      trim(material_group),
+      trim(is_batteries_included),
+      trim(age_mark),
+      case when piece_count ~ E'^\\d+$' then piece_count::decimal(15) else null end  as piece_count,
+      case_pack,
+      lbs_size,
+      case when net_weight_kg ~ E'^\\d+$' then net_weight_kg::decimal(15) else null end  as net_weight_kg,
+      case when length_mm ~ E'^\\d+$' then length_mm::decimal(15) else null end  as length_mm,
+      case when width_mm ~ E'^\\d+$' then width_mm::decimal(15) else null end  as width_mm,
+      case when height_mm ~ E'^\\d+$' then height_mm::decimal(15) else null end  as height_mm,
+      trim(product_ean_code),
+      trim(carton_ean_code),
+      case when new_List_price_pricelist_ab_china ~ E'^\\d+$' then new_List_price_pricelist_ab_china::decimal(15) else null end  as new_List_price_pricelist_ab_china,
+      case when new_ldc_extended_line_list_price ~ E'^\\d+$' then new_ldc_extended_line_list_price::decimal(15) else null end  as new_ldc_extended_line_list_price,
+      dl_batch_date,
+      now()
+    from ods.r_dl_product_info
+    where year_version <> '' and material_id<>'';
+
+    # REMOVE THE STORE SKU IDs in the data model
+    # update edw.d_dl_product_info p0
+    # set tmall_sku_id = b.tsku,
+    #   jd_pop_sku_id = b.psku,
+    #   jd_b2b_sku_id = b.bsku
+    # from(
+    #   select distinct p1.year_version , p1.material_id , tm.store_sku_id tsku, pm.store_sku_id psku, bm.store_sku_id bsku
+    #   from edw.d_dl_product_info p1 
+    #       left join edw.d_bu_tm_sku_map tm on p1.lego_sku_id = tm.lego_sku_id
+    #     left join edw.d_bu_jd_pop_sku_map pm on p1.lego_sku_id = pm.lego_sku_id
+    #     left join edw.d_bu_jd_b2b_sku_map bm on p1.lego_sku_id = bm.lego_sku_id
+    #   where  tm.lego_sku_id is not null and trim(tm.lego_sku_id)<>''
+    #   and pm.lego_sku_id is not null and  trim(pm.lego_sku_id)<>''
+    #   and bm.lego_sku_id is not null and trim(bm.lego_sku_id)<>''
+    #   )b
+    # where p0.year_version = b.year_version
+    #   and p0.material_id = b.material_id ;
+  
+  daily_update_product_status:
+    update edw.d_dl_product_info p
+    set cn_tm_substatus =  case 
+                when  date_part('day', now() - cn_tm_launch_date )<0 then null
+                when date_part('day', now() - cn_tm_launch_date ) <= 90   then 'N0-3'
+                when date_part('day', now() - cn_tm_launch_date ) <= 180 then 'N3-6'
+                when date_part('day', now() - cn_tm_launch_date ) <= 270 then 'N6-9'
+                when date_part('day', now() - cn_tm_launch_date ) > 270 then 'N9-12'
+                else null end,
+      cn_jd_b2b_substatus =  case 
+                when  date_part('day', now() - cn_jd_b2b_launch_date )<0 then null
+                when date_part('day', now() - cn_jd_b2b_launch_date ) <= 90 then 'N0-3'
+                when date_part('day', now() - cn_jd_b2b_launch_date ) <= 180 then 'N3-6'
+                when date_part('day', now() - cn_jd_b2b_launch_date ) <= 270 then 'N6-9'
+                when date_part('day', now() - cn_jd_b2b_launch_date ) > 270 then 'N9-12'
+                else null end,
+      cn_jd_pop_substatus =  case 
+                when date_part('day', now() - cn_jd_pop_launch_date )<0 then null
+                when date_part('day', now() - cn_jd_pop_launch_date ) <= 90  then 'N0-3'
+                when date_part('day', now() - cn_jd_pop_launch_date ) <= 180 then 'N3-6'
+                when date_part('day', now() - cn_jd_pop_launch_date ) <= 270 then 'N6-9'
+                when date_part('day', now() - cn_jd_pop_launch_date ) > 270 then 'N9-12'
+                else null end,
+      cn_jd_substatus =  case 
+                when date_part('day', now() - least(cn_jd_b2b_launch_date,cn_jd_pop_launch_date) )<0 then null
+                when date_part('day', now() - least(cn_jd_b2b_launch_date,cn_jd_pop_launch_date)  ) <= 90 then 'N0-3'
+                when date_part('day', now() -  least(cn_jd_b2b_launch_date,cn_jd_pop_launch_date) ) <= 180 then 'N3-6'
+                when date_part('day', now() -  least(cn_jd_b2b_launch_date,cn_jd_pop_launch_date) ) <= 270 then 'N6-9'
+                when date_part('day', now() -  least(cn_jd_b2b_launch_date,cn_jd_pop_launch_date) ) > 270 then 'N9-12'
+                else null end
+        where product_status='N';
+
+  sync_to_rds_dm:
+    create table if not exists dm.d_dl_product_info (like frn.d_dl_product_info);
+    delete from dm.d_dl_product_info;
+    delete from dm.d_dl_product_info;
+    insert into dm.d_dl_product_info
+    select * 
+    from frn.d_dl_product_info;
+
+  #jd_b2b_sku_map(lego_sku_id,store_sku_id) 
+  # ->
+  # product_info(jd_b2b_sku_id)
+  update_by_b2b_sku_map:
+    # update edw.d_dl_product_info a
+    # set jd_b2b_sku_id = c.store_sku_id
+    # FROM  (
+    #   select year_version, material_id , store_sku_id
+    #     from(
+    #       select  p.year_version , p.material_id , b.store_sku_id , row_number() over(partition by material_id, year_version order by year_version desc) rk
+    #       from edw.d_dl_product_info p 
+    #         left join edw.d_bu_jd_b2b_sku_map b on p.lego_sku_id  = b.lego_sku_id 
+    # )d where d.rk =1
+    # ) c where a.year_version  = c.year_version
+    # and a.material_id = c.material_id;
+  
+
+  # tm_sku_map(lego_sku_id,store_sku_id) ->product_info(tmall_sku_id)
+  update_by_tm_sku_map:
+    # update edw.d_dl_product_info a
+    # set jd_b2b_sku_id = c.store_sku_id
+    # FROM  (
+    #   select year_version, material_id , store_sku_id
+    #     from(
+    #       select  p.year_version , p.material_id , b.store_sku_id , row_number() over(partition by material_id, year_version order by year_version desc) rk
+    #       from edw.d_dl_product_info p 
+    #         left join edw.d_bu_tm_sku_map b on p.lego_sku_id  = b.lego_sku_id 
+    # )d where d.rk =1
+    # ) c where a.year_version  = c.year_version
+    # and a.material_id = c.material_id;
+    
+  # pop_sku_map(lego_sku_id,store_sku_id)
+  # ->
+  # _product_info(jd_pop_sku_id)
+  update_by_pop_sku_map:
+    # update edw.d_dl_product_info a
+    #   set jd_pop_sku_id = c.store_sku_id
+    # FROM  (
+    #   select year_version, material_id , store_sku_id
+    #   from(
+    #     select  p.year_version , p.material_id , b.store_sku_id , row_number() over(partition by material_id, year_version order by year_version desc) rk
+    #     from edw.d_dl_product_info p 
+    #     left join edw.d_bu_jd_pop_sku_map b on p.lego_sku_id  = b.lego_sku_id 
+    # )d where d.rk =1
+    # ) c where a.year_version  = c.year_version
+    # and a.material_id = c.material_id;
+    

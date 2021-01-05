@@ -1,0 +1,85 @@
+EDW:
+  sync_to_rds_dm:
+    create table if not exists dm.f_jd_b2b_order (like frn.f_jd_b2b_order);
+
+    delete from dm.f_jd_b2b_order;
+    delete from dm.f_jd_b2b_order;
+    
+    insert into dm.f_jd_b2b_order  
+    select *  from frn.f_jd_b2b_order
+    where date_id >'2020-02-10';
+    
+  update_by_b2b_order_dtl:
+    create table if not exists edw.f_jd_b2b_order(
+      parent_order_id  varchar(50),
+      shopperid varchar(255),
+      openid varchar(255),
+      date_id date,
+      order_start_date timestamp,
+      earlist_order_end_date timestamp,
+      latest_order_end_date timestamp,
+      order_amt decimal(17,6),
+      create_date timestamp,
+      update_date timestamp,
+      is_gwp_include varchar(1), 
+      is_delivered varchar(100), 
+      dl_batch_date varchar(8),
+      dl_load_time timestamp,
+      constraint pk_b2b_order_id primary key( parent_order_id )
+    )distributed by (parent_order_id);
+
+    create temporary table t1 as
+    select 
+      parent_order_id,
+      shopperid,
+      openid,
+      max(date_id) date_id,
+      min(order_start_date) as order_start_date, 
+      min(order_end_date) as earlist_order_end_date,
+      max(order_end_date) as latest_order_end_date,
+      sum(order_gmv_amount) as order_amt,
+      min(create_date) as create_date,
+      max(update_date) as update_date,
+      'N' as is_gwp_include,
+      max(dl_batch_date) as dl_batch_date,
+      now()
+    from edw.f_jd_b2b_order_dtl
+    where son_order_status not in ('2', '取消')
+    group by parent_order_id ,shopperid,openid;
+
+    delete from edw.f_jd_b2b_order;
+
+    insert into edw.f_jd_b2b_order select * from t1;
+
+    with new_b2b_order as(
+      select * from edw.f_jd_b2b_order_dtl
+    )
+    update edw.f_jd_b2b_order od
+    set is_gwp_include = 'Y'
+    from (
+        select distinct od.parent_order_id 
+        from new_b2b_order od
+            inner join edw.d_bu_jd_b2b_gwp gw on od.store_sku_id  = gw.store_sku_id 
+        union
+        select distinct od.parent_order_id
+        from new_b2b_order od inner join (
+                select store_sku_id, lego_sku_id 
+                from edw.d_bu_jd_b2b_sku_map sku
+                where sku.lego_sku_id ~ '\d+[\+|/]\d+'
+            ) k on od.store_sku_id = k.store_sku_id
+        union
+        select distinct od.parent_order_id
+        from new_b2b_order od
+        where not exists (select sku.lego_sku_id from edw.d_bu_jd_b2b_sku_map sku where od.store_sku_id = sku.store_sku_id)
+    )yod where od.parent_order_id = yod.parent_order_id;
+
+    update edw.f_jd_b2b_order a
+    set is_delivered = case when b.dlv_agg ~ '.*Y.*' then 'Y' else 'N' end
+    from (select 
+            parent_order_id,
+            string_agg(is_delivered ,'') dlv_agg 
+          from edw.f_jd_b2b_order_dtl 
+          group by parent_order_id) b
+    where a.parent_order_id = b.parent_order_id ;
+
+    

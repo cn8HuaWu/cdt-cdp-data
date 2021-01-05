@@ -1,0 +1,51 @@
+Staging:
+  src_columns:
+    province text,
+    muni_pref_lvl text,
+    city_chn text,
+    city_eng text,
+    admin_level text,
+    city_tier text,
+    year text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.d_dl_city_tier(
+    id serial ,
+    province varchar(100),
+    muni_pref_lvl varchar(100),
+    city_chn varchar(100),
+    city_eng varchar(100),
+    admin_level varchar(100),
+    city_tier varchar(100),
+    year varchar(10),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_city_tier_id primary key( id )
+    )distributed by (id );
+  
+  insert_edw_from_ods_query:
+    insert into edw.d_dl_city_tier(
+      province,
+      muni_pref_lvl,
+      city_chn,
+      city_eng,
+      admin_level,
+      city_tier,
+      year,
+      dl_batch_date,
+      dl_load_time
+    )
+    select
+      province,
+      muni_pref_lvl,
+      city_chn,
+      city_eng,
+      admin_level,
+      city_tier,
+      year,
+      dl_batch_date,
+      now()
+    from ods.r_dl_city_tier;

@@ -1,0 +1,56 @@
+Staging:
+  src_columns:
+    store_sku_id text,
+    lego_sku_id text,
+    store_sku_name text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.d_bu_jd_pop_gwp(
+    store_sku_id varchar(50),
+    lego_sku_id varchar(50),
+    store_sku_name varchar(255),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_jd_pop_gwp_id primary key( store_sku_id )
+    )distributed by (store_sku_id)
+  
+  insert_edw_from_ods_query:
+    insert into edw.d_bu_jd_pop_gwp(
+    store_sku_id,
+    lego_sku_id,
+    store_sku_name,
+    dl_batch_date,
+    dl_load_time
+    )
+    select
+    store_sku_id,
+    lego_sku_id,
+    store_sku_name,
+    dl_batch_date,
+    now()
+    from ods.r_bu_jd_pop_gwp
+
+  # post_update_other_edw:
+  #   create temporary table t1 as
+  #   select parent_order_id,
+  #         son_order_id,
+  #         c.store_sku_id gwp_store_sku_id,
+  #         d.store_sku_id
+  #   from edw.f_jd_pop_order_dtl a
+  #   left join edw.d_bu_jd_pop_gwp c on a.store_sku_id = c.store_sku_id
+  #   left join edw.d_bu_jd_pop_sku_map d on a.store_sku_id = d.store_sku_id
+  #   distributed by (parent_order_id,son_order_id);
+
+  #   update edw.f_jd_pop_order_dtl a
+  #   set is_gwp = case when t1.gwp_store_sku_id is not null then 'Y'
+  #                 when t1.store_sku_id ~ '.*\+.*' or t1.store_sku_id  ~ '.*/.*' or t1.store_sku_id is null then 'Y'
+  #               else 'N' end,
+  #       lego_sku_id = case when t1.gwp_store_sku_id is not null then null
+  #                 when t1.store_sku_id  ~ '.*\+.*'  or t1.store_sku_id  ~ '.*/.*' or t1.store_sku_id is null then null
+  #                 else t1.store_sku_id end
+  #   from t1
+  #   where a.parent_order_id = t1.parent_order_id
+  #     and a.son_order_id = t1.son_order_id;

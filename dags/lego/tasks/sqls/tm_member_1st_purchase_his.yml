@@ -1,0 +1,95 @@
+Staging:
+  src_columns:
+    shopperid text,
+    is_control_group text,
+    platform text,
+    name text,
+    gender text,
+    birth_year text,
+    birthday text,
+    age text,
+    province text,
+    city text,
+    county text,
+    mobile text,
+    email text,
+    address text,
+    job text,
+    zip_code text,
+    tm_1st_purchase_date text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.d_dl_tm_member_1st_purchase_his (
+      shopperid varchar(255) NULL,
+      is_control_group varchar(255) NULL,
+      platform varchar(255) NULL,
+      name varchar(255) NULL,
+      gender varchar(10) NULL,
+      birth_year numeric(4) NULL,
+      birthday varchar(10) NULL,
+      age numeric(4) NULL,
+      province varchar(255) NULL,
+      city varchar(255) NULL,
+      county varchar(255) NULL,
+      mobile varchar(255) NULL,
+      email varchar(255) NULL,
+      address varchar(500) NULL,
+      job varchar(255) NULL,
+      zip_code varchar(255) NULL,
+      tm_1st_purchase_date timestamp NULL,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp,
+      constraint pk_dl_tm_member_1st_purchase_his_id primary key( shopperid )
+    )
+     distributed by (shopperid)
+
+  insert_edw_from_ods_query:
+    INSERT INTO edw.d_dl_tm_member_1st_purchase_his
+    (
+      shopperid, 
+      is_control_group, 
+      platform, 
+      name, 
+      gender, 
+      birth_year, 
+      birthday, 
+      age, 
+      province, 
+      city, 
+      county,
+      mobile, 
+      email, 
+      address, 
+      job, 
+      zip_code, 
+      tm_1st_purchase_date,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      shopperid, 
+      is_control_group, 
+      platform, 
+      name, 
+      gender, 
+      case when birth_year ~ E'^\\d+$' then birth_year::decimal(4,0) else null end,
+      birthday, 
+      case when age ~ E'^\\d+$' then age::decimal(4,0) else null end,
+      province, 
+      city, 
+      county,
+      mobile, 
+      email, 
+      address, 
+      job, 
+      zip_code, 
+      case when(tm_1st_purchase_date ~ E'^\\d+/\\d+/\\d{4}') then to_date(tm_1st_purchase_date, 'dd/mm/yyyy') else null end as tm_1st_purchase_date,
+      dl_batch_date,
+      dl_load_time
+    from (select *, row_number() over(partition by shopperid order by dl_batch_date desc) rk  from  ods.r_tm_member_1st_purchase_his ) tmh 
+    where tmh.rk=1;
+
+    

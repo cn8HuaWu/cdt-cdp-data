@@ -1,0 +1,84 @@
+Staging:
+
+  src_columns:
+    id text,
+    return_order_id text,
+    platform_sku_id text,
+    platform_sku_name text,
+    sap_material_code text,
+    lego_product_id text,
+    gwp_type text,
+    bundle_product_sku text,
+    mystery_box_product_sku text,
+    sku_number text,
+    sku_rrp text,
+    sku_actual_paid_amount text,
+    created_time text,
+    update_time text
+
+ODS:
+
+EDW:
+  create_table_query:
+    create table if not exists edw.f_oms_return_order_dtl(
+      id varchar(255),
+      return_order_id varchar(255),
+      platform_sku_id varchar(255),
+      platform_sku_name varchar(255),
+      sap_material_code varchar(255),
+      lego_product_id varchar(255),
+      gwp_type varchar(255),
+      bundle_product_sku varchar(255),
+      mystery_box_product_sku varchar(255),
+      sku_number varchar(255),
+      sku_rrp decimal(17,6),
+      sku_actual_paid_amount decimal(17,6),
+      created_time timestamp,
+      update_time timestamp,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp,
+      constraint pk_oms_return_order_dtl_id primary key(id)
+    )distributed by (id);
+  insert_edw_from_ods_query:
+    insert into edw.f_oms_return_order_dtl(
+      id,
+      return_order_id,
+      platform_sku_id,
+      platform_sku_name,
+      sap_material_code,
+      lego_product_id,
+      gwp_type ,
+      bundle_product_sku,
+      mystery_box_product_sku,
+      sku_number,
+      sku_rrp,
+      sku_actual_paid_amount,
+      created_time,
+      update_time,
+      dl_batch_date,
+      dl_load_time
+    )select 
+      id,
+      return_order_id,
+      platform_sku_id,
+      platform_sku_name,
+      sap_material_code,
+      lego_product_id,
+      gwp_type ,
+      bundle_product_sku,
+      mystery_box_product_sku,
+      sku_number,
+      case when sku_rrp ~ E'\\d+$' then sku_rrp::decimal(17,6) else null end,
+      case when sku_actual_paid_amount ~ E'\\d+$' then sku_actual_paid_amount::decimal(17,6)  else null end,
+      to_timestamp(created_time,'YYYY-MM-DD HH24:MI:SS'),
+      to_timestamp(update_time,'YYYY-MM-DD HH24:MI:SS'),
+      dl_batch_date,
+      now()
+    from  (select *, row_number() over(partition by id order by update_time desc ) as rk from  ods.r_oms_return_order_dtl)a
+    where a.rk =1 ;
+  
+  # merge the b2b order dtl to order table
+  post_update_other_edw:
+    
+    
+    

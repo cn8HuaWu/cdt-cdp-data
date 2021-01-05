@@ -1,0 +1,62 @@
+Staging:
+  src_columns:
+    year text,
+    month text,
+    platform text,
+    primary_category text,
+    brand text,
+    piece_cnt text,
+    percent_piece_cnt text,
+    gmv_amt text,
+    percent_gmv_amt text
+    
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_qbt_brand_sales(
+      year decimal(4),
+      month decimal(2),
+      platform varchar(255),
+      primary_category varchar(255),
+      brand varchar(255),
+      piece_cnt decimal(15),
+      percent_piece_cnt decimal(5,4),
+      gmv_amt decimal(17,2),
+      percent_gmv_amt decimal(5,4),
+      dl_batch_date varchar(8),
+      dl_load_time timestamp,
+      constraint pk_brand_sales_id primary key( year, month, platform, primary_category, brand )
+    )distributed by (year, month, platform, primary_category, brand );
+
+  
+  insert_edw_from_ods_query:
+    delete from edw.f_qbt_brand_sales;
+    insert into edw.f_qbt_brand_sales
+    (
+      year, 
+      month,
+      platform,  
+      primary_category,
+      brand,
+      piece_cnt,
+      percent_piece_cnt,
+      gmv_amt,
+      percent_gmv_amt,
+      dl_batch_date, 
+      dl_load_time
+    )
+    select
+      year::decimal(4,0) as year,
+      month::decimal(4,0) as month,
+      lower(platform) as platform,
+      primary_category,
+      brand,
+      case when piece_cnt ~ E'\\d+' then replace(trim(piece_cnt),',','')::decimal(15) else null end  as piece_cnt,
+      case when percent_piece_cnt ~ E'\\d+' then  replace(trim(percent_piece_cnt),',','')::decimal(5,4) else null end  as percent_piece_cnt,
+      case when gmv_amt ~ E'\\d+' then replace(trim(gmv_amt),',','')::decimal(17,2) else null end  as gmv_amt,
+      case when percent_gmv_amt ~ E'\\d+' then replace(trim(percent_gmv_amt),',','')::decimal(5,4) else null end  as percent_gmv_amt,
+      dl_batch_date,
+      now()
+    from ods.r_qbt_brand_sales
+    

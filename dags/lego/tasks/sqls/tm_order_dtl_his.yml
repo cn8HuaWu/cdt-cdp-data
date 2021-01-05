@@ -1,0 +1,74 @@
+Staging:
+  src_file_list:
+    # tm_order_dtl_202001.csv_ALIGNED,
+    # tm_order_dtl_201912.csv_ALIGNED
+    # TM_detail_201912.xlsx,
+    # TM_detail_202001.xlsx
+  src_columns:
+    parent_order_id text,
+    title text,
+    unit_price text,
+    pieces_cnt text,
+    external_sku_id text,
+    product_type text,
+    package_info text,
+    comment text,
+    order_status text,
+    store_sku_id text,
+    sku text,
+    rsp text,
+    rrp text
+
+ODS:
+
+EDW:
+  create_table_query:
+    create table if not exists edw.f_tm_order_dtl_his(
+      parent_order_id varchar(255),
+      store_sku_id varchar(255),
+      title varchar(255),
+      unit_price decimal(17,6),
+      pieces_cnt decimal(11),
+      external_sku_id varchar(255),
+      product_type varchar(255),
+      order_status varchar(100),
+      sku varchar(255),
+      rsp decimal(17,6),
+      rrp decimal(17,6),
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )
+    distributed by (parent_order_id, store_sku_id)
+    
+  
+  insert_edw_from_ods_query:
+    insert into edw.f_tm_order_dtl_his(
+      parent_order_id,
+      store_sku_id,
+      title,
+      unit_price,
+      pieces_cnt,
+      external_sku_id,
+      product_type,
+      order_status,
+      sku,
+      rsp,
+      rrp,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      parent_order_id,
+      store_sku_id,
+      title,
+      case when trim(unit_price) ='' then null::decimal(17,6) else unit_price::decimal(17,6) end as unit_price,
+      case when trim(pieces_cnt) ='' then null::decimal(11) else pieces_cnt::decimal(11) end as pieces_cnt,
+      external_sku_id,
+      product_type,
+      order_status,
+      sku,
+      case when trim(rsp) ~ '\d+' then trim(rsp)::decimal(17,6) else null end as rsp,
+      case when trim(rrp) ~ '\d+' then trim(rrp)::decimal(17,6) else null end as rrp,
+      dl_batch_date,
+      now()
+    from ods.r_tm_order_dtl_his; 

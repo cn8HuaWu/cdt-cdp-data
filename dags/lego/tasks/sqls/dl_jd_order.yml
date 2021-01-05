@@ -1,0 +1,75 @@
+EDW:
+  sync_to_rds_dm:
+    create table if not exists dm.f_dl_jd_order (like frn.f_dl_jd_order);
+    delete from dm.f_dl_jd_order;
+    delete from dm.f_dl_jd_order;
+    
+    insert into dm.f_dl_jd_order  
+    select * from frn.f_dl_jd_order
+    where date_id > '2020-02-10';
+
+  update_by_jd_order:
+    create temporary table tmp_f_dl_jd_order (like dm.f_dl_jd_order );
+
+    INSERT INTO tmp_f_dl_jd_order(
+        store, 
+        parent_order_id, 
+        date_id, 
+        shopperid,
+        openid, 
+        order_start_date, 
+        order_end_date, 
+        order_amt, 
+        is_gwp_include, 
+        is_delivered,
+        dl_batch_date, 
+        dl_load_time)
+    select
+        'JD POP' store, 
+        parent_order_id, 
+        date_id, 
+        shopperid,
+        openid, 
+        order_start_date, 
+        order_end_date, 
+        order_amt, 
+        is_gwp_include, 
+        is_delivered,
+        dl_batch_date, 
+        dl_load_time
+    from edw.f_jd_pop_order
+    where date_id is not null;
+    ;
+
+    INSERT INTO tmp_f_dl_jd_order(
+        store, 
+        parent_order_id, 
+        date_id, 
+        shopperid,
+        openid, 
+        order_start_date, 
+        order_end_date, 
+        order_amt, 
+        is_gwp_include, 
+        is_delivered,
+        dl_batch_date, 
+        dl_load_time)
+    select
+        'JD B2B' store, 
+        parent_order_id, 
+        date_id, 
+        shopperid,
+        openid, 
+        order_start_date, 
+        latest_order_end_date order_end_date, 
+        order_amt, 
+        is_gwp_include, 
+        is_delivered,
+        dl_batch_date, 
+        dl_load_time
+    from edw.f_jd_b2b_order
+    where date_id is not null;
+
+    update dm.f_dl_jd_order set store='del';
+    insert into dm.f_dl_jd_order select * from tmp_f_dl_jd_order;
+    delete from dm.f_dl_jd_order where store='del';

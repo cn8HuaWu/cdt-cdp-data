@@ -1,0 +1,339 @@
+EDW:
+  reload_dm_scv:
+    create table if not exists dm.d_dl_scv(   
+      consumer_id varchar(255),
+      name_first varchar(255),
+      name_last varchar(255),
+      gender varchar(50),
+      birthday date, 
+      age decimal(3),
+      age_group varchar(50),
+      email varchar(255),
+      telephone varchar(255),
+      mobile varchar(255),
+      fax varchar(255),
+      country varchar(50),
+      zip_code varchar(10),
+      province varchar(255),
+      city varchar(255),
+      city_tier varchar(20),
+      address varchar(500),
+      dlv_province  varchar(255),
+      dlv_city varchar(255),
+      dlv_county varchar(50),
+      dlv_address varchar(500),
+      cs_partner varchar(10),
+      wc_register_date timestamp,
+      wc_member_id varchar(100),
+      jd_register_date timestamp,
+      jd_member_id varchar(100),
+      jd_member_cluster varchar(50),
+      jd_consumer_grade varchar(50),
+      jd_consumer_grade_start_date timestamp, 
+      jd_consumer_grade_end_date timestamp, 
+      jd_contribute_amt decimal(17,6),
+      jd_pop_1st_purchase_date timestamp,
+      jd_pop_1st_purchase_order_amt decimal(17,6),
+      jd_pop_1st_purchase_id varchar(200),
+      jd_pop_last_purchase_date timestamp, 
+      jd_pop_last_purchase_order_amt decimal(17,6),
+      jd_pop_last_purchase_id varchar(200),
+      jd_b2b_1st_purchase_date timestamp, 
+      jd_b2b_1st_purchase_order_amt decimal(17,6),
+      jd_b2b_1st_purchase_id varchar(200),
+      jd_b2b_last_purchase_date timestamp, 
+      jd_b2b_last_purchase_order_amt decimal(17,6),
+      jd_b2b_last_purchase_id varchar(200),
+      tm_member_status varchar(200),
+      tm_member_start_date timestamp, 
+      tm_consumer_grade varchar(100),
+      tm_consumer_grade_start_date timestamp, 
+      tm_consumer_grade_end_date timestamp, 
+      tm_contribute_amt decimal(17,6),
+      tm_1st_purchase_date timestamp, 
+      tm_1st_purchase_order_amt decimal(17,6),
+      tm_1st_purchase_id varchar(200),
+      tm_last_purchase_date timestamp, 
+      tm_last_purchase_order_amt decimal(17,6),
+      tm_last_purchase_id varchar(200),
+      from_cs_channel varchar(100),
+      from_wc_channel varchar(100),
+      from_pop_channel varchar(100),
+      from_tm_channel varchar(100),
+      constraint pk_dl_scv_id primary key(consumer_id)
+    )distributed by (consumer_id);
+
+    delete from dm.d_dl_scv;
+
+    with all_mobile as(
+      select distinct mobile from edw.f_jd_pop_consignee where mobile is not null and trim(mobile) <> ''  
+      union
+      select distinct mobile from edw.f_cs_consumer_info  where mobile is not null and trim(mobile) <> ''
+      union
+      select distinct mobile from edw.f_wc_mini_member_info  where mobile is not null and trim(mobile) <> ''
+      union
+      select distinct consignee_mobile from edw.f_oms_order  where consignee_mobile is not null and trim(consignee_mobile) <> ''
+    )
+    insert into dm.d_dl_scv
+    (
+      consumer_id,
+      name_first,
+      name_last,
+      email,
+      fax,
+      telephone,
+      mobile,
+      country,
+      zip_code ,
+      province,
+      city,
+      city_tier ,
+      address,
+      cs_partner,
+      dlv_province ,
+      dlv_city ,
+      dlv_county ,
+      dlv_address,
+      wc_register_date,
+      wc_member_id,
+      from_cs_channel,
+      from_wc_channel,
+      from_pop_channel,
+      from_tm_channel
+    )
+    select 
+      md5(a.mobile) consumer_id,
+      cs.name_first ,
+      cs.name_last ,
+      cs.email ,
+      cs.fax ,
+      cs.telephone,
+      a.mobile,
+      cs.country ,
+      cs.zip_code ,
+      cs.region  as province ,
+      cs.city ,
+      ct.city_tier ,
+      cs.street  address,
+      cs.partner  as cs_partner,
+      csg.province as dlv_province,
+      csg.city as dlv_city,
+      csg.county as dlv_county,
+      csg.delivery_address as dlv_address,
+      wc.register_time as wc_register_date,
+      wc.openid as wc_member_id,
+      case when cs.mobile is not null then 'Y' else 'N' end from_cs_channel,
+      case when wc.mobile is not null then 'Y' else 'N' end from_wc_channel,
+      'N' from_pop_channel,
+      'N' from_tm_channel
+    from all_mobile a 
+      left join (
+        select * from ( 
+          select *, row_number() over(partition by mobile order by change_date desc ) rk 
+          from edw.f_cs_consumer_info where mobile is not null and mobile <> ''
+        )cds where cds.rk =1 
+      )cs on a.mobile = cs.mobile 
+      left join edw.d_dl_city_tier ct on cs.city = ct.city_chn 
+      left join (
+        select * from (
+          select  
+            order_end_date, 
+            consignee_mobile as mobile, 
+            province, 
+            city, 
+            county, 
+            delivery_address,
+            row_number() over(partition by consignee_mobile order by order_end_date desc) as rk
+            from
+            (
+              select  payment_confirm_time as order_end_date, consignee_mobile, province, city, county, delivery_address
+              from edw.f_oms_order
+              union
+              select  ord.order_end_date, pc.mobile, ord.province, ord.city, pc.county, pc.full_address 
+              from edw.f_jd_pop_consignee pc left join edw.f_jd_pop_order ord  on ord.consignee_info_id = pc.id 
+            ) tt
+          )pt where pt.rk =1
+        )csg on a.mobile = csg.mobile
+      left join (
+        select * from (
+          select *, row_number() over(partition by mobile order by register_time desc ) rk 
+          from edw.f_wc_mini_member_info where mobile is not null and mobile <> ''
+        )m where m.rk =1
+    ) wc on a.mobile = wc.mobile;
+
+      update dm.d_dl_scv a
+      set from_tm_channel = 'Y'
+      where exists (select 1 from edw.f_oms_order oms  where oms.consignee_mobile = a.mobile);
+
+      update dm.d_dl_scv a
+      set from_pop_channel = 'Y'
+      where exists (select 1 from edw.f_jd_pop_consignee pop  where pop.mobile = a.mobile);
+
+    create temporary table t1 as
+    select 
+      'POP' store,
+      ord.order_start_date ,
+      ord.order_end_date,
+      dtl.order_gmv_amount ,
+      dtl.is_gwp ,
+      dtl.lego_sku_gmv_price ,
+      dtl.parent_order_id ,
+      dtl.is_member,
+      md5(con.mobile ) mobile
+    from edw.f_jd_pop_order_dtl dtl 
+      inner join edw.f_jd_pop_order ord on dtl.parent_order_id  = ord.parent_order_id 
+      left join edw.f_jd_pop_consignee con on ord.consignee_info_id  = con.id ;
+
+
+    update dm.d_dl_scv s
+    set jd_consumer_grade = case when a.gmv_amt > 0 and a.gmv_amt <= 800 then 'ENTRY'
+                    when a.gmv_amt > 800 and a.gmv_amt <= 2000 then 'VIP'
+                    when a.gmv_amt > 2000 then 'VVIP' else null end
+    from (
+      select 
+        t1.mobile,
+        sum(order_gmv_amount) gmv_amt
+      from t1
+      where is_member='Y'
+      group by t1.mobile
+    )a 
+    where  a.mobile = s.consumer_id;
+
+    update dm.d_dl_scv s
+    set jd_consumer_grade_start_date = order_end_date
+    from(
+      select 
+        mobile,
+        min(order_end_date) order_end_date
+      from t1 
+      where lego_sku_gmv_price>=19
+      and is_gwp <> 'Y'
+      group by mobile
+    )a 
+    where a.mobile = s.consumer_id;
+
+
+    update dm.d_dl_scv s
+    set jd_pop_1st_purchase_date = a.order_end_date,
+        jd_pop_1st_purchase_id = a.parent_order_id
+    from (
+        select order_end_date, 
+          parent_order_id, 
+          mobile consumer_id,
+          row_number() over(partition by mobile order by order_end_date asc) rk
+        from t1
+        where lego_sku_gmv_price>=10
+      and is_gwp <> 'Y'
+    )a 
+    where a.consumer_id = s.consumer_id
+    and a.rk =1;
+
+    update dm.d_dl_scv s
+    set jd_pop_last_purchase_date = a.order_end_date,
+        jd_pop_last_purchase_id = a.parent_order_id
+    from (
+        select 
+            order_end_date, 
+            parent_order_id, 
+            mobile consumer_id,
+            row_number() over(partition by mobile order by order_end_date desc) rk
+        from t1
+        where lego_sku_gmv_price>=10
+        and is_gwp <> 'Y'
+    )a 
+    where a.consumer_id = s.consumer_id
+    and a.rk =1;
+
+    update dm.d_dl_scv s
+      set jd_pop_1st_purchase_order_amt = a.ord_amt
+    from (
+      select 
+        mobile consumer_id,
+        sum(order_gmv_amount) ord_amt,
+        row_number() over(partition by mobile order by max(order_end_date) asc) rk
+      from t1
+      where  lego_sku_gmv_price>=10
+        and is_gwp <> 'Y'
+      group by parent_order_id, mobile
+    )a 
+    where a.consumer_id = s.consumer_id
+    and a.rk =1;
+
+    update dm.d_dl_scv s
+      set jd_pop_last_purchase_order_amt = a.ord_amt
+    from (
+      select 
+        mobile consumer_id,
+        sum(order_gmv_amount) ord_amt,
+        row_number() over(partition by mobile order by max(order_end_date) desc) rk
+      from t1
+      where  lego_sku_gmv_price>=10
+        and is_gwp <> 'Y'
+      group by parent_order_id, mobile
+    )a 
+    where a.consumer_id = s.consumer_id
+    and a.rk =1;
+
+    create temporary  table t2 as  
+    select 
+      shopperid ,
+      parent_order_id,
+      payment_confirm_time,
+      actual_order_amt,
+      md5(consignee_mobile) mobile,
+      row_number() over(partition by consignee_mobile order by payment_confirm_time asc) asc_order,
+      row_number() over(partition by consignee_mobile order by payment_confirm_time desc) desc_order
+    from edw.f_oms_order
+    where consignee_mobile is not null and consignee_mobile <> ''
+    distributed by (parent_order_id);
+
+    update dm.d_dl_scv s
+    set tm_contribute_amt = all_amt
+    from (
+      select
+        consignee_mobile, 
+        sum(actual_order_amt) all_amt
+      from edw.f_oms_order
+      where consignee_mobile is not null and consignee_mobile <> ''
+      group by consignee_mobile
+    )a where md5(a.consignee_mobile) = s.consumer_id;
+
+    update dm.d_dl_scv s
+    set tm_1st_purchase_date = payment_confirm_time,
+      tm_1st_purchase_order_amt = actual_order_amt,
+      tm_1st_purchase_id = parent_order_id
+    from t2 
+    where t2.mobile = s.consumer_id
+    and t2.asc_order =1;
+
+    update dm.d_dl_scv s
+    set tm_last_purchase_date = payment_confirm_time,
+      tm_last_purchase_order_amt = actual_order_amt,
+      tm_last_purchase_id = parent_order_id
+    from t2 
+    where t2.mobile = s.consumer_id
+    and t2.desc_order =1;
+
+
+
+  sync_to_rds_dm:
+    create table if not exists dm.d_dl_scv (like frn.d_dl_scv);
+    delete from dm.d_dl_scv;
+    delete from dm.d_dl_scv;
+    insert into dm.d_dl_scv select *  from frn.d_dl_scv;
+
+  update_by_jd_member:
+
+  update_by_cs_consumer_info:
+
+  update_by_wc_mini_member_info:
+
+  update_by_oms_order:
+
+  update_by_oms_order_dtl:
+
+  update_by_jd_pop_order_dtl:
+
+  update_by_jd_b2b_order_dtl:
+      
+  

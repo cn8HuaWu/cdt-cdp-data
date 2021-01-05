@@ -1,0 +1,314 @@
+Staging:
+  src_columns:
+    id text,
+    order_search_info_id text,
+    sku_id text,
+    sku_name text,
+    jd_price text,
+    item_total text,
+    create_date text,
+    update_date text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_jd_pop_order_dtl(
+    id varchar(255) ,
+    parent_order_id varchar(255) ,
+    shopperid varchar(255),
+    date_id date,
+    openid varchar(255) ,
+    pin varchar(255),
+    order_start_date timestamp,
+    order_end_date timestamp,
+    order_state varchar(255),
+    store_sku_id varchar(255),
+    store_sku_name varchar(255),
+    sku_price decimal(17,6),
+    piece_cnt decimal(15),
+    is_gwp varchar(1),
+    lego_sku_id varchar(255),
+    lego_sku_name_en varchar(255),
+    lego_sku_rrp_price decimal(17,6),
+    lego_sku_gmv_price decimal(17,6),
+    order_gmv_amount decimal(17,6),
+    order_rrp_amount decimal(17,6),
+    lego_sku_line varchar(100),
+    lego_sku_status varchar(100),
+    cn_product_substatus varchar(5),
+    cn_store_product_substatus varchar(5),
+    cn_launchdate date,
+    cn_store_launchdate date,
+    is_newshopper_ever varchar(1),
+    is_newshopper_365 varchar(1),
+    is_member varchar(1),
+    is_new_member varchar(1), 
+    member_grade varchar(5),
+    is_1st_order_ever varchar(5),
+    is_1st_order_365 varchar(5),
+    is_member_1st_order varchar(5),
+    is_delivered varchar(100),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_pop_order_dtl_id primary key( id )
+    ) distributed by (id);
+
+  # inlcuding historica data and daily loaded data
+  insert_edw_from_ods_query:
+    insert into edw.f_jd_pop_order_dtl
+    (
+    id,
+    parent_order_id,
+    store_sku_id,
+    store_sku_name,
+    sku_price,
+    piece_cnt,
+    dl_batch_date,
+    dl_load_time ,
+    is_newshopper_ever,
+    is_newshopper_365,
+    is_new_member,
+    is_member_1st_order,
+    is_member,
+    is_1st_order_ever,
+    is_1st_order_365
+    )
+    select
+    id,
+    order_search_info_id,
+    sku_id,
+    sku_name,
+    jd_price::decimal(21,6),
+    item_total::decimal(15),
+    dl_batch_date,
+    now(),
+    'N',
+    'N',
+    'N',
+    'N',
+    'N',
+    'N',
+    'N'
+    from ods.r_jd_pop_order_dtl;
+
+    ## dont need the historica data!
+    # drop sequence if exists sequence_his_pop_order_dtl_id;
+    # create sequence sequence_his_pop_order_dtl_id increment by 1 minvalue 1 no maxvalue start with 1;
+    # insert into edw.f_jd_pop_order_dtl(
+    #   id,
+    #   parent_order_id, 
+    #   shopperid, 
+    #   date_id, 
+    #   pin, 
+    #   order_start_date, 
+    #   order_end_date, 
+    #   order_state, 
+    #   store_sku_id,
+    #   store_sku_name, 
+    #   sku_price, 
+    #   piece_cnt,
+    #   lego_sku_gmv_price, 
+    #   order_gmv_amount, 
+    #   dl_batch_date, 
+    #   dl_load_time
+    # )
+    # select 
+    #   'his_'|| nextval('sequence_his_pop_order_dtl_id'),
+    #   odh.parent_order_id,
+    #   null  shopperid,
+    #   odh.order_create_time::date date_id,
+    #   odh.pin,
+    #   odh.order_create_time,
+    #   odh.order_completed_time,
+    #   odh.order_status,
+    #   odh.store_sku_id,
+    #   odh.store_sku_name,
+    #   odh.jd_price,
+    #   odh.piece_cnt,
+    #   odh.actual_amount/odh.piece_cnt*1.0 lego_sku_gmv_price,
+    #   odh.actual_amount order_gmv_amount,
+    #   odh.dl_batch_date ,
+    #   now()
+    # from edw.f_jd_pop_order_dtl_his odh
+    # where not exists (
+    #   select 1 from edw.f_jd_pop_order_dtl a where a.parent_order_id = odh.parent_order_id
+    # );
+    # drop sequence  if exists sequence_his_pop_order_dtl_id;
+
+
+  sync_to_rds_dm:
+    create table if not exists dm.f_jd_pop_order_dtl (like frn.f_jd_pop_order_dtl);
+    delete from dm.f_jd_pop_order_dtl;
+    delete from dm.f_jd_pop_order_dtl;
+    insert into dm.f_jd_pop_order_dtl select * from frn.f_jd_pop_order_dtl;
+
+  # (parent_order_id,openid,pin,order_start_date,order_end_date,order_state)
+  #  -->
+  #(openid,pin,order_start_date,order_end_date,order_state,is_newshopper_ever,is_newshopper_365)
+  # (parent_order_id,order_amt) -> (lego_sku_gmv_price,order_gmv_amount)
+  update_by_pop_order:
+    update edw.f_jd_pop_order_dtl a
+    set openid = b.openid,
+        pin = b.pin,
+        date_id = b.date_id,
+        order_start_date = b.order_start_date,
+        order_end_date = b.order_end_date,
+        order_state = b.order_state,
+        is_delivered = case when b.order_state in ('WAIT_GOODS_RECEIVE_CONFIRM', 'WAIT_SELLER_DELIVERY', 'POP_ORDER_PAUSE', 'FINISHED_L', 'LOCKED', 'WAIT_SEND_CODE') then 'Y' else 'N' end 
+    from edw.f_jd_pop_order b
+    where a.parent_order_id = b.parent_order_id
+    ;
+
+    update edw.f_jd_pop_order_dtl a
+    set shopperid = coalesce(b.openid,b.pin)
+    from (select pin,max(openid) openid from edw.f_jd_pop_order_dtl group by pin) b 
+    where a.pin = b.pin;
+
+    create temporary table t3 as
+    select 
+        parent_order_id,
+        lag(order_end_date) over(partition by shopperid order by order_end_date) last_order_date
+    from edw.f_jd_pop_order_dtl
+    where order_end_date is not null
+      and shopperid is not null
+    group by parent_order_id,order_end_date,shopperid
+    distributed by (parent_order_id)
+    ;
+
+    update edw.f_jd_pop_order_dtl a
+    set is_1st_order_ever = case when last_order_date is null then 'Y' else 'N' end,
+        is_1st_order_365  = case when last_order_date is null or extract('day' from (order_end_date - last_order_date)) >= 365 then 'Y' else 'N' end
+    from t3 b
+    where a.parent_order_id = b.parent_order_id
+    ;
+
+    update edw.f_jd_pop_order_dtl a
+    set is_newshopper_ever = 'Y'
+    where exists (select 1 from edw.f_jd_pop_order_dtl b
+        where a.shopperid = b.shopperid
+          and a.date_id = b.date_id
+          and b.is_1st_order_ever = 'Y')
+    ;
+
+    update edw.f_jd_pop_order_dtl a
+    set is_newshopper_365 = 'Y'
+    where exists (select 1 from edw.f_jd_pop_order_dtl b
+        where a.shopperid = b.shopperid
+          and a.date_id = b.date_id
+          and b.is_1st_order_365 = 'Y')
+    ;
+
+    
+    create temporary table t2 as
+    select b.parent_order_id,b.order_amt,sum((case when a.is_gwp='Y' then 0 else a.lego_sku_rrp_price end) * a.piece_cnt) total_price
+    from edw.f_jd_pop_order_dtl a,edw.f_jd_pop_order b
+    where a.parent_order_id = b.parent_order_id
+    group by b.parent_order_id,b.order_amt
+    distributed by (parent_order_id)
+    ;
+
+    update edw.f_jd_pop_order_dtl a
+    set lego_sku_gmv_price = case when total_price=0 then 0 else (case when is_gwp='Y' then 0 else lego_sku_rrp_price end) /total_price*b.order_amt end,
+        order_gmv_amount = case when total_price=0 then 0 else  (case when is_gwp='Y' then 0 else lego_sku_rrp_price end) /total_price*b.order_amt * piece_cnt end
+    from t2 b
+    where a.parent_order_id = b.parent_order_id;
+
+  # gwp(store_sku_id), sku_map(store_sku_id) 
+  # -> pop_order_dtl(is_gwp,lego_sku_id)
+  update_by_jd_pop_gwp_and_sku_map:
+    update edw.f_jd_pop_order_dtl a
+    set is_gwp = case when t1.gwp_store_sku_id is not null then 'Y'
+                  when t1.lego_sku_id ~ '.*\+.*' or t1.lego_sku_id like '.*/.*' or t1.lego_sku_id is null or product_lego_sku_id is null then 'Y'
+                else 'N' end,
+        lego_sku_id = t1.lego_sku_id
+    from (select id,
+                  c.store_sku_id gwp_store_sku_id,
+                  d.lego_sku_id,
+                  e.lego_sku_id product_lego_sku_id
+            from edw.f_jd_pop_order_dtl a
+            left join edw.d_bu_jd_pop_gwp c on a.store_sku_id = c.store_sku_id
+            left join edw.d_bu_jd_pop_sku_map d on a.store_sku_id = d.store_sku_id
+            left join (select lego_sku_id from edw.d_dl_product_info group by lego_sku_id) e on d.lego_sku_id = e.lego_sku_id
+             ) t1
+    where a.id = t1.id;
+
+  # product_info(lego_sku_id,sku_name_en,RSP,cn_line,product_status,bu_cn_launch_date,bu_cn_launch_date)
+  # ->
+  # order_dtl(lego_sku_name_en,lego_sku_rrp_price,order_rrp_amount,lego_sku_line,lego_sku_status,cn_launchdate,cn_store_launchdate,cn_product_substatus,cn_store_product_substatus)
+  # It s possible that : order detail date < bu_cn_launch_date
+  update_by_product_info:
+    create temp table t1 as 
+    select * from 
+        (select *,row_number() over(partition by lego_sku_id,year_version order by bu_cn_launch_date desc) rn from edw.d_dl_product_info) a 
+     where rn = 1;
+    
+    create temp table t2 as 
+    SELECT 1 priority,year_version::float8 as year,lego_sku_id,sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_pop_launch_date FROM t1
+        union all
+    SELECT 10 priority,year_version::float8 - 1,lego_sku_id,sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_pop_launch_date FROM t1
+        union all
+    SELECT y.year - t1.year_version::FLOAT8 + 100 priority,y.year,lego_sku_id,sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_pop_launch_date FROM t1
+            join (select distinct year_version::float8 as year from edw.d_dl_product_info) y on t1.year_version::float8 < y.year
+    ;
+  
+    update edw.f_jd_pop_order_dtl a
+    set lego_sku_name_en = b.sku_name_en,
+        lego_sku_rrp_price = b.RSP,
+        order_rrp_amount = b.RSP * piece_cnt,
+        lego_sku_line = coalesce(case when trim( b.top_theme )='' then null else b.top_theme end , b.cn_line),
+        lego_sku_status = b.product_status,
+        cn_launchdate = b.bu_cn_launch_date,
+        cn_store_launchdate = coalesce(b.cn_jd_pop_launch_date,b.bu_cn_launch_date),
+        cn_product_substatus = case when b.product_status = 'N'  then
+                                case when a.date_id - b.bu_cn_launch_date <= 90 then 'N0-3'
+                                when a.date_id - b.bu_cn_launch_date <= 180 then 'N3-6' 
+                                when a.date_id - b.bu_cn_launch_date <= 270 then 'N6-9' 
+                                when a.date_id - b.bu_cn_launch_date > 270 then 'N9-12' end end,
+        cn_store_product_substatus  = case when b.product_status = 'N' then
+                                case when a.date_id - coalesce(b.cn_jd_pop_launch_date,b.bu_cn_launch_date) <= 90 then 'N0-3'
+                                when a.date_id - coalesce(b.cn_jd_pop_launch_date,b.bu_cn_launch_date) <= 180 then 'N3-6' 
+                                when a.date_id - coalesce(b.cn_jd_pop_launch_date,b.bu_cn_launch_date) <= 270 then 'N6-9' 
+                                when a.date_id - coalesce(b.cn_jd_pop_launch_date,b.bu_cn_launch_date) > 270 then 'N9-12' end end
+    from (select *,row_number() over(partition by year,lego_sku_id order by priority) rn2 from t2) b
+    where a.lego_sku_id = b.lego_sku_id
+      and date_part('year',coalesce(a.date_id,a.order_start_date::date)) = b.year
+      and b.rn2 = 1;
+  
+  # jd_member(openid,register_date,member_grade) 
+  # -> 
+  # order_dtl(is_member,is_new_member,member_grade)
+  update_by_jd_member:
+    update edw.f_jd_pop_order_dtl a
+    set is_member = case when a.date_id >= date_trunc('day',b.register_date) then 'Y' else 'N' end,
+        member_grade = b.member_grade
+    from edw.d_dl_jd_member b
+    where a.shopperid = b.openid
+      and a.date_id between b.valid_date and b.expire_date-1
+    ;
+    
+    update edw.f_jd_pop_order_dtl a
+    set is_member_1st_order = 'Y'
+    from (select parent_order_id, 
+                 shopperid,
+                 max(order_end_date) order_end_date,
+                 row_number() over(partition by shopperid order by max(order_end_date)) rn
+            from edw.f_jd_pop_order_dtl 
+           where is_member = 'Y' 
+           group by shopperid, parent_order_id)b
+    where b.rn = 1
+      and a.shopperid = b.shopperid
+      and a.parent_order_id = b.parent_order_id
+    ;
+    
+    update edw.f_jd_pop_order_dtl a
+    set is_new_member = 'Y'
+    from (select a.shopperid,a.parent_order_id
+            from (select shopperid,max(order_end_date)::date order_end_date from edw.f_jd_pop_order_dtl where is_member_1st_order = 'Y' group by shopperid)b,
+                  edw.f_jd_pop_order_dtl a
+            where a.shopperid = b.shopperid
+              and a.order_end_date::date = b.order_end_date
+            group by a.shopperid,a.parent_order_id)b
+    where a.shopperid = b.shopperid
+      and a.parent_order_id = b.parent_order_id
+    ;

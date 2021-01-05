@@ -1,0 +1,58 @@
+EDW:
+  create_table_query:
+    create table if not exists edw.d_oms_promotion_info(
+      id varchar(255),
+      parent_order_id varchar(255),
+      promotion_name varchar(255),
+      discount_fee decimal(17,2),
+      lastchanged timestamp,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (id);
+
+  sync_to_rds_dm:
+    create table if not exists dm.d_oms_promotion_info (like frn.d_oms_promotion_info);
+    delete from dm.d_oms_promotion_info;
+    delete from dm.d_oms_promotion_info;
+    insert into dm.d_oms_promotion_info select * from frn.d_oms_promotion_info;
+
+  update_by_income_expense:
+    delete from edw.d_oms_promotion_info
+    where exists (
+        select parent_order_id 
+        from edw.d_oms_promotion_info p
+        where 
+        p.parent_order_id = parent_order_id
+        and dl_batch_date='{batch_date}'
+    );
+    insert into edw.d_oms_promotion_info
+    (
+      id,
+      parent_order_id,
+      promotion_name,
+      discount_fee,
+      lastchanged,
+      dl_batch_date,
+      dl_load_time
+    )
+    select
+    id,
+      parent_order_id ,
+      promotion::jsonb ->> 'promotion_name',
+      (promotion::jsonb ->> 'discount_fee')::decimal(17,2),
+      lastchanged,
+      dl_batch_date ,
+      dl_load_time 
+    from (
+      select
+        id,
+        parent_order_id ,
+        json_array_elements_text(promotion_info::json) as promotion,
+        lastchanged,
+        dl_batch_date ,
+        dl_load_time 
+      from edw.f_oms_income_expense
+      where dl_batch_date='{batch_date}'
+    )a;
+
+    

@@ -1,0 +1,118 @@
+Staging:
+  src_columns:
+    parent_order_id text,
+    son_order_id text,
+    is_multiple_paid text,
+    payment_time text,
+    distributor text,
+    lego_store_code text,
+    distributor_store_code text,
+    store_name text,
+    member_id text,
+    lego_sku_id text,
+    lego_sku_name text,
+    piece_cnt text,
+    lego_sku_asp_price text,
+    lego_sku_gmv_amt text,
+    is_gwp text,
+    gwp_type text,
+    ctt_ref_num text,
+    note text,
+    order_create_time text,
+    order_end_time text,
+    sendout_time text
+
+ODS:    
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_phy_store_order_dtl (
+      parent_order_id varchar(255) NOT NULL,
+      son_order_id varchar(255) NOT NULL,
+      is_multiple_paid varchar(5) NULL,
+      payment_time timestamp NULL,
+      distributor varchar(255) NULL,
+      lego_store_code varchar(255) NULL,
+      distributor_store_code varchar(255) NULL,
+      store_name varchar(255) NULL,
+      member_id varchar(255) NULL,
+      lego_sku_id varchar(255) NULL,
+      lego_sku_name varchar(255) NULL,
+      piece_cnt decimal(15) NULL,
+      lego_sku_asp_price decimal(17,2) NULL,
+      lego_sku_gmv_amt decimal(17,2) NULL,
+      is_gwp varchar(255) NULL,
+      gwp_type varchar(255) NULL,
+      ctt_ref_num varchar(255) NULL,
+      note varchar(600) NULL,
+      sendout_time timestamp NULL,
+      order_create_time timestamp NULL,
+      order_end_time timestamp NULL,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (distributor, parent_order_id, son_order_id);
+
+  insert_edw_from_ods_query:
+    insert into edw.f_phy_store_order_dtl(
+      parent_order_id,
+      son_order_id,
+      is_multiple_paid,
+      payment_time,
+      distributor,
+      lego_store_code,
+      distributor_store_code,
+      store_name,
+      member_id,
+      lego_sku_id,
+      lego_sku_name,
+      piece_cnt,
+      lego_sku_asp_price,
+      lego_sku_gmv_amt,
+      is_gwp,
+      gwp_type,
+      ctt_ref_num,
+      note,
+      order_create_time,
+      order_end_time,
+      sendout_time,
+      dl_batch_date,
+      dl_load_time
+    )select 
+      parent_order_id,
+      case when trim(son_order_id) in('','null') then parent_order_id||'-'||lego_sku_id else son_order_id end as son_order_id,
+      is_multiple_paid,
+      TIMESTAMP WITH TIME ZONE 'epoch' + payment_time::decimal(13) * INTERVAL '1 s',
+      upper(distributor),
+      case when trim(lego_store_code) in('','null') then null else lego_store_code end as lego_store_code,
+      distributor_store_code,
+      store_name,
+      member_id,
+      lego_sku_id,
+      lego_sku_name,
+      piece_cnt::decimal(15),
+      lego_sku_asp_price::decimal(17,2),
+      lego_sku_gmv_amt::decimal(17,2),
+      is_gwp,
+      case when trim(gwp_type) in('','null') then null else gwp_type end as gwp_type,
+      case when trim(ctt_ref_num) in('','null') then null else ctt_ref_num end as ctt_ref_num,
+      case when trim(note) in('','null') then null else note end as note,
+      TIMESTAMP WITH TIME ZONE 'epoch' + order_create_time::decimal(13) * INTERVAL '1 s',
+      case when order_end_time ='null' then null else TIMESTAMP WITH TIME ZONE 'epoch' + order_end_time::decimal(13) * INTERVAL '1 s'end,
+      TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s',
+      dl_batch_date,
+      dl_load_time
+    from (
+      select * , row_number() over( partition by upper(distributor), distributor_store_code, parent_order_id,lego_sku_id order by (TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s') desc ) rk
+      from ods.r_phy_store_order_dtl
+    )ab
+    where rk=1;
+
+  update_by_phy_store:
+    update edw.f_phy_store_order_dtl o
+    set lego_store_code = s.lego_store_code 
+    from edw.f_phy_store s
+    where o.distributor_store_code  = s.distributor_store_code 
+    and o.distributor = s.distributor 
+    and lower(o.distributor) ='lewin'
+    and (o.lego_store_code is null or trim(o.lego_store_code) ='')
+    and s.lego_store_code is not null;

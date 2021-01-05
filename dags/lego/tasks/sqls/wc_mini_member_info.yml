@@ -1,0 +1,47 @@
+Staging:
+  src_columns:
+    unionid text,
+    openid text,
+    mobile text,
+    register_time text,
+    nickname text,
+    is_authorized text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_wc_mini_member_info(
+    unionid varchar(200),
+    openid varchar(200),
+    mobile varchar(32),
+    register_time timestamp, 
+    nickname varchar(200),
+    is_authorized varchar(2),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_wc_member_id primary key( unionid )
+    )distributed by (unionid)
+  
+  insert_edw_from_ods_query:
+    insert into edw.f_wc_mini_member_info(
+    unionid,
+    openid,
+    mobile,
+    register_time,
+    nickname,
+    is_authorized,
+    dl_batch_date,
+    dl_load_time
+    )
+    select
+    unionid,
+    openid,
+    mobile,
+    to_timestamp(register_time,'YYYY-MM-DD HH24:MI:SS') register_time,
+    nickname,
+    is_authorized,
+    dl_batch_date,
+    now()
+    from ods.r_wc_mini_member_info
+    where trim(openid)!='';

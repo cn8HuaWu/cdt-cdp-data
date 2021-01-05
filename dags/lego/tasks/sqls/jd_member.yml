@@ -1,0 +1,160 @@
+Staging:
+  src_columns:
+    member_id text,
+    member_num text,
+    telephone text,
+    sex text,
+    birthday text,
+    register_date text,
+    openid text,
+    create_date text,
+    update_date text
+
+ODS:
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.d_dl_jd_member(
+    member_id varchar(100),
+    member_num varchar(100),
+    telephone varchar(100),
+    sex varchar(100),
+    birthday date,
+    register_date timestamp ,
+    openid varchar(255),
+    create_date timestamp ,
+    update_date timestamp ,
+    pin varchar(255),
+    member_cluster varchar(50),
+    member_grade varchar(10),
+    shopperid varchar(255),
+    valid_date date,
+    expire_date date,
+    current_row varchar(5), 
+    dl_batch_date varchar(8),
+    dl_load_time timestamp
+    )distributed by (member_id)
+  
+  # update rules
+  # A union B union C
+  # A: new coming member
+  # B: the member loaded on batch_date always set current_row='Y'. 
+  #    Avoid if load multiples ond day,  current_row in('Y','N') where batchdate in the same day
+  # C: updated members
+  scd2_update_query:
+    create temporary table t1 as 
+    select 
+      omb.member_id,
+      omb.member_num,
+      omb.telephone,
+      case omb.sex when '0' then '未知' when '1' then '男' when '2' then '女' end sex,
+      to_date(omb.birthday,'YYYY-MM-DD'),
+      to_timestamp(omb.register_date,'YYYY-MM-DD HH24:MI:SS' ) register_date,
+      omb.openid,
+      to_timestamp(omb.create_date,'YYYY-MM-DD HH24:MI:SS') create_date,
+      to_timestamp(omb.update_date,'YYYY-MM-DD HH24:MI:SS') update_date,
+      cast(null as text) pin,
+      cast(null as text) as  member_cluster,
+      cast(null as text) as  member_grade,
+      omb.openid shopperid,
+      to_timestamp(omb.create_date,'YYYY-MM-DD HH24:MI:SS') valid_date,
+      to_date('2099-12-31','YYYY-MM-DD')as  expire_date,
+      cast('Y' as text) as current_row,
+      omb.dl_batch_date,
+      now()
+    from ods.r_jd_member omb left join edw.d_dl_jd_member emb on omb.member_id = emb.member_id
+    where emb.member_id is null;
+
+    create temporary table t2 as 
+    select 
+      omb.member_id,
+      omb.member_num,
+      omb.telephone,
+      case omb.sex when '0' then '未知' when '1' then '男' when '2' then '女' end sex,
+      to_date(omb.birthday,'YYYY-MM-DD'),
+      to_timestamp(omb.register_date,'YYYY-MM-DD HH24:MI:SS' ) register_date,
+      omb.openid,
+      to_timestamp(omb.create_date,'YYYY-MM-DD HH24:MI:SS') create_date,
+      to_timestamp(omb.update_date,'YYYY-MM-DD HH24:MI:SS') update_date,
+      cast(null as text) as  pin,
+      emb.member_cluster,
+      emb.member_grade,
+      omb.openid shopperid,
+      to_timestamp(omb.update_date,'YYYY-MM-DD HH24:MI:SS') valid_date_new ,
+      to_date('2099-12-31','YYYY-MM-DD') as expire_date,
+      cast('Y' as text) as current_row,
+      omb.dl_batch_date,
+      now()
+    from ods.r_jd_member omb inner join edw.d_dl_jd_member emb on omb.member_id = emb.member_id
+    where omb.dl_batch_date = '{batch_date}'
+    and emb.current_row = 'Y'
+    and to_date(omb.update_date,'YYYY-MM-DD') > emb.valid_date;
+
+
+    update  edw.d_dl_jd_member emb 
+      set current_row='N',
+        expire_date = t2.valid_date_new 
+    from t2
+    where emb.member_id = t2.member_id
+      and emb.current_row='Y';
+
+    insert into edw.d_dl_jd_member
+    select * from t1
+    union 
+    select * from t2;
+
+    update edw.d_dl_jd_member set member_grade = 'ENTRY' where member_grade is null;
+    
+    delete from edw.d_dl_jd_member mb
+    where exists (
+        select 1
+        from( 
+            select a.member_id ,  row_number() over(partition by a.shopperid order by dl_batch_date  desc ) as rk
+            from edw.d_dl_jd_member a inner join
+            (
+                    select shopperid, count(distinct member_id )
+                    from edw.d_dl_jd_member
+                    group by shopperid having count(distinct member_id )>1
+            )b on a.shopperid  = b.shopperid
+        )d where mb.member_id = d.member_id and rk =1
+    )
+
+
+    
+  # sync the member table to RDS
+  sync_to_rds_dm:
+    create table if not exists dm.d_dl_jd_member (like frn.d_dl_jd_member);
+    delete from dm.d_dl_jd_member;
+    delete from dm.d_dl_jd_member;
+    insert into dm.d_dl_jd_member
+    select * 
+    from frn.d_dl_jd_member;
+  
+  update_by_pop_order_and_b2b_order_dtl:
+    create temporary table t1 as
+    select 
+        b.member_id,
+        sum(case when a.date_id>= current_date-365 then order_amt end) amt,
+        case when count(distinct a.date_id) = 1 then 'New member'
+            else 'Exist member' end member_cluster
+      from (select date_id,order_amt,shopperid from edw.f_jd_pop_order aord
+                where exists ( select 1 from edw.f_jd_pop_order_dtl adtl where aord.parent_order_id = adtl.parent_order_id  and adtl.is_member ='Y')
+              union all 
+            select date_id,son_order_amt,shopperid from edw.f_jd_b2b_order_dtl where son_order_status <> '2' and  is_member = 'Y') a, edw.d_dl_jd_member b
+    where a.shopperid = b.openid
+      and a.date_id >= b.register_date::date
+      and b.current_row = 'Y'
+    group by b.member_id,b.register_date
+    having sum(order_amt)>0
+    distributed by (member_id);
+    
+    update edw.d_dl_jd_member set member_grade = 'ENTRY' where member_grade is null;
+    
+    update edw.d_dl_jd_member s
+    set member_grade = case when t1.amt > 800 and t1.amt <= 2000 then 'VIP'
+                            when t1.amt > 2000 then 'VVIP' else 'ENTRY' end,
+        member_cluster = t1.member_cluster
+    from t1
+    where s.member_id = t1.member_id
+    ;
+

@@ -1,0 +1,86 @@
+Staging:
+  src_columns:
+    return_order_id text,
+    return_son_order_id text,
+    distributor text,
+    member_id text,
+    return_order_type text,
+    lego_sku_id text,
+    lego_sku_name text,
+    piece_cnt text,
+    lego_sku_asp_price text,
+    lego_sku_gmv_amt text,
+    is_gwp text,
+    gwp_type text,
+    order_create_time text,
+    order_end_time text,
+    sendout_time text
+
+ODS:    
+
+EDW:
+  create_table_query:
+    CREATE TABLE if not exists edw.f_phy_store_return_order_dtl (
+      return_order_id varchar(255) NOT NULL,
+      return_son_order_id varchar(255) NULL,
+      distributor varchar(255) NULL,
+      member_id varchar(255) NULL,
+      return_order_type varchar(255) NULL,
+      lego_sku_id varchar(255) NULL,
+      lego_sku_name varchar(255) NULL,
+      piece_cnt decimal(15) NULL,
+      lego_sku_asp_price decimal(17,2) NULL,
+      lego_sku_gmv_amt decimal(17,2) NULL,
+      is_gwp varchar(255) NULL,
+      gwp_type varchar(255) NULL,
+      order_create_time timestamp NULL,
+      order_end_time timestamp NULL,
+      sendout_time timestamp NULL,
+      is_returned varchar(255) NULL,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (distributor, return_order_id, lego_sku_id);
+
+  insert_edw_from_ods_query:
+    insert into edw.f_phy_store_return_order_dtl(
+      return_order_id,
+      return_son_order_id,
+      distributor,
+      member_id,
+      return_order_type,
+      lego_sku_id,
+      lego_sku_name,
+      piece_cnt,
+      lego_sku_asp_price,
+      lego_sku_gmv_amt,
+      is_gwp,
+      gwp_type,
+      order_create_time,
+      order_end_time,
+      sendout_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      return_order_id,
+      case when trim(return_son_order_id) in('','null') then return_order_id||'-'||lego_sku_id else return_son_order_id end as return_son_order_id,
+      upper(distributor),
+      member_id,
+      case when trim(return_order_type) in('','null') then null else return_order_type end as return_order_type,
+      lego_sku_id,
+      lego_sku_name,
+      piece_cnt::decimal(15,0),
+      lego_sku_asp_price::decimal(17,2),
+      lego_sku_gmv_amt::decimal(17,2),
+      is_gwp,
+      case when trim(gwp_type) in('','null') then null else gwp_type end as gwp_type,
+      TIMESTAMP WITH TIME ZONE 'epoch' + order_create_time::decimal(13) * INTERVAL '1 s',
+      case when order_end_time in ('null','') then null else TIMESTAMP WITH TIME ZONE 'epoch' + order_end_time::decimal(13) * INTERVAL '1 s' end,
+      TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s',
+      dl_batch_date,
+      dl_load_time
+    from (
+      select * , row_number() over( partition by upper(distributor), member_id, return_order_id,lego_sku_id order by (TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s') desc ) rk
+      from ods.r_phy_store_return_order_dtl
+    )ab
+    where rk=1;
