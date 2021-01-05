@@ -1,0 +1,267 @@
+Staging:
+  src_columns:
+    id text,
+    shopid text,
+    shop_name text,
+    deal_code text,
+    order_create_time text,
+    order_amount text,
+    return_order_amount text,
+    in_amount text,
+    out_amount text,
+    adjust_amount text,
+    adjust_reason text,
+    adjust_operator text,
+    adjust_time text,
+    check_time text,
+    check_status text,
+    check_msg text,
+    status text,
+    spare_in_amount text,
+    spare_out_amount text,
+    remark text,
+    seller_msg text,
+    trade_status text,
+    import_time text,
+    create_time text,
+    not_check_reason text,
+    is_sync_sap text,
+    import_deal_code text,
+    org_deal_code text,
+    order_no text,
+    opt_user_id text,
+    adjust_reason_ew text,
+    adjust_type text,
+    alipay text,
+    cart_money text,
+    is_cart text,
+    lastchanged text,
+    flag text,
+    sendout_time text
+
+ODS:
+
+EDW:
+  create_table_query:
+    create table if not exists edw.f_oms_income_statement(
+      id varchar(255) not null,
+      shopid varchar(255) not null,
+      shop_name varchar(255) ,
+      deal_code varchar(255) ,
+      order_create_time timestamp,
+      order_amount decimal(17,2),
+      return_order_amount decimal(17,2),
+      in_amount decimal(17,2),
+      out_amount decimal(17,2),
+      adjust_amount decimal(17,2),
+      adjust_reason varchar(2000),
+      adjust_operator varchar(255),
+      adjust_time timestamp,
+      check_time timestamp,
+      check_status varchar(255),
+      check_msg varchar(255),
+      status varchar(255),
+      spare_in_amount decimal(17,2),
+      spare_out_amount decimal(17,2),
+      remark varchar(255),
+      seller_msg varchar(2000),
+      trade_status varchar(255),
+      import_time timestamp,
+      create_time timestamp,
+      not_check_reason varchar(255),
+      is_sync_sap varchar(255),
+      import_deal_code varchar(255),
+      org_deal_code varchar(255),
+      order_no varchar(255),
+      opt_user_id varchar(255),
+      adjust_reason_ew varchar(255),
+      adjust_type varchar(255),
+      alipay varchar(255),
+      cart_money decimal(17,2),
+      is_cart varchar(255),
+      diff_amt decimal(17,2),
+      lastchanged timestamp,
+      flag varchar(255),
+      sendout_time timestamp,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (id);
+    
+  insert_edw_from_ods_query:
+    insert into edw.f_oms_income_statement(
+      id,
+      shopid,
+      shop_name,
+      deal_code,
+      order_create_time,
+      order_amount,
+      return_order_amount,
+      in_amount,
+      out_amount,
+      adjust_amount,
+      adjust_reason,
+      adjust_operator,
+      adjust_time,
+      check_time,
+      check_status,
+      check_msg,
+      status,
+      spare_in_amount,
+      spare_out_amount,
+      remark,
+      seller_msg,
+      trade_status,
+      import_time,
+      create_time,
+      not_check_reason,
+      is_sync_sap,
+      import_deal_code,
+      org_deal_code,
+      order_no,
+      opt_user_id,
+      adjust_reason_ew,
+      adjust_type,
+      alipay,
+      cart_money,
+      is_cart,
+      diff_amt,
+      lastchanged,
+      flag,
+      sendout_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      id,
+      shopid,
+      shop_name,
+      case when trim(deal_code) in ('null', '') then null else deal_code end as deal_code,
+      case when trim(order_create_time) in ('null', '') then null else to_timestamp(order_create_time, 'yyyy-MM-dd hh24:mi:ss') end as order_create_time,
+      order_amount::decimal(17,2),
+      return_order_amount::decimal(17,2),
+      in_amount::decimal(17,2),
+      out_amount::decimal(17,2),
+      adjust_amount::decimal(17,2),
+      case when trim(adjust_reason) in ('null', '') then null else substring(adjust_reason,0,2000) end as adjust_reason,
+      case when trim(adjust_operator) in ('null', '') then null else adjust_operator end as adjust_operator,
+      case when trim(adjust_time) in ('null', '') then null else to_timestamp(adjust_time, 'yyyy-MM-dd hh24:mi:ss')  end as adjust_time,
+      case when trim(check_time) in ('null', '') then null else to_timestamp(check_time, 'yyyy-MM-dd hh24:mi:ss') end as check_time,
+      case when check_status ='0' then '未对账' 
+        when check_status ='1' then '对账成功'
+        when check_status ='2' then '部分对账' 
+        else null end as check_status,
+      case when trim(check_msg) in ('null', '') then null else check_msg end as check_msg,
+      case when status ='0' then '不需要对账' 
+        when status ='1' then '需要对账'
+        else null end as status,
+      spare_in_amount::decimal(17,2),
+      spare_out_amount::decimal(17,2),
+      case when trim(remark) in ('null', '') then null else remark end as remark,
+      case when trim(seller_msg) in ('null', '') then null else substring(seller_msg,0,2000) end as seller_msg,
+      case when trade_status ='SELLER_CONSIGNED_PART' then '卖家部分发货' 
+        when trade_status ='WAIT_SELLER_SEND_GOODS' then '等待卖家发货'
+        when trade_status ='WAIT_BUYER_CONFIRM_GOODS' then '等待买家确认收货' 
+        when trade_status ='TRADE_FINISHED' then '交易成功' 
+        when trade_status ='TRADE_CLOSED' then '交易关闭' 
+        else null end as trade_status,
+      case when trim(import_time) in ('null', '') then null else to_timestamp(import_time, 'yyyy-MM-dd hh24:mi:ss') end as import_time,
+      case when trim(create_time) in ('null', '') then null else to_timestamp(create_time, 'yyyy-MM-dd hh24:mi:ss') end as create_time,
+      case when trim(not_check_reason) in ('null', '') then null else not_check_reason end as not_check_reason,
+      case when is_sync_sap ='0' then '未同步' 
+        when is_sync_sap ='1' then '已同步'
+        when is_sync_sap ='2' then '同步中'
+        else null end as is_sync_sap,
+      case when trim(import_deal_code) in ('null', '') then null else import_deal_code end as import_deal_code,
+      case when trim(org_deal_code) in ('null', '') then null else org_deal_code end as org_deal_code,
+      case when trim(order_no) in ('null', '') then null else order_no end as order_no,
+      case when trim(opt_user_id) in ('null', '') then null else opt_user_id end as opt_user_id,
+      case when trim(adjust_reason_ew) in ('null', '') then null else adjust_reason_ew end as adjust_reason_ew,
+      case when trim(adjust_type) in ('null', '') then null else adjust_type end as adjust_type,
+      case when trim(alipay) in ('null', '') then null else alipay end as alipay,
+      cart_money::decimal(17,2),
+      case when is_cart ='0' then '否' 
+        when is_cart ='1' then '是'
+        else null end as is_cart,
+      (order_amount::decimal(17,2) + return_order_amount::decimal(17,2) + adjust_amount::decimal(17,2)) - ( in_amount::decimal(17,2) + out_amount::decimal(17,2) )  as diff_amt,
+      to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss')  as lastchanged,
+      flag,
+      to_timestamp(sendout_time, 'yyyy-MM-dd hh24:mi:ss')  as sendout_time,
+      dl_batch_date,
+      now()
+    from (
+      select * , row_number() over( partition by id, flag order by to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss') desc ) rk
+      from ods.r_oms_income_statement
+    )ab
+    where rk=1;
+
+  sync_to_rds_dm:
+    create table if not exists dm.f_oms_income_statement (like frn.f_oms_income_statement);
+    delete from dm.f_oms_income_statement;
+    delete from dm.f_oms_income_statement;
+    with del_ids as 
+    ( 
+      select distinct id
+      from frn.f_oms_income_statement
+      where flag='DELETE'
+    ),
+    upd_ids as 
+    (
+      select 
+         id,
+        shopid,
+        shop_name,
+        deal_code,
+        order_create_time,
+        order_amount,
+        return_order_amount,
+        in_amount,
+        out_amount,
+        adjust_amount,
+        adjust_reason,
+        adjust_operator,
+        adjust_time,
+        check_time,
+        check_status,
+        check_msg,
+        status,
+        spare_in_amount,
+        spare_out_amount,
+        remark,
+        seller_msg,
+        trade_status,
+        import_time,
+        create_time,
+        not_check_reason,
+        is_sync_sap,
+        import_deal_code,
+        org_deal_code,
+        order_no,
+        opt_user_id,
+        adjust_reason_ew,
+        adjust_type,
+        alipay,
+        cart_money,
+        is_cart,
+        diff_amt,
+        lastchanged,
+        flag,
+        sendout_time,
+        dl_batch_date,
+        dl_load_time
+      from (
+        select *, row_number() over(partition by id order by lastchanged desc) as rk
+        from frn.f_oms_income_statement es
+        where flag='UPDATE'
+      )t where rk =1
+    )
+    insert into dm.f_oms_income_statement
+    select *
+    from frn.f_oms_income_statement a
+    where flag='INSERT'
+    and not exists( select 1 from del_ids  where id = a.id )
+    union
+    select *
+    from upd_ids a
+    where not exists( select 1 from del_ids  where id = a.id );
+    
+  

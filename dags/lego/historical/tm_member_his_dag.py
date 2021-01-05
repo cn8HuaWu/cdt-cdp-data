@@ -86,7 +86,7 @@ def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
 
     sql_dict = myutil.get_sql_yml_fd(src_entity)
     columns_list = sql_dict['Staging']['src_columns'].replace(' text','').replace(' ','').split(",")
-    myutil.encrypt_csv_fields(src_file_path, src_file_path,0, to_encrypt_list, columns_list, dl_aes_key, dl_aes_iv, del_src= True, keepheader=False)
+    myutil.encrypt_csv_fields(src_file_path, src_file_path,0, to_encrypt_list, columns_list, dl_aes_key, dl_aes_iv, del_src= True, keepheader=False, remove_empty_row=True)
 # end encrypt the mobile field
     myutil.modify_ok_file_prefix( old_prefix=None, prefix="running", ok_file_path=OK_FILE_PATH)
 

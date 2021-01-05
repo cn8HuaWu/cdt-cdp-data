@@ -1,7 +1,7 @@
 #!/bin/sh
-MAIL_TO="zhxie@deloitte.com.cn,jamzeng@deloitte.com.cn,spwei@deloitte.com.cn"
-MAIL_SUBJECT='PROD AIRFLOW SERVER DOWN'
-AIRFLOW_WORK_DIR="/cdp/work_dir"
+MAIL_TO="zhxie@deloitte.com.cn"
+MAIL_SUBJECT='DEV AIRFLOW SERVER DOWN'
+AIRFLOW_WORK_DIR="/cdp/airflow/dags/lego"
 log(){
     echo $(date):$1 >> /cdp/work_dir/airflow_monitor.log
 }
@@ -18,14 +18,14 @@ start_airflow_scheduler(){
 
 start_airflow_dag(){
     dag_name=$1
-	log " Try to start dag $dag_name"
+    log " Try to start dag $dag_name"
     airflow trigger_dag -sd "/root/airflow/dags/" $dag_name
 }
 
 sendout_mail(){
     msg=$1
     log "sendout mail:$msg"
-    python3 ${AIRFLOW_WORK_DIR}/lego_send_mail.py -t "$MAIL_TO" -s "$MAIL_SUBJECT" -c "$msg"
+    python3 ${AIRFLOW_WORK_DIR}/tasks/utils/lego_send_mail.py -t "$MAIL_TO" -s "$MAIL_SUBJECT" -c "$msg"
 }
 
 log "Starting check airflow server state..."
@@ -33,9 +33,9 @@ export AIRFLOW_HOME=/cdp/airflow
 AIRFLOW_SCHEDULER=$(ps -ef|grep "airflow scheduler"|grep -v grep |wc -l)
 AIRFLOW_WEBSERVER=$(ps -ef|grep "airflow-webserver"|grep -v grep |wc -l)
 
-# airflow list_dag_runs monitoring_file_dag --state running | tail -n -1 | grep "\d*\s*\|.*"
+# airflow list_dag_runs monitoring_file_dag --state running | tail -n -1 | grep -E "\d*\s*\|.*"
 AIRFLOE_MONITOR_RUNNING=$(airflow list_dag_runs monitoring_file_dag --state running | tail -n -1 | grep -E "\d*\s*\|.*"|wc -l)
-#0b0000 airflow scheduler alive, airflow webserver alive 
+#0b0000 airflow scheduler alive, airflow webserver alive
 #0b0001 airflow scheduler stopped, airflow webserver alive 
 #0b0010 airflow scheduler alive, airflow webserver stopped
 #0b0011 airflow scheduler stopped, airflow webserver stopped
@@ -92,7 +92,7 @@ if [[ $STATE_FLAG -eq 0 ]] && [[ $AIRFLOE_MONITOR_RUNNING -eq 0 ]]; then
     log "monitoring_file_dag stopped. Need to restart it."
     start_airflow_dag "monitoring_file_dag"
 
-     if [[ $? -eq 0 ]];then
+    if [[ $? -eq 0 ]];then
         log "Airflow [monitoring_file_dag] have been restarted"
         sendout_mail "Airflow [monitoring_file_dag] have been restarted"
     else

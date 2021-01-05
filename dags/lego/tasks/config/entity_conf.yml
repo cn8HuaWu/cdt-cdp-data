@@ -396,17 +396,17 @@ entities:
     edw_prefix: f
     update_type: F
     stg_suffix: di
-    key: id
+    key: id,flag
     dm_dependicies: oms_promotion_info
 
   oms_income_statement:
     edw_prefix: f
     update_type: F
     stg_suffix: di
-    key: id
+    key: id,flag
 
   oms_expense_statement:
     edw_prefix: f
     update_type: F
     stg_suffix: di
-    key: id
+    key: id,flag
