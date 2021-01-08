@@ -1,0 +1,88 @@
+collect_stg_count:    
+    select * from (
+        select 'jd_pop_order' as name, count(1) as record_count from stg.r_jd_pop_order_di rjpod where to_date(update_date,'yyyy_mm_dd') = current_date
+        union
+        select 'jd_pop_order_dtl' as name,  count(1) as record_count from stg.r_jd_pop_order_dtl_di rjpodd where to_date(update_date,'yyyy_mm_dd') = current_date
+        union
+        select 'jd_member' as name, count(1) as record_count from  stg.r_jd_member_di rjmd where to_date(update_date,'yyyy_mm_dd') = current_date -1
+        union
+        select 'jd_pop_consignee' as name, count(1) as record_count from stg.r_jd_pop_consignee_di rjpcd where to_date(update_date,'yyyy_mm_dd') = current_date
+        union
+        select 'jd_b2b_order_dtl' as name, count(1) as record_count from stg.r_jd_b2b_order_dtl_di where to_date(update_date,'yyyy_mm_dd') = current_date
+        union
+        select 'oms_order' as name, count(1) as record_count from stg.r_oms_order_di rood  where to_date(order_update_time, 'yyyy-mm-dd')  = current_date-1
+        union
+        select 'oms_order_dtl' as name, count(1) as record_count from stg.r_oms_order_dtl_di roodd  where to_date(update_time, 'yyyy-mm-dd')  = current_date-1
+        union
+        select 'oms_return_order' as name, count(1) as record_count from stg.r_oms_return_order_di rorod where to_date(order_update_time, 'yyyy-mm-dd')  = current_date-1
+        union
+        select 'oms_return_order_dtl' as name, count(1) as record_count from stg.r_oms_return_order_dtl_di rorodd where to_date(update_time, 'yyyy-mm-dd')  = current_date-1
+        union
+        select 'phy_store' as name, count(1) as record_count from stg.r_phy_store_di rpsd where date(TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s') = (current_date-1)
+        union
+        select 'wechat_member_info' as name, count(1) as record_count from stg.r_wc_mini_member_info_yf rwmmiy where to_date(register_time,'yyyy_mm_dd') = current_date-2
+        union
+        select 'callcenter_consumer_info' as name, count(1) as record_count from stg.r_cs_consumer_info_di rccid where to_date(change_date,'yyyyMMddhh24miss')=current_date-1
+        UNION
+        select topic_name, record_count from (
+            select topic_name , update_dt , record_count -lead(record_count)over(partition by topic_name order by update_dt desc) as record_count, row_number() over(partition by topic_name order by update_dt desc) as rk
+            from (
+                select topic_name, date(update_ts) as update_dt, max(record_count) as record_count
+                from edw.a_dl_datahub_checkpoint where state='done'
+                group by topic_name, date(update_ts)
+            
+            )a 
+            )b where rk=1 and update_dt = current_date
+    )c order by 1
+
+
+collect_edw_count:
+    select * from (
+        select 1 as rk, 'jd_pop_order' as name, count(1) as record_count, 'T+2' as frequency from edw.f_jd_pop_order  where dl_batch_date = to_char(current_date-2,'yyyymmdd')  
+        union
+        select 2 as rk, 'jd_pop_order_dtl' as name,  count(1) as record_count , 'T+2' as frequency from edw.f_jd_pop_order_dtl  where dl_batch_date = to_char(current_date-2,'yyyymmdd')
+        union
+        select 3 as rk, 'jd_member' as name, count(1) as record_count , 'T+1' as frequency from  edw.d_dl_jd_member  where dl_batch_date = to_char(current_date-1,'yyyymmdd')
+        union
+        select 4 as rk, 'jd_pop_consignee' as name, count(1) as record_count , 'T+1' as frequency from edw.f_jd_pop_consignee  where dl_batch_date = to_char(current_date-2,'yyyymmdd')
+        union
+        select 5 as rk, 'jd_b2b_order_dtl' as name, count(1) as record_count , 'T+2' as frequency from edw.f_jd_b2b_order_dtl where dl_batch_date = to_char(current_date-2,'yyyymmdd')
+        union
+        select 6 as rk, 'oms_order' as name, count(1) as record_count , '48H' as frequency from edw.f_oms_order  where date(order_update_time) = current_date-1
+        union
+        select 7 as rk, 'oms_order_dtl' as name, count(1) as record_count , '48H' as frequency from edw.f_oms_order_dtl  where date(update_time) = current_date-1
+        union
+        select 8 as rk, 'oms_return_order' as name, count(1) as record_count , '48H' as frequency from edw.f_oms_return_order  where date(order_update_time) = current_date-1
+        union
+        select 9 as rk, 'oms_return_order_dtl' as name, count(1) as record_count , '48H' as frequency from edw.f_oms_return_order_dtl  where date(update_time) = current_date-1
+        union
+        select 10 as rk, 'oms_expense_statement' as name, count(1) as record_count , 'T+1' as frequency from edw.f_oms_expense_statement  where date(sendout_time) = current_date-1
+        union
+        select 11 as rk, 'oms_income_expense' as name, count(1) as record_count , 'T+1' as frequency from edw.f_oms_income_expense  where date(sendout_time) = current_date-1
+        union
+        select 12 as rk, 'oms_income_statement' as name, count(1) as record_count , 'T+1' as frequency from edw.f_oms_income_statement  where date(sendout_time) = current_date-1
+        union
+        select 13 as rk, 'phy_store_order' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store_order  where date(sendout_time ) = current_date-1
+        union
+        select 14 as rk, 'phy_store_order_dtl' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store_order_dtl  where date(sendout_time ) = current_date-1
+        union
+        select 15 as rk, 'phy_store_order_payment_dtl' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store_order_payment_dtl  where date(sendout_time ) = current_date-1
+        union
+        select 16 as rk, 'phy_store_order_coupon_dtl' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store_order_coupon_dtl  where date(sendout_time ) = current_date-1
+        union
+        select 17 as rk, 'phy_store_return_order' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store_return_order  where date(sendout_time ) = current_date-1
+        union
+        select 18 as rk, 'phy_store_return_order_dtl' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store_return_order_dtl  where date(sendout_time ) = current_date-1
+        union
+        select 19 as rk, 'phy_store' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store  where date(sendout_time ) = current_date-1
+        union
+        select 20 as rk, 'phy_store_inventory' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store_inventory  where date(sendout_time ) = current_date-1
+        union
+        select 21 as rk, 'phy_store_member' as name, count(1) as record_count , 'T+1' as frequency from edw.f_phy_store_member  where date(sendout_time ) = current_date-1
+        union
+        select 22 as rk, 'phy_store_member_point' as name, count(1) as record_count , 'T+1' as frequency from edw.f_phy_store_member_point  where date(sendout_time ) = current_date-1
+        union
+        select 23 as rk, 'wechat_member_info' as name, count(1) as record_count , 'T+2' as frequency from edw.f_wc_mini_member_info   where dl_batch_date = to_char(current_date-1,'yyyymmdd')
+        union
+        select 24 as rk, 'callcenter_consumer_info' as name, count(1) as record_count , 'T+1' as frequency from edw.f_cs_consumer_info  where date(change_date) = current_date-1
+    )a order by 1

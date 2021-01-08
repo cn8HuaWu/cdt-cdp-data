@@ -324,18 +324,53 @@ def excute_rete_from_db( rule_names = None ):
         
         pre_rule = ru
     else:
-        myrete = execute_rete(pre_rule.name, rule_list)
-        if len(myrete.error_msg) > 0:
-            error_msg[pre_rule.name] = myrete.error_msg
+        if pre_rule:
+            myrete = execute_rete(pre_rule.name, rule_list)
+            if len(myrete.error_msg) > 0:
+                error_msg[pre_rule.name] = myrete.error_msg
 
-        if len(myrete.warning_msg) > 0:
-            warning_msg[pre_rule.name] = myrete.warning_ms
+            if len(myrete.warning_msg) > 0:
+                warning_msg[pre_rule.name] = myrete.warning_ms
     
     return (error_msg, warning_msg)
 
-def generate_data_scan_report(err, warning):
-    email_body = '<html> <body><h3>Error message:<h3> \n'
-    email_body += "<div><ol>\n"
+from datetime import datetime
+@dbsession_wrapper
+def collect_tables_input_record(session =None):
+    collect_sql_dict = myutil.get_sql_yml_fd('collect_table_daily_input') 
+    stg_collect_sql = collect_sql_dict["collect_stg_count"]
+    edw_collect_sql = collect_sql_dict["collect_edw_count"]
+    stg_count_list = session.execute(stg_collect_sql).fetchall()
+    edw_count_list = session.execute(edw_collect_sql).fetchall()
+    stg_count_dict = defaultdict(int)
+    for name, count in stg_count_list:
+        stg_count_dict[name] = count
+
+    table_report_html_str = datetime.strftime(datetime.now(),'%Y-%m-%d') + " CDP收数表"
+    table_report_html_str += '''
+    <table border="1">
+    <tr>
+        <th>name</th>
+        <th>stg_count</th>
+        <th>edw_count</th>
+        <th>frequency</th>
+    </tr>
+    '''
+    for rk, name, record_count, frq in edw_count_list:
+        row_str = "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(name, stg_count_dict[name], record_count, frq)
+        table_report_html_str += row_str
+    table_report_html_str += "</table>"
+    return table_report_html_str
+    
+
+def generate_data_scan_report(err, warning, scan_table = True):
+    email_body = '<html> <body>'
+    if scan_table:
+        email_body += collect_tables_input_record()
+    
+    email_body += '='*60 + "\n"
+    email_body += "<h3>自定义数据检验规则结果<h3> \n"
+    email_body += "<h4>Error message:<h4> \n<div><ol>\n"
     for k in err.keys():
         email_body += "<li><b>{}</b></li>\n".format(k)
         email_body += "<ul> \n"
@@ -344,9 +379,8 @@ def generate_data_scan_report(err, warning):
             email_body += "<li>{}</li>\n".format(msg)
         email_body += "</ul></div>\n"
     email_body += "</ol></div>\n"
-    email_body += '='*40 + "\n"
-
-    email_body += '<h3>Warning message:<h3>\n'
+    
+    email_body += '<h4>Warning message:<h4>\n'
     email_body += "<div><ol>\n"
     for k in warning.keys():
         email_body += "<li><b>{}</b></li>\n".format(k)
