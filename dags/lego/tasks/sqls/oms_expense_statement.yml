@@ -67,7 +67,7 @@ EDW:
       self_user_id varchar(255),
       opt_user_id varchar(255),
       remark varchar(255),
-      create_time varchar(255),
+      create_time timestamp,
       category varchar(255),
       is_shougong varchar(255),
       import_time timestamp,
@@ -146,48 +146,56 @@ EDW:
     )
     select 
       id,
-      platform,
+      case when platform ='1' then '天猫' 
+        when platform ='5' then '京东'
+        else '其它' end as platform,
       shopid,
       shop_name,
-      deal_code,
-      import_deal_code,
-      old_deal_code,
+      case when trim(deal_code) in ('null', '') then null else deal_code end as deal_code,
+      case when trim(import_deal_code) in ('null', '') then null else import_deal_code end as import_deal_code,
+      case when trim(old_deal_code) in ('null', '') then null else old_deal_code end as old_deal_code,
       dzd_type_id,
-      dzd_type_name,
-      lego_sku_name,
+      case when trim(dzd_type_name) in ('null', '') then null else dzd_type_name end as dzd_type_name,
+      case when trim(lego_sku_name) in ('null', '') then null else lego_sku_name end as lego_sku_name,
       balance::decimal(17,2),
       fee_amount::decimal(17,2),
-      accounts_no,
-      order_no,
-      merchant_order_no,
-      self_user_id,
-      opt_user_id,
-      remark,
-      to_timestamp(create_time, 'yyyy-MM-dd hh:mi:ss')  as create_time,
-      category,
-      is_shougong,
-      to_timestamp(import_time, 'yyyy-MM-dd hh:mi:ss')  as import_time,
+      case when trim(accounts_no) in ('null', '') then null else accounts_no end as accounts_no,
+      case when trim(order_no) in ('null', '') then null else order_no end as order_no,
+      case when trim(merchant_order_no) in ('null', '') then null else merchant_order_no end as merchant_order_no,
+      case when trim(self_user_id) in ('null', '') then null else self_user_id end as self_user_id,
+      case when trim(opt_user_id) in ('null', '') then null else opt_user_id end as opt_user_id,
+      case when trim(remark) in ('null', '') then null else remark end as remark,
+      case when trim(create_time) in ('null', '') then null else to_timestamp(create_time, 'yyyy-MM-dd hh24:mi:ss') end as create_time,  
+      case when category ='5' then '第三方收付款' 
+        when category ='6' then '随单费用'
+        when category ='7' then '非随单费用'
+        else category end as category,
+       case when is_shougong ='0' then '否' 
+        when is_shougong ='1' then '是'
+        else null end as is_shougong,
+      case when trim(import_time) in ('null', '') then null else to_timestamp(import_time, 'yyyy-MM-dd hh24:mi:ss') end as import_time,
       case when deal_status ='0' then '开启' 
         when deal_status ='1' then '关闭'
         else null end as deal_status,
       case when check_status ='0' then '未对账' 
         when check_status ='1' then '已对账'
+        when check_status ='2' then '对账失败'
         else null end as check_status,
       case when is_check ='0' then '未参与' 
         when is_check ='1' then '已参与'
         else null end as is_check,
-      message,
-      bus_type,
-      bus_desc,
-      bus_sour,
-      channel,
+      case when trim(message) in ('null', '') then null else message end as message,
+      case when trim(bus_type) in ('null', '') then null else bus_type end as bus_type,
+      case when trim(bus_desc) in ('null', '') then null else bus_desc end as bus_desc,
+      case when trim(bus_sour) in ('null', '') then null else bus_sour end as bus_sour,
+      case when trim(channel) in ('null', '') then null else channel end as channel,
       dzd_dj_id,
       error_times::decimal(15),
-      error_info,
-      to_timestamp(check_time, 'yyyy-MM-dd hh:mi:ss')  as check_time,
-      reason_diff,
+      case when trim(error_info) in ('null', '') then null else error_info end as error_info,
+      to_timestamp(check_time, 'yyyy-MM-dd hh24:mi:ss')  as check_time,
+      case when trim(reason_diff) in ('null', '') then null else reason_diff end as reason_diff,
       diff_amount::decimal(17,2),
-      alipay,
+      case when trim(alipay) in ('null', '') then null else alipay end as alipay,
       case when is_cart_charge ='0' then '否' 
         when is_cart_charge ='1' then '是'
         else null end as is_cart_charge,
@@ -195,13 +203,13 @@ EDW:
       case when is_cart ='0' then '否' 
         when is_cart ='1' then '是'
         else null end as is_cart,
-      to_timestamp(lastchanged, 'yyyy-MM-dd hh:mi:ss')  as lastchanged,
+      to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss')  as lastchanged,
       flag,
-      to_timestamp(sendout_time, 'yyyy-MM-dd hh:mi:ss')  as sendout_time,
+      to_timestamp(sendout_time, 'yyyy-MM-dd hh24:mi:ss')  as sendout_time,
       dl_batch_date,
       now()
     from (
-      select * , row_number() over( partition by id order by to_timestamp(sendout_time, 'yyyy-MM-dd hh:mi:ss') desc ) rk
+      select * , row_number() over( partition by id, flag order by to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss') desc ) rk
       from ods.r_oms_expense_statement
     )ab
     where rk=1;
@@ -210,6 +218,74 @@ EDW:
     create table if not exists dm.f_oms_expense_statement (like frn.f_oms_expense_statement);
     delete from dm.f_oms_expense_statement;
     delete from dm.f_oms_expense_statement;
-    insert into dm.f_oms_expense_statement select * from frn.f_oms_expense_statement;
+    with del_ids as 
+    ( 
+      select distinct id
+      from frn.f_oms_expense_statement
+      where flag='DELETE'
+    ),
+    upd_ids as 
+    (
+      select 
+        id,
+        platform,
+        shopid,
+        shop_name,
+        deal_code,
+        import_deal_code,
+        old_deal_code,
+        dzd_type_id,
+        dzd_type_name,
+        lego_sku_name,
+        balance,
+        fee_amount,
+        accounts_no,
+        order_no,
+        merchant_order_no,
+        self_user_id,
+        opt_user_id,
+        remark,
+        create_time,
+        category,
+        is_shougong,
+        import_time,
+        deal_status,
+        check_status,
+        is_check,
+        message,
+        bus_type,
+        bus_desc,
+        bus_sour,
+        channel,
+        dzd_dj_id,
+        error_times,
+        error_info,
+        check_time,
+        reason_diff,
+        diff_amount,
+        alipay,
+        is_cart_charge,
+        cart_money,
+        is_cart,
+        lastchanged,
+        flag,
+        sendout_time,
+        dl_batch_date,
+        dl_load_time
+      from (
+        select *, row_number() over(partition by id order by lastchanged desc) as rk
+        from frn.f_oms_expense_statement es
+        where flag='UPDATE'
+      )t where rk =1
+    )
+    insert into dm.f_oms_expense_statement
+    select *
+    from frn.f_oms_expense_statement a
+    where flag='INSERT'
+    and not exists( select 1 from del_ids  where id = a.id )
+    union
+    select *
+    from upd_ids a
+    where not exists( select 1 from del_ids  where id = a.id );
     
   

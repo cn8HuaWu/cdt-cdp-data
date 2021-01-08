@@ -47,7 +47,7 @@ EDW:
       select
         id,
         parent_order_id ,
-        json_array_elements_text(promotion_info::json) as promotion,
+        case when jsonb_typeof(promotion_info::jsonb)='array' then json_array_elements_text(promotion_info::json) else null end as promotion,
         lastchanged,
         dl_batch_date ,
         dl_load_time 

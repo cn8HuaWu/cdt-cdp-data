@@ -1,0 +1,320 @@
+Staging:
+  src_columns:
+    id text,
+    parent_order_id text,
+    order_sn text,
+    goods_sn text,
+    lego_sku_name text,
+    lego_sku_id text,
+    sku_rrp_amt text,
+    lego_sku_gmv_amt text,
+    order_create_time text,
+    red_discount_fee text,
+    promotion_info text,
+    piece_cnt text,
+    store_sku_rsp_price text,
+    goods_tag text,
+    son_order_id text,
+    disc_type_code text,
+    goods_type text,
+    is_success text,
+    report_create_time text,
+    vip_discount_fee text,
+    difference_price_fee text,
+    rrp_difference_fee text,
+    exchange_goos_fee text,
+    relating_order_id text,
+    gwp_discount_fee text,
+    is_shipping_sku text,
+    shipping_sku text,
+    shipping_fee text,
+    is_handwork text,
+    mx_id text,
+    tc_sku_id text,
+    vip_program_discount_fee text,
+    order_type text,
+    sap_time text,
+    shopid text,
+    create_reason text,
+    check_status text,
+    shipping_time_ck text,
+    oms_sku text,
+    is_changed text,
+    origin_order_sn text,
+    shop_name text,
+    sku_type text,
+    sku_rrp_price text,
+    deposit text,
+    remark text,
+    lastchanged text,
+    flag text,
+    sendout_time text
+
+ODS:
+
+EDW:
+  create_table_query:
+    create table if not exists edw.f_oms_income_expense(
+      id varchar(255) not null,
+      parent_order_id varchar(255) not null,
+      son_order_id varchar(255) ,
+      order_sn varchar(255) ,
+      goods_sn varchar(255) ,
+      lego_sku_name varchar(255) ,
+      lego_sku_id varchar(255) ,
+      sku_rrp_amt decimal(17,2),
+      lego_sku_gmv_amt decimal(17,2),
+      order_create_time timestamp,
+      red_discount_fee decimal(17,2),
+      promotion_info text,
+      piece_cnt decimal(15,0),
+      store_sku_rsp_price decimal(17,2),
+      goods_tag varchar(255),
+      disc_type_code varchar(255) ,
+      goods_type varchar(255) ,
+      is_success varchar(255) ,
+      report_create_time timestamp,
+      vip_discount_fee decimal(17,2),
+      difference_price_fee decimal(17,2),
+      rrp_difference_fee decimal(17,2),
+      exchange_goos_fee decimal(17,2),
+      relating_order_id varchar(255),
+      gwp_discount_fee decimal(17,2),
+      is_shipping_sku varchar(255),
+      shipping_sku varchar(255),
+      shipping_fee decimal(10,2),
+      is_handwork varchar(255),
+      mx_id varchar(255),
+      tc_sku_id varchar(255),
+      vip_program_discount_fee decimal(10,2),
+      order_type varchar(255),
+      sap_time timestamp,
+      shopid varchar(255),
+      create_reason varchar(255),
+      check_status varchar(255),
+      shipping_time_ck timestamp,
+      oms_sku varchar(255),
+      is_changed varchar(255),
+      origin_order_sn varchar(255),
+      shop_name varchar(255),
+      sku_type varchar(255),
+      sku_rrp_price decimal(10,2),
+      deposit decimal(17,2),
+      remark varchar(500),
+      lastchanged timestamp,
+      flag varchar(255),
+      sendout_time timestamp,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp
+    )distributed by (id,parent_order_id);
+    
+  insert_edw_from_ods_query:
+    insert into edw.f_oms_income_expense(
+      id,
+      parent_order_id,
+      son_order_id,
+      order_sn,
+      goods_sn,
+      lego_sku_name,
+      lego_sku_id,
+      sku_rrp_amt,
+      lego_sku_gmv_amt,
+      order_create_time,
+      red_discount_fee,
+      promotion_info,
+      piece_cnt,
+      store_sku_rsp_price,
+      goods_tag,
+      disc_type_code,
+      goods_type,
+      is_success,
+      report_create_time,
+      vip_discount_fee,
+      difference_price_fee,
+      rrp_difference_fee,
+      exchange_goos_fee,
+      relating_order_id,
+      gwp_discount_fee,
+      is_shipping_sku,
+      shipping_sku,
+      shipping_fee,
+      is_handwork,
+      mx_id,
+      tc_sku_id,
+      vip_program_discount_fee,
+      order_type,
+      sap_time,
+      shopid,
+      create_reason,
+      check_status,
+      shipping_time_ck,
+      oms_sku,
+      is_changed,
+      origin_order_sn,
+      shop_name,
+      sku_type,
+      sku_rrp_price,
+      deposit,
+      remark,
+      lastchanged,
+      flag,
+      sendout_time,
+      dl_batch_date,
+      dl_load_time
+    )
+    select 
+      id,
+      parent_order_id,
+      case when trim(son_order_id) in ('null', '') then null else son_order_id end as son_order_id,
+      case when trim(order_sn) in ('null', '') then null else order_sn end as order_sn,
+      case when trim(goods_sn) in ('null', '') then null else goods_sn end as goods_sn,
+      case when trim(lego_sku_name) in ('null', '') then null else lego_sku_name end as lego_sku_name,
+      case when trim(lego_sku_id) in ('null', '') then null else lego_sku_id end as lego_sku_id,
+      sku_rrp_amt::decimal(17,2),
+      lego_sku_gmv_amt::decimal(17,2),
+      case when trim(order_create_time) in ('null', '') then null else to_timestamp(order_create_time, 'yyyy-MM-dd hh24:mi:ss') end as order_create_time,
+      red_discount_fee::decimal(17,2),
+      case when trim(promotion_info) in ('null', '') then null else promotion_info end as promotion_info,
+      piece_cnt::decimal(15,0),
+      store_sku_rsp_price::decimal(17,2),
+      case when goods_tag ='0' then '无' when goods_tag ='1' then '盲盒' when goods_tag ='2' then '组套' else null end as goods_tag,
+      case when trim(disc_type_code) in ('null', '') then null else disc_type_code end as disc_type_code,
+      case when trim(goods_type) in ('null', '') then null else goods_type end as goods_type,
+      case when is_success ='1' then '成功' when is_success ='2' then '失败' else null end as is_success,
+      to_timestamp(report_create_time, 'yyyy-MM-dd hh24:mi:ss')  as report_create_time,
+      vip_discount_fee::decimal(17,2),
+      difference_price_fee::decimal(17,2),
+      rrp_difference_fee::decimal(17,2),
+      exchange_goos_fee::decimal(17,2),
+      relating_order_id,
+      gwp_discount_fee::decimal(17,2),
+      is_shipping_sku,
+      case when trim(shipping_sku) in ('null', '') then null else shipping_sku end as shipping_sku,
+      shipping_fee::decimal(10,2),
+      is_handwork,
+      mx_id,
+      tc_sku_id,
+      vip_program_discount_fee::decimal(10,2),
+      case when order_type ='0' then '无' 
+          when order_type ='1' then '天猫正向' 
+          when order_type ='2' then '手工单' 
+          when order_type ='3' then '天猫退货' 
+          when order_type ='4' then '手工退货' 
+          when order_type ='5' then '天猫退款' 
+          when order_type ='6' then '手工退款' 
+          when order_type ='7' then '天猫换货退单' 
+          when order_type ='8' then '手工换货退单'
+          when order_type ='9' then '换货订单'
+          when order_type ='10' then '预售预付'
+          else null end as order_type,
+      to_timestamp(sap_time, 'yyyy-MM-dd hh24:mi:ss')  as sap_time,
+      shopid,
+      case when trim(create_reason) in ('null', '') then null else create_reason end as create_reason,
+      case when check_status ='0' then '初始化' 
+        when check_status ='1' then '核对正确'
+        when check_status ='2' then '核对错误' 
+        else null end as check_status,
+      to_timestamp(shipping_time_ck, 'yyyy-MM-dd hh24:mi:ss')  as shipping_time_ck,
+      case when trim(oms_sku) in ('null', '') then null else oms_sku end as oms_sku,
+      case when is_changed ='0' then '未变更' 
+        when is_changed ='1' then '已变更'
+        else null end as is_changed,
+      case when trim(origin_order_sn) in ('null', '') then null else origin_order_sn end as origin_order_sn,
+      shop_name,
+      case when trim(sku_type) in ('null', '') then null else sku_type end as sku_type,
+      sku_rrp_price::decimal(10,2),
+      case when trim(deposit) in ('null', '') then null else deposit::decimal(17,2) end as deposit,
+      case when trim(remark) in ('null', '') then null else remark end as remark,
+      to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss')  as lastchanged,
+      flag,
+      to_timestamp(sendout_time, 'yyyy-MM-dd hh24:mi:ss')  as sendout_time,
+      dl_batch_date,
+      now()
+    from (
+      select * , row_number() over( partition by id, flag order by to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss') desc ) rk
+      from ods.r_oms_income_expense
+    )ab
+    where rk=1;
+
+  sync_to_rds_dm:
+    create table if not exists dm.f_oms_income_expense (like frn.f_oms_income_expense);
+    delete from dm.f_oms_income_expense;
+    delete from dm.f_oms_income_expense;
+    
+    with del_ids as 
+      ( 
+        select distinct id
+        from frn.f_oms_income_expense
+        where flag='DELETE'
+      ),
+      upd_ids as 
+      (
+        select 
+          id,
+          parent_order_id,
+          son_order_id,
+          order_sn,
+          goods_sn,
+          lego_sku_name,
+          lego_sku_id,
+          sku_rrp_amt,
+          lego_sku_gmv_amt,
+          order_create_time,
+          red_discount_fee,
+          promotion_info,
+          piece_cnt,
+          store_sku_rsp_price,
+          goods_tag,
+          disc_type_code,
+          goods_type,
+          is_success,
+          report_create_time,
+          vip_discount_fee,
+          difference_price_fee,
+          rrp_difference_fee,
+          exchange_goos_fee,
+          relating_order_id,
+          gwp_discount_fee,
+          is_shipping_sku,
+          shipping_sku,
+          shipping_fee,
+          is_handwork,
+          mx_id,
+          tc_sku_id,
+          vip_program_discount_fee,
+          order_type,
+          sap_time,
+          shopid,
+          create_reason,
+          check_status,
+          shipping_time_ck,
+          oms_sku,
+          is_changed,
+          origin_order_sn,
+          shop_name,
+          sku_type,
+          sku_rrp_price,
+          deposit,
+          remark,
+          lastchanged,
+          flag,
+          sendout_time,
+          dl_batch_date,
+          dl_load_time
+        from (
+          select *, row_number() over(partition by id order by lastchanged desc) as rk
+          from frn.f_oms_income_expense es
+          where flag='UPDATE'
+        )t where rk =1
+      )
+      insert into dm.f_oms_income_expense
+      select *
+      from frn.f_oms_income_expense a
+      where flag='INSERT'
+      and not exists( select 1 from del_ids  where id = a.id )
+      union
+      select *
+      from upd_ids a
+      where not exists( select 1 from del_ids  where id = a.id );
+    
+  

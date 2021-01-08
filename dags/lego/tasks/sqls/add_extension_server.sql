@@ -139,7 +139,18 @@ insert into dm.f_jd_pop_order select * from  frn.f_jd_pop_order;
 insert into dm.f_jd_pop_order_dtl select * from  frn.f_jd_pop_order_dtl;
 insert into dm.f_oms_order select * from  frn.f_oms_order;
 insert into dm.f_oms_order_dtl select * from  frn.f_oms_order_dtl;
---  use etl_user end --   
+--  use etl_user end -- 
 
-------   RDS  setting up end------------------
+---------------------oms cdp report------------------------
+drop foreign table if exists frn.f_oms_expense_statement;
+drop foreign table if exists frn.f_oms_income_expense;
+drop foreign table if exists frn.f_oms_income_statement;
+drop foreign table if exists frn.d_oms_promotion_info;
+IMPORT FOREIGN SCHEMA edw LIMIT TO (f_oms_expense_statement,d_oms_promotion_info, f_oms_income_expense, f_oms_income_statement)
+    FROM SERVER gp_remote INTO frn;
+create table if not exists dm.f_oms_expense_statement (like frn.f_oms_expense_statement);   
+create table if not exists dm.f_oms_income_expense (like frn.f_oms_income_expense);   
+create table if not exists dm.f_oms_income_statement (like frn.f_oms_income_statement);   
+create table if not exists dm.d_oms_promotion_info (like frn.d_oms_promotion_info);  
+
 ----------------------------------------------
