@@ -76,7 +76,7 @@ collect_edw_count:
         union
         select 19 as rk, 'phy_store' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store  where date(sendout_time ) = current_date-1
         union
-        select 20 as rk, 'phy_store_inventory' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store_inventory  where date(sendout_time ) = current_date-1
+        select 20 as rk, 'phy_store_inventory' as name, count(1) as record_count , 'T+1' as frequency from edw.f_phy_store_inventory  where date(sendout_time ) = current_date-1
         union
         select 21 as rk, 'phy_store_member' as name, count(1) as record_count , 'T+1' as frequency from edw.f_phy_store_member  where date(sendout_time ) = current_date-1
         union

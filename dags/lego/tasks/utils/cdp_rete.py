@@ -186,7 +186,7 @@ class MyRete():
         rule_str = rule_str.strip(" ").strip(';')
         if rule_type == SQL_TYPE:
             if ( ';' in rule_str 
-                or rule_str.lower().find("select") > 0):
+                or rule_str.lower().find("select") != 0):
                 raise ValueError("Cannot execute >1 SQL statement in 1 rule and must be select query")
         elif rule_type == EXP_TYPE:
             for fc in rule_str.split(" "):
