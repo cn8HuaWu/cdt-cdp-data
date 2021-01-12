@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import logging
 from sqlalchemy.exc import InternalError
+import contextlib
 
 class Mydb(object):
     def __init__(self, h, p, db, usr, pw):
@@ -47,6 +48,20 @@ class Mydb(object):
                 trans.rollback()
                 raise
         return r
+    
+    @contextlib.contextmanager
+    def create_session(self):
+        engine = self.create_engine()
+        Session = sessionmaker(bind=engine, autocommit=False, expire_on_commit=False)
+        try:
+            session = Session()
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.expire_on_commit=True
     
     def close_conn(self, conn):
         try:
