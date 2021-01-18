@@ -183,9 +183,9 @@ EDW:
         when is_cart ='1' then '是'
         else null end as is_cart,
       (order_amount::decimal(17,2) + return_order_amount::decimal(17,2) + adjust_amount::decimal(17,2)) - ( in_amount::decimal(17,2) + out_amount::decimal(17,2) )  as diff_amt,
-      to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss')  as lastchanged,
+      case when trim(lastchanged) in ('null', '') then null else to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss') end as lastchanged,
       flag,
-      to_timestamp(sendout_time, 'yyyy-MM-dd hh24:mi:ss')  as sendout_time,
+      case when trim(sendout_time) in ('null', '') then null else to_timestamp(sendout_time, 'yyyy-MM-dd hh24:mi:ss') end as sendout_time,
       dl_batch_date,
       now()
     from (
@@ -259,6 +259,7 @@ EDW:
     from frn.f_oms_income_statement a
     where flag='INSERT'
     and not exists( select 1 from del_ids  where id = a.id )
+    and not exists( select 1 from upd_ids  where id = a.id )
     union
     select *
     from upd_ids a

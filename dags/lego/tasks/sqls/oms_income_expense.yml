@@ -181,7 +181,7 @@ EDW:
       case when trim(disc_type_code) in ('null', '') then null else disc_type_code end as disc_type_code,
       case when trim(goods_type) in ('null', '') then null else goods_type end as goods_type,
       case when is_success ='1' then '成功' when is_success ='2' then '失败' else null end as is_success,
-      to_timestamp(report_create_time, 'yyyy-MM-dd hh24:mi:ss')  as report_create_time,
+      case when trim(report_create_time) in ('null', '') then null else to_timestamp(report_create_time, 'yyyy-MM-dd hh24:mi:ss') end  as report_create_time,
       vip_discount_fee::decimal(17,2),
       difference_price_fee::decimal(17,2),
       rrp_difference_fee::decimal(17,2),
@@ -207,14 +207,14 @@ EDW:
           when order_type ='9' then '换货订单'
           when order_type ='10' then '预售预付'
           else null end as order_type,
-      to_timestamp(sap_time, 'yyyy-MM-dd hh24:mi:ss')  as sap_time,
+      case when trim(sap_time) in ('null', '') then null else to_timestamp(sap_time, 'yyyy-MM-dd hh24:mi:ss') end as sap_time,
       shopid,
       case when trim(create_reason) in ('null', '') then null else create_reason end as create_reason,
       case when check_status ='0' then '初始化' 
         when check_status ='1' then '核对正确'
         when check_status ='2' then '核对错误' 
         else null end as check_status,
-      to_timestamp(shipping_time_ck, 'yyyy-MM-dd hh24:mi:ss')  as shipping_time_ck,
+      case when trim(shipping_time_ck) in ('null', '') then null else to_timestamp(shipping_time_ck, 'yyyy-MM-dd hh24:mi:ss') end as shipping_time_ck,
       case when trim(oms_sku) in ('null', '') then null else oms_sku end as oms_sku,
       case when is_changed ='0' then '未变更' 
         when is_changed ='1' then '已变更'
@@ -225,9 +225,9 @@ EDW:
       sku_rrp_price::decimal(10,2),
       case when trim(deposit) in ('null', '') then null else deposit::decimal(17,2) end as deposit,
       case when trim(remark) in ('null', '') then null else remark end as remark,
-      to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss')  as lastchanged,
+      case when trim(lastchanged) in ('null', '') then null else to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss') end  as lastchanged,
       flag,
-      to_timestamp(sendout_time, 'yyyy-MM-dd hh24:mi:ss')  as sendout_time,
+      case when trim(sendout_time) in ('null', '') then null else to_timestamp(sendout_time, 'yyyy-MM-dd hh24:mi:ss') end  as sendout_time,
       dl_batch_date,
       now()
     from (
@@ -312,6 +312,7 @@ EDW:
       from frn.f_oms_income_expense a
       where flag='INSERT'
       and not exists( select 1 from del_ids  where id = a.id )
+      and not exists( select 1 from upd_ids  where id = a.id )
       union
       select *
       from upd_ids a
