@@ -42,7 +42,8 @@ Staging:
     is_cart text,
     lastchanged text,
     flag text,
-    sendout_time text
+    sendout_time text,
+    tmall_u_order text
 
 ODS:
 
@@ -92,6 +93,7 @@ EDW:
       lastchanged timestamp,
       flag varchar(255),
       sendout_time timestamp,
+      tmall_u_order varchar(255),
       dl_batch_date varchar(8),
       dl_load_time timestamp
     )distributed by (id);
@@ -141,6 +143,7 @@ EDW:
       lastchanged,
       flag,
       sendout_time,
+      tmall_u_order,
       dl_batch_date,
       dl_load_time
     )
@@ -206,6 +209,7 @@ EDW:
       case when trim(lastchanged) in ('null', '') then null else to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss') end as lastchanged,
       flag,
       case when trim(sendout_time) in ('null', '') then null else to_timestamp(sendout_time, 'yyyy-MM-dd hh24:mi:ss') end as sendout_time,
+      case when tmall_u_order = '1' then '是' else '否' end as tmall_u_order,
       dl_batch_date,
       now()
     from (
@@ -271,7 +275,8 @@ EDW:
         flag,
         sendout_time,
         dl_batch_date,
-        dl_load_time
+        dl_load_time,
+        tmall_u_order
       from (
         select *, row_number() over(partition by id order by lastchanged desc) as rk
         from frn.f_oms_expense_statement es
