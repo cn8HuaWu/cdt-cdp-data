@@ -318,7 +318,7 @@ EDW:
       where flag='INSERT'
       and not exists( select 1 from del_ids  where id = a.id )
       and not exists( select 1 from upd_ids  where id = a.id )
-      union
+      union all
       select *
       from upd_ids a
       where not exists( select 1 from del_ids  where id = a.id );

@@ -185,7 +185,7 @@ EDW:
       case when is_cart ='0' then '否' 
         when is_cart ='1' then '是'
         else null end as is_cart,
-      (order_amount::decimal(17,2) + return_order_amount::decimal(17,2) + adjust_amount::decimal(17,2)) - ( in_amount::decimal(17,2) + out_amount::decimal(17,2) )  as diff_amt,
+      (order_amount::decimal(17,2) - return_order_amount::decimal(17,2) + adjust_amount::decimal(17,2) - cart_money::decimal(17,2)) - ( in_amount::decimal(17,2) + out_amount::decimal(17,2) )  as diff_amt,
       case when trim(lastchanged) in ('null', '') then null else to_timestamp(lastchanged, 'yyyy-MM-dd hh24:mi:ss') end as lastchanged,
       flag,
       case when trim(sendout_time) in ('null', '') then null else to_timestamp(sendout_time, 'yyyy-MM-dd hh24:mi:ss') end as sendout_time,
@@ -265,7 +265,7 @@ EDW:
     where flag='INSERT'
     and not exists( select 1 from del_ids  where id = a.id )
     and not exists( select 1 from upd_ids  where id = a.id )
-    union
+    union all
     select *
     from upd_ids a
     where not exists( select 1 from del_ids  where id = a.id );
