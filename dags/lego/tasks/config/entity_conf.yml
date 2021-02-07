@@ -410,3 +410,9 @@ entities:
     update_type: F
     stg_suffix: di
     key: id,flag
+  
+  dl_mini_member_distribution:
+    edw_prefix: f
+    update_type: SCD3
+    stg_suffix: di
+    key: unionid

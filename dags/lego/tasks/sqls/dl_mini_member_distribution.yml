@@ -1,0 +1,34 @@
+EDW:
+  create_table_query:
+    create table if not exists edw.f_dl_mini_member_distribution(
+      unionid varchar(200) not null,
+      mobile varchar(32) not null,
+      province varchar(200), 
+      city varchar(200),
+      register_month date
+    )distributed by (province);
+
+
+    create table if not exists edw.a_dl_mini_member_stats(
+      privince varchar(200),
+      city varchar(200), 
+      register_month date,
+      member_count bigint
+    )distributed by (register_month);
+
+  scd3_update_query:
+    insert into edw.f_dl_mini_member_distribution
+    select  a.unionid , a.mobile , c.province , c.city , to_date(a.dl_batch_date,'yyyymmdd') as register_month
+    from edw.f_wc_mini_member_info a left join edw.f_dl_mini_member_distribution b on a.unionid = b.unionid
+        inner join edw.d_dl_mobile_attribution c on substring( encode(decrypt_iv(decode(a.mobile , 'base64'), '{DL_AES_KEY}','{DL_AES_IV}','aes-cbc'),'escape'), 1,7) = c.mobile_num_prefix
+    where b.unionid is  null
+    and a.mobile != '' 
+    and a.mobile is not null;
+
+  update_mini_member_month_stats:
+    delete from  edw.a_dl_mini_member_stats;
+    insert into edw.a_dl_mini_member_stats 
+    select province, city, date_trunc('month',register_month), count(1)
+    from edw.f_dl_mini_member_distribution
+    group by province, city, date_trunc('month',register_month);
+  
