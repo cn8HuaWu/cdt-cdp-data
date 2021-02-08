@@ -1,0 +1,33 @@
+name: TEST github runner
+
+on:
+  push:
+    branches:
+      - dev-github-runner
+jobs:
+  test-deploy:
+    runs-on: self-hosted
+    continue-on-error: true
+    steps:
+    - name: backup current packages
+      run: |
+        mkdir -p /home/github_runner/test-bak/
+        mkdir -p /home/github_runner/test/
+        cp -rf /home/github_runner/test/ /home/github_runner/test-bak/
+        touch /home/github_runner/test-bak/test-bak.dat
+
+    - name: copy source code to target
+      if: ${{ success() }}
+      run: |
+        cp -rf ./dags/ /home/github_runner/test/
+
+    - name: rollback 
+      if: ${{ failure() }}
+      run:
+        cp -rf /home/github_runner/test-bak/test/* /home/github_runner/test/ 
+    
+    - name: post process
+      if: ${{ always() }}
+      run: |
+        rm -rf /home/github_runner/test-bak/
+      
