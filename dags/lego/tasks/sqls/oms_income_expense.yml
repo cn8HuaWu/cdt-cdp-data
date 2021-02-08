@@ -242,17 +242,25 @@ EDW:
 
   sync_to_rds_dm:
     create table if not exists dm.f_oms_income_expense (like frn.f_oms_income_expense);
-    delete from dm.f_oms_income_expense;
-    delete from dm.f_oms_income_expense;
-    
-    with del_ids as 
-      ( 
-        select distinct id
-        from frn.f_oms_income_expense
-        where flag='DELETE'
-      ),
-      upd_ids as 
-      (
+
+    create temporary table tmp_del_ids as 
+    select distinct id
+      from frn.f_oms_income_expense
+      where flag='DELETE'
+      and sendout_time >= (select date(max(sendout_time))-1 from frn.f_oms_income_expense foes);
+
+    create temporary table dup_income_ids as 
+    select distinct a.id 
+    from frn.f_oms_income_expense a inner join dm.f_oms_income_expense b on a.id = b.id and a.flag = b.flag
+    where a.sendout_time >= (select date(max(sendout_time))-1 from frn.f_oms_income_expense foes);
+
+    delete from dm.f_oms_income_expense 
+    where id in (select id from tmp_del_ids);
+    delete from dm.f_oms_income_expense a 
+    where  exists (select 1 from dup_income_ids where id = a.id );
+
+    with upd_ids as 
+    (
         select 
           id,
           parent_order_id,
@@ -306,21 +314,24 @@ EDW:
           dl_batch_date,
           dl_load_time,
           tmall_u_order
-        from (
-          select *, row_number() over(partition by id order by lastchanged desc) as rk
-          from frn.f_oms_income_expense es
-          where flag='UPDATE'
-        )t where rk =1
-      )
-      insert into dm.f_oms_income_expense
-      select *
-      from frn.f_oms_income_expense a
-      where flag='INSERT'
-      and not exists( select 1 from del_ids  where id = a.id )
-      and not exists( select 1 from upd_ids  where id = a.id )
-      union all
-      select *
-      from upd_ids a
-      where not exists( select 1 from del_ids  where id = a.id );
+      from (
+        select *, row_number() over(partition by id order by lastchanged desc) as rk
+        from frn.f_oms_income_expense es
+        where flag='UPDATE'
+        and sendout_time >= (select date(max(sendout_time))-1 from frn.f_oms_income_expense foes)
+      )t where rk =1
+    )
+    insert into dm.f_oms_income_expense
+    select *
+    from frn.f_oms_income_expense a
+    where flag='INSERT'
+    and not exists( select 1 from tmp_del_ids  where id = a.id )
+    and not exists( select 1 from upd_ids  where id = a.id )
+    and sendout_time>= (select date(max(sendout_time))-1 from frn.f_oms_income_expense foes)
+    union all
+    select *
+    from upd_ids a
+    where not exists( select 1 from tmp_del_ids  where id = a.id );
+
     
   

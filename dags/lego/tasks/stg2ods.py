@@ -1,4 +1,6 @@
 import logging
+from datetime import datetime,timedelta
+from pytz import timezone
 
 class Stg2odsHandler:
     def __init__(self, temp_folder, stg_level, ods_level, batch_date, datasource, entity_name, suffix, table_key, myutil, db, has_head = 1):
@@ -38,6 +40,12 @@ class Stg2odsHandler:
                                 'income_statement':'income_statement',
                                 'expense_statement':'expense_statement'
                             }
+        self.datahub_intime_table = {
+            'consumer_info':'consumer_info',
+            'income_expense':'income_expense',
+            'income_statement':'income_statement',
+            'expense_statement':'expense_statement'
+        }   
     
     def _is_table_exists(self, schema, tablename, conn):
         query = "select  from information_schema.tables where table_schema='{0}' and table_name='{1}'".format(schema, tablename)
@@ -90,13 +98,25 @@ class Stg2odsHandler:
         # if self._is_table_exists("STG", stg_table, conn):
         # if (self.entity_name == 'consumer_info'):
         if (self.entity_name in self.datahub_stg_tables) :
+            # Assume all the data send into Datahub can be consumed in half hour
+            # if run time after 00:30, then load data income on currend day
+            # if run time before 00:30, then load data income at yesterday
+            run_hour = datetime.now(timezone('Asia/Shanghai')).hour
+            run_minuter = datetime.now(timezone('Asia/Shanghai')).minute
+            if run_hour == 0 and run_minuter <= 30 and self.entity_name in self.datahub_intime_table:
+
+                datahub_run_date = datetime.strftime( datetime.now(timezone('Asia/Shanghai')) - timedelta(1) ,'%Y%m%d')
+            else:
+                datahub_run_date = ''
+            #    datahub_run_date = datetime.strftime( datetime.now(timezone('Asia/Shanghai')) ,'%Y%m%d')
+            var_map['DATAHUB_RUN_DATE'] = datahub_run_date
             build_stg_table_srcipt = '''
                 CREATE FOREIGN TABLE STG.R_{SRC}_{ENTITY}_{SUFFIX}(
                     {DDL_COLUMNS}
                 )
                 server cdp_oss_server
                 options (
-                        prefix 'Staging/{SRC}/{OSS_PREFIX}/',
+                        prefix 'Staging/{SRC}/{OSS_PREFIX}/{DATAHUB_RUN_DATE}',
                         format 'csv',
                         delimiter ',',
                         header '{HEADER}',
