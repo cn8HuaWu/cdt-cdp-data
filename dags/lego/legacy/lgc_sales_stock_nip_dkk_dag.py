@@ -2,6 +2,8 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.models import Variable
 from airflow.utils.dates import days_ago
 from airflow import DAG
+from airflow.utils.db import provide_session
+from airflow.models import XCom
 
 import logging
 import os, sys
@@ -36,6 +38,10 @@ src_entity = 'lgc_sales_stock_nip_dkk'
 DAG_NAME = 'lgc_sales_stock_nip_dkk_dag'
 
 
+@provide_session
+def cleanup_xcom(context, session=None):
+    session.query(XCom).filter(XCom.dag_id == DAG_NAME).delete()
+
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     
@@ -61,10 +67,14 @@ def post_process_fileload( **kwargs):
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     myutil.modify_ok_file_prefix("running", "done", OK_FILE_PATH)
 
+    cleanup_xcom(kwargs)
+
 def dag_failure_handler(context):
     #rename: change prefix to "failed-"
     OK_FILE_PATH  = context.get('dag_run').conf.get('ok_file_path')
     myutil.modify_ok_file_prefix("running", "failed",OK_FILE_PATH)
+
+    cleanup_xcom(context)
     
 def load_src2stg(**kwargs):
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
@@ -75,9 +85,6 @@ def load_src2stg(**kwargs):
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, sheetname='Sheet1')
     src2stg.start()
-
-
-
 
 args = {
     'owner': 'cdp_admin',
