@@ -1,0 +1,22 @@
+Staging:
+  src_columns:
+    year_week text,
+    cust_link text,
+    cust_name text,
+    cust_id text,
+    store_id text,
+    prod_id text,
+    prod_name text,
+    cntr_instock_recdr text,
+    cntr_recdr text,
+    retail_stock_qty text,
+    in_stock_percnt text
+
+ODS:
+
+EDW:
+  create_table_query:
+    
+  
+  insert_edw_from_ods_query:
+

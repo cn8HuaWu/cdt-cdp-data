@@ -1,0 +1,25 @@
+Staging:
+  src_columns:
+    year_month text,
+    year_week text,
+    date text,
+    cust_link text,
+    cust_name text,
+    prod_id text,
+    prod_name text,
+    net_sale_invc_amt text,
+    dlvr_prcs_amt text,
+    cnfir_open_sale_ordr_amt text,
+    tot_open_sale_ordr_prtfl_amt text,
+    last_dmnd_plan_amt text,
+    order_prtfl_percnt text,
+    bill_calt_qty text
+
+
+ODS:
+
+EDW:
+  create_table_query:
+    
+  
+  insert_edw_from_ods_query:

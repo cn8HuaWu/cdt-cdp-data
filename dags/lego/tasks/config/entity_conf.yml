@@ -416,3 +416,9 @@ entities:
     update_type: SCD3
     stg_suffix: di
     key: unionid
+
+  lgc_sales_stock_nip_dkk:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: c6_linking_level,customer_name,trade_id,store_id
