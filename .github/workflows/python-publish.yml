@@ -6,7 +6,7 @@ on:
       - dev-legacy
 jobs:
   legacy-deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     continue-on-error: true
     steps:
     - name: backup current packages
