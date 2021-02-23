@@ -25,7 +25,7 @@ collect_stg_count:
         select 'callcenter_consumer_info' as name, count(1) as record_count from stg.r_cs_consumer_info_di rccid where to_date(change_date,'yyyyMMddhh24miss')=current_date-1
         UNION
         select topic_name, record_count from (
-            select topic_name , update_dt , record_count -lead(record_count)over(partition by topic_name order by update_dt desc) as record_count, row_number() over(partition by topic_name order by update_dt desc) as rk
+            select topic_name , update_dt , record_count, row_number() over(partition by topic_name order by update_dt desc) as rk
             from (
                 select topic_name, date(update_ts) as update_dt, max(record_count) as record_count
                 from edw.a_dl_datahub_checkpoint where state='done'
@@ -56,11 +56,11 @@ collect_edw_count:
         union
         select 9 as rk, 'oms_return_order_dtl' as name, count(1) as record_count , '48H' as frequency from edw.f_oms_return_order_dtl  where date(update_time) = current_date-1
         union
-        select 10 as rk, 'oms_expense_statement' as name, count(1) as record_count , 'T+1' as frequency from edw.f_oms_expense_statement  where date(sendout_time) = current_date
+        select 10 as rk, 'oms_expense_statement' as name, count(1) as record_count , 'T+1' as frequency from edw.f_oms_expense_statement  where date(sendout_time) = current_date-1
         union
-        select 11 as rk, 'oms_income_expense' as name, count(1) as record_count , 'T+1' as frequency from edw.f_oms_income_expense  where date(sendout_time) = current_date
+        select 11 as rk, 'oms_income_expense' as name, count(1) as record_count , 'T+1' as frequency from edw.f_oms_income_expense  where date(sendout_time) = current_date-1
         union
-        select 12 as rk, 'oms_income_statement' as name, count(1) as record_count , 'T+1' as frequency from edw.f_oms_income_statement  where date(sendout_time) = current_date
+        select 12 as rk, 'oms_income_statement' as name, count(1) as record_count , 'T+1' as frequency from edw.f_oms_income_statement  where date(sendout_time) = current_date-1
         union
         select 13 as rk, 'phy_store_order' as name, count(1) as record_count , 'T+2' as frequency from edw.f_phy_store_order  where date(sendout_time ) = current_date-1
         union

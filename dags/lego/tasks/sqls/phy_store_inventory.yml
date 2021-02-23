@@ -76,7 +76,7 @@ EDW:
     update edw.f_phy_store_inventory o
     set lego_store_code = s.lego_store_code 
     from edw.f_phy_store s
-    where o.distributor_store_code  = s.distributor_store_code 
+    where substring(o.distributor_store_code,1,4)  = s.distributor_store_code 
     and o.distributor = s.distributor 
     and lower(o.distributor) ='lewin'
     and (o.lego_store_code is null or trim(o.lego_store_code) ='')

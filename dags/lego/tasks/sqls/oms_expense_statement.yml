@@ -220,15 +220,24 @@ EDW:
 
   sync_to_rds_dm:
     create table if not exists dm.f_oms_expense_statement (like frn.f_oms_expense_statement);
-    delete from dm.f_oms_expense_statement;
-    delete from dm.f_oms_expense_statement;
-    with del_ids as 
-    ( 
-      select distinct id
+
+    create temporary table tmp_del_ids as 
+    select distinct id
       from frn.f_oms_expense_statement
       where flag='DELETE'
-    ),
-    upd_ids as 
+      and sendout_time >= (select date(max(sendout_time))-1 from frn.f_oms_expense_statement foes);
+
+    create temporary table dup_income_ids as 
+    select distinct a.id 
+    from frn.f_oms_expense_statement a inner join dm.f_oms_expense_statement b on a.id = b.id and a.flag = b.flag
+    where a.sendout_time >= (select date(max(sendout_time))-1 from frn.f_oms_expense_statement foes);
+
+    delete from dm.f_oms_expense_statement 
+    where id in (select id from tmp_del_ids);
+    delete from dm.f_oms_expense_statement a 
+    where  exists (select 1 from dup_income_ids where id = a.id );
+
+    with upd_ids as 
     (
       select 
         id,
@@ -281,17 +290,19 @@ EDW:
         select *, row_number() over(partition by id order by lastchanged desc) as rk
         from frn.f_oms_expense_statement es
         where flag='UPDATE'
+        and sendout_time >= (select date(max(sendout_time))-1 from frn.f_oms_expense_statement foes)
       )t where rk =1
     )
     insert into dm.f_oms_expense_statement
     select *
     from frn.f_oms_expense_statement a
     where flag='INSERT'
-    and not exists( select 1 from del_ids  where id = a.id )
+    and not exists( select 1 from tmp_del_ids  where id = a.id )
     and not exists( select 1 from upd_ids  where id = a.id )
+    and sendout_time>= (select date(max(sendout_time))-1 from frn.f_oms_expense_statement foes)
     union all
     select *
     from upd_ids a
-    where not exists( select 1 from del_ids  where id = a.id );
+    where not exists( select 1 from tmp_del_ids  where id = a.id );
     
   

@@ -3,6 +3,8 @@ from datetime import datetime
 from airflow.operators.sensors import BaseSensorOperator
 from airflow.plugins_manager import AirflowPlugin
 from airflow.utils.decorators import apply_defaults
+from datetime import datetime
+from pytz import timezone
 
 log = logging.getLogger(__name__)
 
@@ -21,7 +23,13 @@ class DatahubSensor(BaseSensorOperator):
         super(DatahubSensor, self).__init__(*args, **kwargs)
  
     def poke(self, context):
+        run_hour = datetime.now(timezone('Asia/Shanghai')).hour
         new_count = self._get_datahub_latest_count()
+        if run_hour == 0 and new_count == self.latest_count:
+            self.latest_count = 0
+            new_count = 0
+            self.update_flag = True
+            
         log.info("new_count: " + str(new_count))
         if (self.max_pork <= 0 or self.latest_count == new_count):
             try:
