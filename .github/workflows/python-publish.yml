@@ -11,7 +11,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: copy source code to target
       run: |
-        whoami
         cp -rf ./dags/lego/legacy/  /cdp/airflow/dags/lego/
         cp -rf ./dags/lego/tasks/sqls/lgc_* /cdp/airflow/dags/lego/tasks/sqls/
         cp -rf ./dags/lego/tasks/config/entity_conf.yml  /cdp/airflow/dags/lego/tasks/config/
