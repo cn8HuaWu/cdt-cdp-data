@@ -8,6 +8,7 @@ jobs:
   legacy-deploy:
     runs-on: [self-hosted, linux]
     steps:
+    - uses: actions/checkout@v1
     - name: copy source code to target
       run: |
         cp -rf ./dags/lego/legacy/  /cdp/airflow/dags/lego/legacy/
