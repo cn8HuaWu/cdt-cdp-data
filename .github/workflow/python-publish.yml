@@ -1,33 +1,33 @@
-name: TEST github runner
+name: Legacy data migration
 
 on:
   push:
     branches:
-      - dev-github-runner
+      - dev-legacy
 jobs:
-  test-deploy:
+  legacy-deploy:
     runs-on: self-hosted
     continue-on-error: true
     steps:
     - name: backup current packages
       run: |
-        mkdir -p /home/github_runner/test-bak/
-        mkdir -p /home/github_runner/test/
-        cp -rf /home/github_runner/test/ /home/github_runner/test-bak/
-        touch /home/github_runner/test-bak/test-bak.dat
+        mkdir -p /tmp/github_runner/test-bak/
+        cp -rf /cdp/airflow/dags/lego/ /tmp/github_runner/test-bak/
 
     - name: copy source code to target
       if: ${{ success() }}
       run: |
-        cp -rf ./dags/ /home/github_runner/test/
+        cp -rf ./dags/lego/legacy/  /cdp/airflow/dags/lego/legacy/
+        cp -rf ./dags/ego/tasks/sqls/lgc_* /cdp/airflow/dags/lego/tasks/sqls/
+
 
     - name: rollback 
       if: ${{ failure() }}
       run:
-        cp -rf /home/github_runner/test-bak/test/* /home/github_runner/test/ 
+        cp -rf /tmp/github_runner/test-bak/* /cdp/airflow/dags/lego/
     
     - name: post process
       if: ${{ always() }}
       run: |
-        rm -rf /home/github_runner/test-bak/
+        rm -rf /tmp/github_runner/test-bak/
       
