@@ -14,3 +14,4 @@ jobs:
         whoami
         cp -rf ./dags/lego/legacy/  /cdp/airflow/dags/lego/
         cp -rf ./dags/lego/tasks/sqls/lgc_* /cdp/airflow/dags/lego/tasks/sqls/
+        cp -rf ./dags/lego/tasks/config/entity_config.yml  /cdp/airflow/dags/lego/tasks/config/
