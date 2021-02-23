@@ -1,4 +1,4 @@
-name: TEST github runner
+name: Legacy data migration CD
 
 on:
   push:
