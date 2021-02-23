@@ -1,0 +1,14 @@
+name: Legacy data migration CD
+
+on:
+  push:
+    branches:
+      - dev-legacy
+jobs:
+  legacy-deploy:
+    runs-on: [self-hosted, linux]
+    steps:
+    - name: copy source code to target
+      run: |
+        cp -rf ./dags/lego/legacy/  /cdp/airflow/dags/lego/legacy/
+        cp -rf ./dags/lego/tasks/sqls/lgc_* /cdp/airflow/dags/lego/tasks/sqls/
