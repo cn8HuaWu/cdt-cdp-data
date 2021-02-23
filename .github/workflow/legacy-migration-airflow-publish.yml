@@ -1,0 +1,33 @@
+name: TEST github runner
+
+on:
+  push:
+    branches:
+      - dev-legacy
+jobs:
+  test-deploy:
+    runs-on: self-hosted
+    continue-on-error: true
+    steps:
+    - name: backup current packages
+      run: |
+        mkdir -p /tmp/github_runner/test-bak/
+        cp -rf /cdp/airflow/dags/lego/ /tmp/github_runner/test-bak/
+
+    - name: copy source code to target
+      if: ${{ success() }}
+      run: |
+        cp -rf ./dags/lego/legacy/  /cdp/airflow/dags/lego/legacy/
+        cp -rf ./dags/ego/tasks/sqls/lgc_* /cdp/airflow/dags/lego/tasks/sqls/
+
+
+    - name: rollback 
+      if: ${{ failure() }}
+      run:
+        cp -rf /tmp/github_runner/test-bak/* /cdp/airflow/dags/lego/
+    
+    - name: post process
+      if: ${{ always() }}
+      run: |
+        rm -rf /tmp/github_runner/test-bak/
+      
