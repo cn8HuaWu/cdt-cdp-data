@@ -7,10 +7,8 @@ on:
 jobs:
   legacy-deploy:
     runs-on: [self-hosted, linux]
-    continue-on-error: true
     steps:
     - name: copy source code to target
-      if: ${{ success() }}
       run: |
         cp -rf ./dags/lego/legacy/  /cdp/airflow/dags/lego/legacy/
         cp -rf ./dags/lego/tasks/sqls/lgc_* /cdp/airflow/dags/lego/tasks/sqls/
