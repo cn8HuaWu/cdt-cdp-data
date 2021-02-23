@@ -11,7 +11,7 @@ Staging:
     cst_retail_stock_nip text,
     cst_retail_stock_qty text,
     consumer_sales_net text
-    
+
 ODS:
 
 EDW:
