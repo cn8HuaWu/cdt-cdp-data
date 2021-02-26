@@ -1,0 +1,18 @@
+Staging:
+  src_columns:
+    store text,
+    close_date text,
+    reopen_date text,
+    floor text,
+    sales_space text,
+    etl_times text
+
+
+
+ODS:
+
+EDW:
+  create_table_query:
+    
+  
+  insert_edw_from_ods_query:
