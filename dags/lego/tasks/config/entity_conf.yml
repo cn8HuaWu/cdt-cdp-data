@@ -298,7 +298,7 @@ entities:
     edw_prefix: f
     update_type: F
     stg_suffix: di
-    key: distributor,distributor_store_code,parent_order_id,son_order_id
+    key: distributor,distributor_store_code,parent_order_id,lego_sku_id,lego_sku_asp_price
     dm_sync: False
 
   phy_store_order_payment_dtl:

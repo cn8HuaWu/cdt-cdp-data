@@ -102,7 +102,7 @@ EDW:
       dl_batch_date,
       dl_load_time
     from (
-      select * , row_number() over( partition by upper(distributor), distributor_store_code, parent_order_id,lego_sku_id order by (TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s') desc ) rk
+      select * , row_number() over( partition by upper(distributor), distributor_store_code, parent_order_id,lego_sku_id, lego_sku_asp_price, order by (TIMESTAMP WITH TIME ZONE 'epoch' + sendout_time::decimal(13) * INTERVAL '1 s') desc ) rk
       from ods.r_phy_store_order_dtl
     )ab
     where rk=1;
