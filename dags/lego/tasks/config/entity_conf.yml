@@ -417,3 +417,44 @@ entities:
     stg_suffix: di
     key: unionid
 
+  lgc_sales_stock_nip_dkk:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: c6_linking_level,customer_name,trade_id,store_id
+
+  lgc_sales_stock_rrp_rmb:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: year_week,cust_id,store_id,prod_id
+
+  lgc_customer_name_mapping:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: customer,correct_customer
+
+  lgc_store_closure_list:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: store,close_date
+
+  lgc_store_renovation_record:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: store,close_date
+  
+  lgc_instock:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: year_week,cust_id,store_id,prod_id
+
+  lgc_sellin:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: date,cust_link,prod_id 
