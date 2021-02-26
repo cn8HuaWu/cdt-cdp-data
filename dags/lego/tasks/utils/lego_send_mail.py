@@ -9,7 +9,7 @@ import imp
 SMTP_USER = "airflow@mail.lego.cn"
 smtp_mail_from = "airflow@mail.lego.cn"
 kms_smtp_conf="prd_smtp_pwd"
-kms_client_path = "/cdp/work_dir//gp_conn_cmd.py"
+kms_client_path = "/cdp/work_dir/gp_conn_cmd.py"
 
 SMTP_HOST = "smtpdm.aliyun.com"
 SMTP_PORT = 80
@@ -97,22 +97,20 @@ def get_email_address_list(address_string):
 
     return address_string
 
+
 import argparse
-parser = argparse.ArgumentParser(description="Send out mail")
-parser.add_argument('-t', "--to") 
-parser.add_argument('-s', "--subject") 
-parser.add_argument('-c', "--content")
-args = parser.parse_args()
-to = args.to
-subject = args.subject
-content = args.content 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Send out mail")
+    parser.add_argument('-t', "--to") 
+    parser.add_argument('-s', "--subject") 
+    parser.add_argument('-c', "--content")
+    parser.add_argument('-f', "--files")
+    args = parser.parse_args()
+    to = args.to
+    subject = args.subject
+    content = args.content 
+    files = ""
+    if args.files is not None:
+        files = args.files.split(",")
 
-send_email(to, subject, content)
-
-# if __name__ == "__main__":
-#     to = "zhxie@deloitte.com.cn"
-#     subject = "Test sent out mail"
-#     html_content = 'test'
-
-#     kms_smtp_conf = "dev_smtp_pwd"
-#     send_email(to, subject, html_content)
+    send_email(to, subject, content, files)

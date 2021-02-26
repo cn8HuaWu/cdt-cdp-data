@@ -21,6 +21,7 @@ class Src2stgHandler:
                 src_aes_key = None,
                 src_aes_iv = None,
                 has_head = True,
+                sheetname = None,
                 algo= None,
                 excel_skip_row = 0,
                 need_encrypt = True
@@ -40,6 +41,7 @@ class Src2stgHandler:
         self.src_aes_key = src_aes_key
         self.src_aes_iv = src_aes_iv
         self.has_head = has_head
+        self.sheetname = sheetname
         self.algo = algo
         self.excel_skip_row = excel_skip_row
         self.work_data_dir = self.myutil.get_conf('ETL', 'WORK_DATA_DIR')
@@ -88,7 +90,7 @@ class Src2stgHandler:
         if( src_file_path.split('.')[-1].lower() == 'gz' ):
             self.myutil.uncompress_gz_file(src_file_path, target_file_path)
         elif( src_file_path.split('.')[-1].lower() in ('xlsx', 'xls') ):
-            self.myutil.read_excel_file(src_file_path, target_file_path, skiprow=self.excel_skip_row ,keephead=self.has_head)
+            self.myutil.read_excel_file(src_file_path, target_file_path, skiprow=self.excel_skip_row ,keephead=self.has_head, sheetname_in= self.sheetname)
         else:
             shutil.copyfile( src_file_path, os.path.join(entity_data_dir, target_file_path) )
         
