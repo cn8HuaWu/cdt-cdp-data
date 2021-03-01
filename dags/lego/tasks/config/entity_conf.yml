@@ -423,7 +423,6 @@ entities:
     stg_suffix: di
     key: c6_linking_level,customer_name,trade_id,store_id
 
-<<<<<<< Updated upstream
   lgc_sales_stock_rrp_rmb:
     edw_prefix: f
     update_type: f
