@@ -1,0 +1,14 @@
+name: dev CD
+on:
+  push:
+    branches:
+      - dev
+jobs:
+  legacy-deploy:
+    runs-on: [self-hosted, linux]
+    steps:
+    - uses: actions/checkout@v1
+    - name: copy source code to target
+      run: |
+        cp -rf ./dags/lego/tasks/utils /cdp/airflow/dags/lego/tasks/utils/
+        cp -rf ./dags/lego/tasks/utils/src2stg.py  /cdp/airflow/dags/lego/tasks

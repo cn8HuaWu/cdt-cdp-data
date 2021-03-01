@@ -4,7 +4,7 @@ import logging, shutil, os
 import gzip
 import yaml, csv
 import xlrd
-
+import zipfile
 import oss2
 from oss2.models import PartInfo
 from oss2 import determine_part_size
@@ -132,13 +132,37 @@ class Myutil:
         if (prefix == 'failed' and os.path.exists(ok_file_path)):
             shutil.move(ok_file_path, ok_file_path+"_"+datetime.strftime(datetime.now(), '%Y%m%d%H%M%S'))
 
-    def uncompress_gz_file(self, fn_in, fn_out):
-            f_in = gzip.open(fn_in, 'rb')
-            with open(fn_out, 'wb') as f_out:
-                file_content = f_in.read()
-                f_out.write(file_content)
-                f_in.close()
-    
+    def uncompress_gz_file(self, fn_in, fn_out, merge= True):
+        targe_file_list = []
+        out_dirname = os.path.dirname(fn_out)
+        out_name = os.path.basename(fn_out).split(".")[0]
+
+        with zipfile.ZipFile(fn_in, 'r') as z:
+            count = 0
+            for nm in z.namelist():
+                if os.path.exists( os.path.join(out_dirname, nm) ):
+                    os.remove(os.path.join(out_dirname, nm))
+            z.extractall(path=out_dirname)
+
+            if len( z.namelist() ) == 1:
+                input_extract_pth = os.path.join( out_dirname, z.namelist()[0] )
+                os.rename(input_extract_pth,  fn_out)
+                targe_file_list.append(fn_out)
+            elif not merge :
+                if len(z.namelist()) > 1:
+                    for nm in z.namelist():
+                        os.rename( os.path.join(out_dirname, nm), os.path.join(out_dirname,out_name) +"_"+ str(count) + "." + nm.split(".")[-1])
+                        count +=1
+                targe_file_list.append(fn_out)
+            elif merge:
+                with open (fn_out , 'wb') as out_fd: 
+                    for nm in z.namelist():
+                        tempfile_path = os.path.join(out_dirname, nm)
+                        with open( tempfile_path, 'rb') as ofd:
+                            out_fd.write(ofd.read())
+                        os.remove(tempfile_path)  
+                        targe_file_list.append(tempfile_path)
+        return targe_file_list
 
     def compress_file(self, fn_in, fn_out):
         f_in = open(fn_in, 'rb')
