@@ -1,0 +1,18 @@
+Staging:
+  src_columns:
+    date text,
+    storecode	text,
+    transactioncode text,
+    productcode text,
+    description	text,
+    salespcs	text,
+    cttrefnum text
+
+
+ODS:
+
+EDW:
+  create_table_query:
+    
+  
+  insert_edw_from_ods_query:
