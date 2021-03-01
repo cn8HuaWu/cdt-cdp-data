@@ -81,7 +81,7 @@ def load_stg2ods(**kwargs):
     pkey = entity_conf[src_entity]["key"]
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
-    kwargs['task_instance'].xcom_push(key='batch_date', value=batch_date)
+    batch_date = kwargs.get('dag_run').conf.get('batch_date')
     stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = has_head )
     stg2ods.start()
 
