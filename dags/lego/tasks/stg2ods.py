@@ -103,13 +103,15 @@ class Stg2odsHandler:
             # if run time before 00:30, then load data income at yesterday
             run_hour = datetime.now(timezone('Asia/Shanghai')).hour
             run_minuter = datetime.now(timezone('Asia/Shanghai')).minute
-            if run_hour == 0 and run_minuter <= 30 and self.entity_name in self.datahub_intime_table:
-
-                datahub_run_date = datetime.strftime( datetime.now(timezone('Asia/Shanghai')) - timedelta(1) ,'%Y%m%d')
+            if self.entity_name in self.datahub_intime_table:
+                if run_hour == 0 and run_minuter <= 30:
+                    datahub_run_date = datetime.strftime( datetime.now(timezone('Asia/Shanghai')) - timedelta(1) ,'%Y%m%d')
+                else:
+                    datahub_run_date = datetime.strftime( datetime.now(timezone('Asia/Shanghai')) ,'%Y%m%d')
             else:
-                datahub_run_date = ''
-            #    datahub_run_date = datetime.strftime( datetime.now(timezone('Asia/Shanghai')) ,'%Y%m%d')
+                 datahub_run_date = ''    
             var_map['DATAHUB_RUN_DATE'] = datahub_run_date
+
             build_stg_table_srcipt = '''
                 CREATE FOREIGN TABLE STG.R_{SRC}_{ENTITY}_{SUFFIX}(
                     {DDL_COLUMNS}

@@ -298,7 +298,7 @@ entities:
     edw_prefix: f
     update_type: F
     stg_suffix: di
-    key: distributor,distributor_store_code,parent_order_id,son_order_id
+    key: distributor,distributor_store_code,parent_order_id,lego_sku_id,lego_sku_asp_price
     dm_sync: False
 
   phy_store_order_payment_dtl:
@@ -422,3 +422,39 @@ entities:
     update_type: f
     stg_suffix: di
     key: c6_linking_level,customer_name,trade_id,store_id
+
+  lgc_sales_stock_rrp_rmb:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: year_week,cust_id,store_id,prod_id
+
+  lgc_customer_name_mapping:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: customer,correct_customer
+
+  lgc_store_closure_list:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: store,close_date
+
+  lgc_store_renovation_record:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: store,close_date
+  
+  lgc_instock:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: year_week,cust_id,store_id,prod_id
+
+  lgc_sellin:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: date,cust_link,prod_id 
