@@ -11,4 +11,4 @@ jobs:
     - name: copy source code to target
       run: |
         cp -rf ./dags/lego/tasks/utils /cdp/airflow/dags/lego/tasks/utils/
-        cp -rf ./dags/lego/tasks/utils/src2stg.py  /cdp/airflow/dags/lego/tasks
+        cp -rf ./dags/lego/tasks/src2stg.py  /cdp/airflow/dags/lego/tasks/
