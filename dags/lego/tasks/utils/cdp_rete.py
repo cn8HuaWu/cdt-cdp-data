@@ -26,12 +26,13 @@ OPERATOR_STATE_CHILD_FALSE = "childfalse"
 
 
 myutil = utiltools.Myutil(DAG_HOME)
-gp_host = myutil.get_conf( 'Greenplum', 'GP_HOST')
-gp_port = myutil.get_conf( 'Greenplum', 'GP_PORT')
-gp_db = myutil.get_conf( 'Greenplum', 'GP_DB')
-gp_usr = myutil.get_conf( 'Greenplum', 'GP_USER')
-gp_pw = myutil.get_conf( 'Greenplum', 'GP_PASSWORD')
-db = mydb.Mydb(gp_host, gp_port, gp_db, gp_usr, gp_pw)
+db = myutil.get_db()
+# gp_host = myutil.get_conf( 'Greenplum', 'GP_HOST')
+# gp_port = myutil.get_conf( 'Greenplum', 'GP_PORT')
+# gp_db = myutil.get_conf( 'Greenplum', 'GP_DB')
+# gp_usr = myutil.get_conf( 'Greenplum', 'GP_USER')
+# gp_pw = myutil.get_conf( 'Greenplum', 'GP_PASSWORD')
+# db = mydb.Mydb(gp_host, gp_port, gp_db, gp_usr, gp_pw)
 
 
 class dbsession_wrapper(object):
