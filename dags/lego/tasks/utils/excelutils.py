@@ -198,7 +198,7 @@ class ExcelConverter:
                 "start_column" not in kwargs[sheetname] else kwargs[sheetname]["start_column"]
         row_count = worksheet.max_row
         col_count = worksheet.max_column
-        column_width = col_count-1 if sheetname not in kwargs or \
+        column_width = col_count if sheetname not in kwargs or \
                 "column_width" not in kwargs[sheetname] else kwargs[sheetname]["column_width"]
         end_column = start_column + column_width
         if start_column + ignore_end_row >= row_count:
