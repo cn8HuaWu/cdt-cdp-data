@@ -28,6 +28,7 @@ class Myutil:
     def __init__(self, dag_home):
         self.cp = ConfigParser()
         self.dag_home = dag_home
+        self.db  = None
         self.cp.read( os.path.join(dag_home, "tasks/config/env.conf") )
         cache = imp.load_source("ModifiedProductCache", os.path.join( self.dag_home, "tasks/utils/cache.py") )
         self.productcache = cache.ModifiedProductCache()
