@@ -87,8 +87,9 @@ class ExcelConverter:
 
         if self.convertion_func_list is not None:
             for fn in self.convertion_func_list:
+                print(fn)
                 if not callable(fn):
-                    raise ValueError("format_parameters must be callable")
+                    raise ValueError("convertion_func_list must be callable")
 
         output_path_dir =  output_path if output_path is not None else os.path.dirname(input_absoult_dir) 
         if not os.path.isdir(output_path_dir):
