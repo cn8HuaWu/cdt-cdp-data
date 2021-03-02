@@ -7,7 +7,7 @@ from typing import List
 # from .myutil import Myutil
 import keyword
 import re
-from . import Myutil
+from myutil import Myutil
 # import imp
 
 DAG_HOME =  Variable.get('dag_home').strip().rstrip('/')
