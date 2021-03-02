@@ -22,7 +22,7 @@ class ModifiedProductCache(Cache):
         super().__init__()
         self._initialized = False
 
-    def is_initialized():
+    def is_initialized(self):
         return self._initialized
 
     def init_from_list(self, product_list):
