@@ -37,7 +37,7 @@ DAG_NAME = 'lgc_sales_stock_pos_dag'
 cache_query = "select * from edw.d_dl_modified_product"
 
 import imp
-cache = imp.load_module("ModifiedProductCache", os.path.join( DAG_HOME, "tasks/utils/cache.py") )
+cache = imp.load_source("ModifiedProductCache", os.path.join( DAG_HOME, "tasks/utils/cache.py") )
 
 
 productcache = cache.ModifiedProduct()
