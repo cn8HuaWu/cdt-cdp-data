@@ -16,7 +16,6 @@ class Cache(metaclass=abc.ABCMeta):
         pass
 
 ModifiedProduct = namedtuple("ModifiedProduct", "distributor lego_sku_id should_be_sku_id action_flag")
-# db = Mydb("localhost", "5432", "cdp", "postgres",'Zmoxie!123')    
 class ModifiedProductCache(Cache):
     def __init__(self) -> None:
         super().__init__()
@@ -27,7 +26,7 @@ class ModifiedProductCache(Cache):
 
     def init_from_list(self, product_list):
         for prd in product_list:
-           self.add(product)
+           self.add(prd)
         self._initialized = True
 
     def get_size(self):
@@ -48,9 +47,10 @@ class ModifiedProductCache(Cache):
 
 from sys import getsizeof
 if __name__ == "__main__":
-    productcache = TaintProductCache()    
-    cache_query = "select * from edw.d_dl_modified_product"
-    productcache.init_from_db(db, cache_query)
-    print( productcache.search("LCS_92943") is None )
+    pass
+    # productcache = ModifiedProductCache()    
+    # cache_query = "select * from edw.d_dl_modified_product"
+    # productcache.init_from_db(db, cache_query)
+    # print( productcache.search("LCS_92943") is None )
 
 

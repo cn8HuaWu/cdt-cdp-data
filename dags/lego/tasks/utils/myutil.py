@@ -22,12 +22,15 @@ from aliyunsdkkms.request.v20160120.CreateSecretRequest import CreateSecretReque
 from aliyunsdkkms.request.v20160120.GetSecretValueRequest import GetSecretValueRequest
 import logging, json
 from datetime import datetime
-from .db import Mydb
+
+from airflow.models import Variable
+DAG_HOME =  Variable.get('dag_home').strip().rstrip('/')
+mydb = imp.load_source("mydb", DAG_HOME+"/tasks/utils/db.py")
 
 class Myutil:
-    def __init__(self, dag_home):
+    def __init__(self, dag_home=None):
         self.cp = ConfigParser()
-        self.dag_home = dag_home
+        self.dag_home = DAG_HOME if dag_home is None else dag_home
         self.db  = None
         self.cp.read( os.path.join(dag_home, "tasks/config/env.conf") )
         cache = imp.load_source("ModifiedProductCache", os.path.join( self.dag_home, "tasks/utils/cache.py") )
@@ -458,7 +461,7 @@ class Myutil:
         gp_db = self.get_conf( 'Greenplum', 'GP_DB')
         gp_usr = self.get_conf( 'Greenplum', 'GP_USER')
         gp_pw = self.get_conf( 'Greenplum', 'GP_PASSWORD')
-        self.db = Mydb(gp_host, gp_port, gp_db, gp_usr, gp_pw)
+        self.db = mydb.Mydb(gp_host, gp_port, gp_db, gp_usr, gp_pw)
     
     def get_db(self):
         if self.db is None:
