@@ -56,6 +56,7 @@ def filter_modified_product(row:list):
         if rs.action_flag.lower() == 'delete':
             return None
         elif rs.action_flag.lower() == 'update':
+            print("update: " + ",".join(row))
             row[3] = rs.should_be_sku_id
     return row
 
