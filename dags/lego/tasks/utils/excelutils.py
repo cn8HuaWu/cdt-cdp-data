@@ -46,6 +46,11 @@ class ExcelConverter:
         if not self.keep_empty:
            self.convertion_func_list.append(filter_empty_row) 
 
+
+    def register_fun_list(self, fn_list):
+        for fn in fn_list:
+            self.register_convertion_fun(fn)
+
     def register_convertion_fun(self, fn):
         self.convertion_func_list.append(fn)
 
