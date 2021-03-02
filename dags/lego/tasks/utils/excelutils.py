@@ -31,6 +31,7 @@ import logging
 import openpyxl
 import os, csv
 
+#filter out the empty row
 def filter_empty_row( row:list ):
     if all( [ v is None or str(v).strip(" ")=='' for v in row] ):
         return None
