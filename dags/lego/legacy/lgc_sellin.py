@@ -85,18 +85,18 @@ def load_stg2ods(**kwargs):
     entity_last = entity + '.xlsx'
 
 
-wb = openpyxl.load_workbook(entity_last)
-ws = wb['Sheet1']
-ws.delete_rows(ws.max_row)
-wb.save(entity_last)
-#
-pkey = entity_conf[src_entity]["key"]
-stg_suffix = entity_conf[src_entity]["stg_suffix"]
-#
-kwargs['task_instance'].xcom_push(key='batch_date', value=batch_date)
-stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db,
-                         has_head=has_head)
-stg2ods.start()
+    wb = openpyxl.load_workbook(entity_last)
+    ws = wb['Sheet1']
+    ws.delete_rows(ws.max_row)
+    wb.save(entity_last)
+    #
+    pkey = entity_conf[src_entity]["key"]
+    stg_suffix = entity_conf[src_entity]["stg_suffix"]
+    #
+    kwargs['task_instance'].xcom_push(key='batch_date', value=batch_date)
+    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db,
+                            has_head=has_head)
+    stg2ods.start()
 
 args = {
     'owner': 'cdp_admin',

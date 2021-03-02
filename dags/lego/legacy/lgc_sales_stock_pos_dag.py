@@ -155,4 +155,14 @@ sales_stock_pos_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
-preprocess_sales_stock_pos_task >> sales_stock_pos_src2stg_task >> sales_stock_pos_stg2ods_task
+
+postprocess_sales_stock_pos_task = PythonOperator(
+    task_id = 'postprocess_sales_stock_pos_task',
+    provide_context = True,
+    python_callable = post_process_fileload,
+    op_kwargs = {'is_encrypted': False},
+    on_failure_callback = dag_failure_handler,
+    dag = dag,
+)
+
+preprocess_sales_stock_pos_task >> sales_stock_pos_src2stg_task >> sales_stock_pos_stg2ods_task >> postprocess_sales_stock_pos_task
