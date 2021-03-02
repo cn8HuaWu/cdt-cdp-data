@@ -1,11 +1,11 @@
 Staging:
   src_columns:
     date text,
-    storecode	text,
+    storecode text,
     transactioncode text,
     productcode text,
-    description	text,
-    salespcs	text,
+    description text,
+    salespcs text,
     cttrefnum text
 
 
