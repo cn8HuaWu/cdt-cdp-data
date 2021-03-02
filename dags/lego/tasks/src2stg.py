@@ -143,8 +143,8 @@ class Src2stgHandler:
     def process_src_data_v2(self, keep_empty= False, merge_source = False):
         excelutils = imp.load_source('excelutils', self.myutil.dag_home+"/tasks/utils/excelutils.py" )
         excel2csv = excelutils.ExcelConverter(keep_empty = keep_empty)
-        excel2csv.register_convertion_fun(self.excel_fun_list) 
-        
+        excel2csv.register_fun_list(self.excel_fun_list) 
+
         ok_dir_path = os.path.dirname(self.ok_file_path)
         ## backup the data file and the ok file
         bucket = self.myutil.get_oss_bucket()
