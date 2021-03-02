@@ -72,7 +72,7 @@ class ExcelConverter:
                 or input_ext not in (".xls", ".xlsx"):
             raise FileNotFoundError("Input excel file does not exists: " + input_path)
         
-        if not simple_mode and sheets_param is None or len(sheets_param) == 0:
+        if not simple_mode and (sheets_param is None or len(sheets_param) == 0):
             raise ValueError("Invalid parameter: simple_mode = False and sheets_params is none")
         
         file_format_parameters = sheets_param["_format_parameters"] if "_format_parameters" in sheets_param else None
