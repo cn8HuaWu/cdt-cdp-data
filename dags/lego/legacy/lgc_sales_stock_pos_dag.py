@@ -34,6 +34,33 @@ email_to_list =  Variable.get('email_to_list').split(',')
 entity = 'sales_stock_pos'
 src_entity = 'lgc_sales_stock_pos'
 DAG_NAME = 'lgc_sales_stock_pos_dag'
+cache_query = "select * from edw.d_dl_modified_product"
+
+import imp
+cache = imp.load_module("ModifiedProductCache", os.path.join( DAG_HOME, "tasks/utils/cache.py") )
+
+
+productcache = cache.ModifiedProduct()
+
+def get_modified_productcache():
+    global  productcache 
+    if not productcache.is_initialized():
+        logging.info("Initializate the product cache")
+        with db.create_session() as session:
+            tainedproducts = session.execute(cache_query)
+            for product in tainedproducts:
+                productcache.add(product)
+    return productcache
+
+def filter_modified_product(row:list):
+    productcache =  get_modified_productcache()
+    rs = productcache.search(row[3])
+    if rs is not None:
+        if rs.action_flag.lower() == 'delete':
+            return None
+        elif rs.action_flag.lower() == 'update':
+            row[3] = rs.should_be_sku_id
+    return row
 
 
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
@@ -74,7 +101,8 @@ def load_src2stg(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, sheetname='POS')
+    excel_fun_list = [filter_modified_product]
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, sheetname='POS')
     src2stg.start(version='v2')
 
 def load_stg2ods(**kwargs):
