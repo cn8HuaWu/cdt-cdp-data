@@ -10,7 +10,7 @@ import re
 import imp
 
 DAG_HOME =  Variable.get('dag_home').strip().rstrip('/')
-mydb = imp.load_source("mydb", DAG_HOME+"/tasks/utils/db.py")
+# mydb = imp.load_source("mydb", DAG_HOME+"/tasks/utils/db.py")
 utiltools = imp.load_source("myutil", DAG_HOME+"/tasks/utils/myutil.py")
 
 SQL_TYPE = 'SQL'
