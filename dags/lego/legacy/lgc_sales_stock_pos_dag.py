@@ -37,6 +37,7 @@ DAG_NAME = 'lgc_sales_stock_pos_dag'
 
 
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
+    logging.info("current path: " + os.getcwd())
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     
     # remove the ok file and get the source file
