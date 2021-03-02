@@ -463,6 +463,7 @@ class Myutil:
     def get_db(self):
         if self.db is None:
             self.init_db()
+        return self.db
 
     def get_modified_productcache(self):
         if not self.productcache.is_initialized():
