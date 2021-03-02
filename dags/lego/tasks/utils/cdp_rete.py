@@ -7,11 +7,12 @@ from typing import List
 # from .myutil import Myutil
 import keyword
 import re
-import imp
+from .myutil import Myutil
+# import imp
 
 DAG_HOME =  Variable.get('dag_home').strip().rstrip('/')
 # mydb = imp.load_source("mydb", DAG_HOME+"/tasks/utils/db.py")
-utiltools = imp.load_source("myutil", DAG_HOME+"/tasks/utils/myutil.py")
+# utiltools = imp.load_source("myutil", DAG_HOME+"/tasks/utils/myutil.py")
 
 SQL_TYPE = 'SQL'
 EXP_TYPE = 'EXP'
@@ -25,7 +26,7 @@ OPERATOR_STATE_TRUE = "true"
 OPERATOR_STATE_CHILD_FALSE = "childfalse"
 
 
-myutil = utiltools.Myutil(DAG_HOME)
+myutil = Myutil(DAG_HOME)
 db = myutil.get_db()
 # gp_host = myutil.get_conf( 'Greenplum', 'GP_HOST')
 # gp_port = myutil.get_conf( 'Greenplum', 'GP_PORT')
