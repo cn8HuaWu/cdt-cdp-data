@@ -23,38 +23,13 @@ ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
 myutil = Myutil(DAG_HOME)
-db = myutil.get_db
+db = myutil.get_db()
 
 entity_conf = myutil.get_entity_config()
 email_to_list =  Variable.get('email_to_list').split(',')
 entity = 'sales_stock_pos'
 src_entity = 'lgc_sales_stock_pos'
 DAG_NAME = 'lgc_sales_stock_pos_dag'
-cache_query = "select * from edw.d_dl_modified_product"
-
-import imp
-cache = imp.load_source("ModifiedProductCache", os.path.join( DAG_HOME, "tasks/utils/cache.py") )
-productcache = cache.ModifiedProductCache()
-def get_modified_productcache():
-    global  productcache 
-    if not productcache.is_initialized():
-        logging.info("Initializate the product cache")
-        with db.create_session() as session:
-            tainedproducts = session.execute(cache_query)
-            for product in tainedproducts:
-                productcache.add(product)
-    return productcache
-
-def filter_modified_product(row:list):
-    productcache =  get_modified_productcache()
-    rs = productcache.search(row[3])
-    if rs is not None:
-        if rs.action_flag.lower() == 'delete':
-            return None
-        elif rs.action_flag.lower() == 'update':
-            print("update: " + ",".join(row))
-            row[3] = rs.should_be_sku_id
-    return row
 
 
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
