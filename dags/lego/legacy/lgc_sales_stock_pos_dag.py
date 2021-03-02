@@ -38,7 +38,7 @@ cache_query = "select * from edw.d_dl_modified_product"
 
 import imp
 cache = imp.load_source("ModifiedProductCache", os.path.join( DAG_HOME, "tasks/utils/cache.py") )
-productcache = cache.ModifiedProduct()
+productcache = cache.ModifiedProductCache()
 def get_modified_productcache():
     global  productcache 
     if not productcache.is_initialized():
