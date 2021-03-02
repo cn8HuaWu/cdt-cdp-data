@@ -87,7 +87,6 @@ class ExcelConverter:
 
         if self.convertion_func_list is not None:
             for fn in self.convertion_func_list:
-                print(fn)
                 if not callable(fn):
                     raise ValueError("convertion_func_list must be callable")
 

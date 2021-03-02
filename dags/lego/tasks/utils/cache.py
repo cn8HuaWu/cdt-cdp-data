@@ -36,7 +36,7 @@ class ModifiedProductCache(Cache):
     def gen_key(self, product:ModifiedProduct) -> str:
         if product.distributor is None or product.lego_sku_id is None:
             raise ValueError("ModifiedProductCache.add(): distributor and lego_sku_id must not empty")
-        return product.distributor+"_"+product.lego_sku_id
+        return product.lego_sku_id
 
     def add(self, product:ModifiedProduct):
         self._cache_dict[self.gen_key(product)] =  product

@@ -194,7 +194,9 @@ class Src2stgHandler:
                         merge= self.merge,
                         **self.sheet_param
                     )
-                    target_file_path_list.extend(output_abs_file)
+                    target_file_path_list.extend(output_abs_file)  ## to-be debug
+                elif target_unpack_file_path('.')[-1].lower() in ('csv', 'txt') : 
+                    target_file_path_list.append(target_unpack_file_path)
 
         elif( src_file_path.split('.')[-1].lower() in ('xlsx', 'xls') ):
             output_abs_file = excel2csv.convert_xls2csv(src_file_path, 
