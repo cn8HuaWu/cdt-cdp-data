@@ -194,7 +194,7 @@ class Src2stgHandler:
                     target_file_path_list.extend(output_abs_file)
 
         elif( src_file_path.split('.')[-1].lower() in ('xlsx', 'xls') ):
-            excel2csv.convert_xls2csv(src_file_path, 
+            output_abs_file = excel2csv.convert_xls2csv(src_file_path, 
                 output_path = target_file_path,
                 output_filename = self.entity_name,
                 overwrite = self.overwrite,
@@ -208,8 +208,9 @@ class Src2stgHandler:
                 merge= self.merge,
                 **self.sheet_param
             )
-            target_file_path_list.append(target_file_path)
+            target_file_path_list.extend(output_abs_file)
         else:
+            target_file_path = os.path.join(entity_data_dir, self.entity_name + ".csv")
             shutil.copyfile( src_file_path, os.path.join(entity_data_dir, target_file_path) )
             target_file_path_list.append(target_file_path)
         
@@ -255,7 +256,8 @@ class Src2stgHandler:
             # self.myutil.upload_local_oss(bucket, target_file_path, backup_path)
             
             ## Step 5: Upload Data to OSS Staging
-            basename = self.entity_name + "_"+ self.table_suffix +".csv" 
+            # basename = self.entity_name + "_"+ self.table_suffix +".csv" 
+            basename = os.path.basename(target_file_path )
             stg_path = '/'.join( (self.level,self.datasource, self.entity_name, self.batch_date, basename) )
             self.myutil.upload_local_oss(bucket, target_file_path, stg_path)
 
