@@ -27,7 +27,7 @@ class ModifiedProductCache(Cache):
 
     def init_from_list(self, product_list):
        for prd in product_list:
-            self.add(product)
+           self.add(product)
         self._initialized = True
 
     def get_size(self):
