@@ -14,6 +14,7 @@ from pandas.errors import EmptyDataError
 from Crypto.Cipher import AES
 import base64
 import chardet
+import imp
 
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkcore.auth.credentials import EcsRamRoleCredential
@@ -21,12 +22,15 @@ from aliyunsdkkms.request.v20160120.CreateSecretRequest import CreateSecretReque
 from aliyunsdkkms.request.v20160120.GetSecretValueRequest import GetSecretValueRequest
 import logging, json
 from datetime import datetime
+from .db import Mydb
 
 class Myutil:
     def __init__(self, dag_home):
         self.cp = ConfigParser()
         self.dag_home = dag_home
         self.cp.read( os.path.join(dag_home, "tasks/config/env.conf") )
+        cache = imp.load_source("ModifiedProductCache", os.path.join( self.dag_home, "tasks/utils/cache.py") )
+        self.productcache = cache.ModifiedProductCache()
 
     def get_secretvalue(self, name, ver = None):
         region_id = self.get_conf('ECSRAM', 'region')
@@ -445,7 +449,43 @@ class Myutil:
         
         logging.info("source file lines is " + str(fct))
         return fct if fct >0 else 0
-        
+    
+
+    def init_db(self):
+        gp_host = self.get_conf( 'Greenplum', 'GP_HOST')
+        gp_port = self.get_conf( 'Greenplum', 'GP_PORT')
+        gp_db = self.get_conf( 'Greenplum', 'GP_DB')
+        gp_usr = self.get_conf( 'Greenplum', 'GP_USER')
+        gp_pw = self.get_conf( 'Greenplum', 'GP_PASSWORD')
+        self.db = Mydb(gp_host, gp_port, gp_db, gp_usr, gp_pw)
+    
+    def get_db(self):
+        if self.db is None:
+            self.init_db()
+
+    def get_modified_productcache(self):
+        if not self.productcache.is_initialized():
+            if self.db is None:
+                self.init_db()
+
+            cache_query = "select * from edw.d_dl_modified_product"
+            logging.info("Initializate the product cache")
+            with self.db.create_session() as session:
+                tainedproducts = session.execute(cache_query)
+                for product in tainedproducts:
+                    self.productcache.add(product)
+        return self.productcache
+
+    def filter_modified_product(self, row:list):
+        productcache =  self.get_modified_productcache()
+        rs = productcache.search(row[3])
+        if rs is not None:
+            if rs.action_flag.lower() == 'delete':
+                return None
+            elif rs.action_flag.lower() == 'update':
+                row[3] = rs.should_be_sku_id
+        return row
+    
     def send_failure_mail(self):
         pass
 
