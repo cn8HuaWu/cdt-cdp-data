@@ -476,6 +476,7 @@ class Myutil:
                     self.productcache.add(product)
         return self.productcache
 
+    # need add key column index
     def filter_modified_product(self, row:list):
         productcache =  self.get_modified_productcache()
         rs = productcache.search(row[3])
