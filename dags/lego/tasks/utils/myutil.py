@@ -28,13 +28,15 @@ DAG_HOME =  Variable.get('dag_home').strip().rstrip('/')
 mydb = imp.load_source("mydb", DAG_HOME+"/tasks/utils/db.py")
 
 class Myutil:
-    def __init__(self, dag_home=None):
+    def __init__(self, dag_home=None, entity_name = None):
         self.cp = ConfigParser()
         self.dag_home = DAG_HOME if dag_home is None else dag_home
         self.db  = None
         self.cp.read( os.path.join(dag_home, "tasks/config/env.conf") )
         cache = imp.load_source("ModifiedProductCache", os.path.join( self.dag_home, "tasks/utils/cache.py") )
         self.productcache = cache.ModifiedProductCache()
+        self.entity_name = entity_name
+        self.prd_idx_list = None
 
     def get_secretvalue(self, name, ver = None):
         region_id = self.get_conf('ECSRAM', 'region')
@@ -481,9 +483,25 @@ class Myutil:
                     self.productcache.add(product)
         return self.productcache
 
+
+
+    def gen_cache_key(self, row):
+        if self.entity_name is None:
+            return row[0]
+        
+        if self.prd_idx_list is None:
+            self.prd_idx_list = self.get_entity_config(self.entity_name)["productcode_index"].split(",").sort()
+            if self.prd_idx_list[0] < 0 or self.prd_idx_list[-1] > len(row):
+                logging.warning("modified product code index is incorrect, it's >len(list) or <0 ")
+                self.prd_idx_list = [0]
+            
+        key = "_".join( row[int(i)] for i in self.prd_idx_list )
+        return key
+
     # need add key column index
     def filter_modified_product(self, row:list):
         productcache =  self.get_modified_productcache()
+        productkey = self.gen_cache_key(row)
         rs = productcache.search(row[3])
         if rs is not None:
             if rs.action_flag.lower() == 'delete':
