@@ -23,12 +23,8 @@ ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
 myutil = Myutil(DAG_HOME)
-gp_host = myutil.get_conf( 'Greenplum', 'GP_HOST')
-gp_port = myutil.get_conf( 'Greenplum', 'GP_PORT')
-gp_db = myutil.get_conf( 'Greenplum', 'GP_DB')
-gp_usr = myutil.get_conf( 'Greenplum', 'GP_USER')
-gp_pw = myutil.get_conf( 'Greenplum', 'GP_PASSWORD')
-db = Mydb(gp_host, gp_port, gp_db, gp_usr, gp_pw)
+db = myutil.get_db
+
 entity_conf = myutil.get_entity_config()
 email_to_list =  Variable.get('email_to_list').split(',')
 entity = 'sales_stock_pos'
@@ -99,7 +95,7 @@ def load_src2stg(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    excel_fun_list = [filter_modified_product]
+    excel_fun_list = [myutil.filter_modified_product]
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, sheetname='POS')
     src2stg.start(version='v2')
 
