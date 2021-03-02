@@ -42,7 +42,7 @@ class ExcelConverter:
         self.convertion_func_list = []
         self.keep_empty =  keep_empty
     
-        if not keep_empty:
+        if not self.keep_empty:
            self.convertion_func_list.append(filter_empty_row) 
 
     def register_convertion_fun(self, fn):
