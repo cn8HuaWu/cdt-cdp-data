@@ -48,6 +48,8 @@ class ExcelConverter:
 
 
     def register_fun_list(self, fn_list):
+        if fn_list is None or len(fn_list) ==0:
+            return
         for fn in fn_list:
             self.register_convertion_fun(fn)
 
