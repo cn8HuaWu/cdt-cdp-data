@@ -506,7 +506,7 @@ class Myutil:
     def filter_modified_product(self, row:list, *args):
         productcache =  self.get_modified_productcache()
         productkey = self.gen_cache_key(row)
-        logging.info("product key " +  productkey)
+        logging.info("product key " +  str(productkey))
         rs = productcache.search(row[int(productkey)])
         if rs is not None:
             if rs.action_flag.lower() == 'delete':
