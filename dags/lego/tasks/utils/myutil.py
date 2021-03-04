@@ -493,7 +493,7 @@ class Myutil:
             entity_cfg = self.get_entity_config()[self.entity_name] 
             logging.info("product cache code list:" + entity_cfg["productcode_index"] )
             self.prd_idx_list = list(sorted(str(entity_cfg["productcode_index"]).split(",")))
-            if self.prd_idx_list is not None and  self.prd_idx_list[0] < 0 or self.prd_idx_list[-1] > len(row):
+            if self.prd_idx_list is not None and  int(self.prd_idx_list[0]) < 0 or int(self.prd_idx_list[-1]) > len(row):
                 logging.warning("modified product code index is incorrect, it's >len(list) or <0 ") 
                 self.prd_idx_list = [0]
             
