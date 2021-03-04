@@ -178,8 +178,8 @@ class Src2stgHandler:
         target_file_path = entity_data_dir
         if( src_file_path.split('.')[-1].lower() in ( 'gz', 'zip' )):
             target_unpack_file_path = self.myutil.uncompress_gz_file(src_file_path, os.path.join(target_file_path, self.entity_name), self.merge )
-            for temp_fn in target_file_path:
-                if target_unpack_file_path('.')[-1].lower() in ('xlsx', 'xls') :
+            for temp_fn in target_unpack_file_path:
+                if temp_fn('.')[-1].lower() in ('xlsx', 'xls') :
                     output_abs_file = excel2csv.convert_xls2csv(temp_fn, 
                         output_path = target_file_path,
                         output_filename = os.path.basename(os.path.splitext(temp_fn)[0]),
@@ -195,8 +195,8 @@ class Src2stgHandler:
                         **self.sheet_param
                     )
                     target_file_path_list.extend(output_abs_file)  ## to-be debug
-                elif target_unpack_file_path('.')[-1].lower() in ('csv', 'txt') : 
-                    target_file_path_list.append(target_unpack_file_path)
+                elif temp_fn('.')[-1].lower() in ('csv', 'txt') : 
+                    target_file_path_list.append(temp_fn)
 
         elif( src_file_path.split('.')[-1].lower() in ('xlsx', 'xls') ):
             output_abs_file = excel2csv.convert_xls2csv(src_file_path, 
