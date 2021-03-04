@@ -32,7 +32,7 @@ import openpyxl
 import os, csv
 
 #filter out the empty row
-def filter_empty_row( row:list ):
+def filter_empty_row( row:list , *args ):
     if all( [ v is None or str(v).strip(" ")=='' for v in row] ):
         return None
     else :
@@ -54,7 +54,7 @@ class ExcelConverter:
             self.register_convertion_fun(fn)
 
     def register_convertion_fun(self, fn):
-        self.convertion_func_list.append(fn)
+        self.convertion_func_list.insert(0, fn)
 
     def clear_convertion_fun(self):
         self.convertion_func_list.clear()
@@ -110,6 +110,7 @@ class ExcelConverter:
         else:
             sheets_name_list = [wb.sheetnames[0]] if sheet_name is None else [sheet_name]
 
+        sheets_name_list = list(set(sheets_name_list) & set(wb.sheetnames))
         # if donot overwrite the exists, then raise exception once the target file exists
         # output_file_path = ouput_path + output_name + [sheet name] + output_format
         if len(sheets_name_list) <= 1 or merge:
@@ -178,7 +179,7 @@ class ExcelConverter:
                         continue
                     # 如果要支持其他文件格式， 则需要重装对应文件的writer，使其支持 writerow(iteror)
                     
-                    fdwriter.writerow( newline )
+                    newline = fn(newline, input_path, sheet)
 
             if not merge:
                 fd.flush()

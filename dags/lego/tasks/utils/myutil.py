@@ -1,7 +1,7 @@
 from configparser import ConfigParser
 from airflow.utils.email import send_email
 import logging, shutil, os
-import gzip
+import gzip, re, json
 import yaml, csv
 import xlrd
 import zipfile
@@ -483,8 +483,6 @@ class Myutil:
                     self.productcache.add(product)
         return self.productcache
 
-
-
     def gen_cache_key(self, row):
         if self.entity_name is None:
             return row[0]
@@ -499,17 +497,61 @@ class Myutil:
         return key
 
     # need add key column index
-    def filter_modified_product(self, row:list):
+    def filter_modified_product(self, row:list, *args):
         productcache =  self.get_modified_productcache()
         productkey = self.gen_cache_key(row)
-        rs = productcache.search(row[3])
+        rs = productcache.search(productkey)
         if rs is not None:
             if rs.action_flag.lower() == 'delete':
                 return None
             elif rs.action_flag.lower() == 'update':
-                row[3] = rs.should_be_sku_id
+                row[int(productkey)] = rs.should_be_sku_id
         return row
     
+    def rearrange_columns(self, row:list, input_file_path, sheetname = None, *args):
+        if row is None:
+            return row
+        file_name = os.path.basename(input_file_path)
+        def new_column(idx_chr):
+            if (idx_chr == '-'):
+                return ''
+            elif( idx_chr == '/' ):
+                return None
+            elif( idx_chr.isdigit() ):
+                return row[int(idx_chr)]
+        # 'all_reg': '', 
+        
+        if "productcode_index" in self.get_entity_config(self.entity_name):
+            filename_col_reg = self.get_entity_config(self.entity_name)["productcode_index"]
+        # filename_col_reg = '{"ABC":{"filename":"cal*","sheets": [["blc", "0,1,3,2,-"]]}}'
+        sortlist = None
+        aj = json.loads(filename_col_reg)
+        for k in aj.keys():
+            cl = dict(aj[k])
+            filename_reg = cl['filename']
+            if re.match(filename_reg, file_name):
+                if 'all_reg' in cl:
+                    sortlist = cl['all_reg']
+                    # print(sortlist)
+                    break
+
+                if 'sheets' in cl and sheetname is not None:
+                    for tmpsn, sl in cl['sheets']:
+                        if tmpsn == sheetname:
+                            sortlist = sl
+                            break
+                        
+                if sortlist is not None:
+                    # print(sortlist)
+                    break
+        
+        if sortlist is None:
+            return row
+        else:
+            new_row = [ new_column(inx) for inx in sortlist.split(",")]
+            new_row = list(filter(lambda x: x is not None, new_row))
+            return new_row
+
     def send_failure_mail(self):
         pass
 
