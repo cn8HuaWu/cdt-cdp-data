@@ -177,7 +177,7 @@ class Src2stgHandler:
         target_file_path_list = []
         target_file_path = entity_data_dir
         if( src_file_path.split('.')[-1].lower() in ( 'gz', 'zip' )):
-            target_unpack_file_path = self.myutil.uncompress_gz_file(src_file_path, os.path.join(target_file_path, self.entity_name) )
+            target_unpack_file_path = self.myutil.uncompress_gz_file(src_file_path, os.path.join(target_file_path, self.entity_name), self.merge )
             for temp_fn in target_file_path:
                 if target_unpack_file_path('.')[-1].lower() in ('xlsx', 'xls') :
                     output_abs_file = excel2csv.convert_xls2csv(temp_fn, 

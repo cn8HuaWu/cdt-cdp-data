@@ -142,7 +142,10 @@ class Myutil:
         if (prefix == 'failed' and os.path.exists(ok_file_path)):
             shutil.move(ok_file_path, ok_file_path+"_"+datetime.strftime(datetime.now(), '%Y%m%d%H%M%S'))
 
-    def uncompress_gz_file(self, fn_in, fn_out, merge= True):
+    def uncompress_gz_file(self, fn_in, fn_out=None, merge= False):
+        if merge and fn_out is None:
+            raise ValueError("Arguments error: Cannot be fn_out None and merge is False")
+
         targe_file_list = []
         out_dirname = os.path.dirname(fn_out)
         out_name = os.path.basename(fn_out).split(".")[0]
@@ -154,16 +157,15 @@ class Myutil:
                     os.remove(os.path.join(out_dirname, nm))
             z.extractall(path=out_dirname)
 
-            if len( z.namelist() ) == 1:
-                input_extract_pth = os.path.join( out_dirname, z.namelist()[0] )
-                os.rename(input_extract_pth,  fn_out)
-                targe_file_list.append(fn_out)
-            elif not merge :
-                if len(z.namelist()) > 1:
-                    for nm in z.namelist():
-                        os.rename( os.path.join(out_dirname, nm), os.path.join(out_dirname,out_name) +"_"+ str(count) + "." + nm.split(".")[-1])
-                        count +=1
-                targe_file_list.append(fn_out)
+            if not merge :
+                for nm in z.namelist():
+                    if fn_out is not None:
+                        new_fn_out = os.path.join(out_dirname,out_name) +"_"+ str(count) + "." + nm.split(".")[-1]
+                        os.rename( os.path.join(out_dirname, nm), new_fn_out)
+                    else:
+                        new_fn_out = os.path.join(out_dirname,nm)
+                    targe_file_list.append(new_fn_out) 
+                    count +=1
             elif merge:
                 with open (fn_out , 'wb') as out_fd: 
                     for nm in z.namelist():
