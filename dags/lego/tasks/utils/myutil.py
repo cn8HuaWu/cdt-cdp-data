@@ -492,19 +492,22 @@ class Myutil:
         if self.prd_idx_list is None:
             entity_cfg = self.get_entity_config()[self.entity_name] 
             logging.info("product cache code list:" + entity_cfg["productcode_index"] )
-            self.prd_idx_list = list(sorted(str(entity_cfg["productcode_index"]).split(",")))
-            if self.prd_idx_list is not None and  int(self.prd_idx_list[0]) < 0 or int(self.prd_idx_list[-1]) > len(row):
-                logging.warning("modified product code index is incorrect, it's >len(list) or <0 ") 
-                self.prd_idx_list = [0]
+            self.prd_idx_list = entity_cfg["productcode_index"]
+            return self.prd_idx_list
+        # #     self.prd_idx_list = list(sorted(str(entity_cfg["productcode_index"]).split(",")))
+        # #     if self.prd_idx_list is not None and  int(self.prd_idx_list[0]) < 0 or int(self.prd_idx_list[-1]) > len(row):
+        # #         logging.warning("modified product code index is incorrect, it's >len(list) or <0 ") 
+        # #         self.prd_idx_list = [0]
             
-        key = "_".join( row[int(i)] for i in self.prd_idx_list )
-        return key
+        # # key = "_".join( row[int(i)] for i in self.prd_idx_list )
+        # return key
 
     # need add key column index
     def filter_modified_product(self, row:list, *args):
         productcache =  self.get_modified_productcache()
         productkey = self.gen_cache_key(row)
-        rs = productcache.search(productkey)
+        logging.info("product key " +  productkey)
+        rs = productcache.search(row[int(productkey)])
         if rs is not None:
             if rs.action_flag.lower() == 'delete':
                 return None
