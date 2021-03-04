@@ -459,6 +459,36 @@ entities:
     stg_suffix: di
     key: date,cust_link,prod_id
 
+  lgc_plan_nip_dkk:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: year,customer,plan_vision
+
+  lgc_plan_rrp_rmb:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: year,customer,plan_vision
+
+  lgc_plan_nip_dkk_portfolio:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: year,customer,plan_vision
+
+  lgc_plan_rrp_rmb_portfolio:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: year,customer,plan_vision
+
+  lgc_cs_weekly_phasing:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    key: customer,month
+
   lgc_sales_stock_pos:
     edw_prefix: f
     update_type: f
