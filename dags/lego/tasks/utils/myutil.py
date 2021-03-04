@@ -525,6 +525,7 @@ class Myutil:
                 return row[int(idx_chr)]
         # 'all_reg': '', 
         
+        logging.warning("entity name: " + self.entity_name)
         entity_cfg = self.get_entity_config()[self.entity_name] 
         if "column_positions" in entity_cfg:
             filename_col_reg = entity_cfg["column_positions"]
