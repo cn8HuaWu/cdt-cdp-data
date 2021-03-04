@@ -173,14 +173,14 @@ class ExcelConverter:
                 for row in self.read_sheet(wb[sheet], sheet, **sheets_param):
                     newline = [ '' if v.value is None else str(v.value) for v in row ]
                     for fn in self.convertion_func_list:
-                        newline = fn(newline)
+                       newline = fn(newline, input_path, sheet)
 
                     if newline is None:
                         continue
                     # 如果要支持其他文件格式， 则需要重装对应文件的writer，使其支持 writerow(iteror)
                     
-                    newline = fn(newline, input_path, sheet)
-
+                    fdwriter.writerow( newline )
+                    
             if not merge:
                 fd.flush()
                 fd.close()
