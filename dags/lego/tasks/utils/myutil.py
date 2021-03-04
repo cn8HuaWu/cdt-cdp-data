@@ -490,7 +490,8 @@ class Myutil:
             return row[0]
         
         if self.prd_idx_list is None:
-            self.prd_idx_list = self.get_entity_config(self.entity_name)["productcode_index"].split(",").sort()
+            entity_cfg = self.get_entity_config()[self.entity_name] 
+            self.prd_idx_list = entity_cfg["productcode_index"].split(",").sort()
             if self.prd_idx_list[0] < 0 or self.prd_idx_list[-1] > len(row):
                 logging.warning("modified product code index is incorrect, it's >len(list) or <0 ")
                 self.prd_idx_list = [0]
@@ -523,8 +524,9 @@ class Myutil:
                 return row[int(idx_chr)]
         # 'all_reg': '', 
         
-        if "column_positions" in self.get_entity_config(self.entity_name):
-            filename_col_reg = self.get_entity_config(self.entity_name)["column_positions"]
+        entity_cfg = self.get_entity_config()[self.entity_name] 
+        if "column_positions" in entity_cfg:
+            filename_col_reg = entity_cfg["column_positions"]
         # filename_col_reg = '{"ABC":{"filename":"cal*","sheets": [["blc", "0,1,3,2,-"]]}}'
         sortlist = None
         aj = json.loads(filename_col_reg)
