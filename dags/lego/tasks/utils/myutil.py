@@ -148,24 +148,24 @@ class Myutil:
 
         targe_file_list = []
         out_dirname = os.path.dirname(fn_out)
-        out_name = os.path.basename(fn_out).split(".")[0]
+        # out_name = os.path.basename(fn_out).split(".")[0]
 
         with zipfile.ZipFile(fn_in, 'r') as z:
-            count = 0
+            # count = 0
             for nm in z.namelist():
                 if os.path.exists( os.path.join(out_dirname, nm) ):
                     os.remove(os.path.join(out_dirname, nm))
             z.extractall(path=out_dirname)
 
             if not merge :
-                for nm in z.namelist():
-                    if fn_out is not None:
-                        new_fn_out = os.path.join(out_dirname,out_name) +"_"+ str(count) + "." + nm.split(".")[-1]
-                        os.rename( os.path.join(out_dirname, nm), new_fn_out)
-                    else:
-                        new_fn_out = os.path.join(out_dirname,nm)
-                    targe_file_list.append(new_fn_out) 
-                    count +=1
+                # for nm in z.namelist():
+                #     if fn_out is not None:
+                #         # new_fn_out = os.path.join(out_dirname,out_name) +"_"+ str(count) + "." + nm.split(".")[-1]
+                #         os.rename( os.path.join(out_dirname, nm), new_fn_out)
+                #     else:
+                new_fn_out = os.path.join(out_dirname,nm)
+                targe_file_list.append(new_fn_out) 
+                    # count +=1
             elif merge:
                 with open (fn_out , 'wb') as out_fd: 
                     for nm in z.namelist():
