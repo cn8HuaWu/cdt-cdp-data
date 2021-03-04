@@ -158,13 +158,13 @@ class Myutil:
             z.extractall(path=out_dirname)
 
             if not merge :
-                # for nm in z.namelist():
+                for nm in z.namelist():
                 #     if fn_out is not None:
                 #         # new_fn_out = os.path.join(out_dirname,out_name) +"_"+ str(count) + "." + nm.split(".")[-1]
                 #         os.rename( os.path.join(out_dirname, nm), new_fn_out)
                 #     else:
-                new_fn_out = os.path.join(out_dirname,nm)
-                targe_file_list.append(new_fn_out) 
+                    new_fn_out = os.path.join(out_dirname,nm)
+                    targe_file_list.append(new_fn_out) 
                     # count +=1
             elif merge:
                 with open (fn_out , 'wb') as out_fd: 
