@@ -1,0 +1,21 @@
+Staging:
+  src_columns:
+    customer text,
+    month text,
+    first_week text,
+    second_week text,
+    third_week text,
+    fourth_week text,
+    fifth_week text
+
+ODS:
+
+EDW:
+  create_table_query:
+    
+  
+  insert_edw_from_ods_query:
+
+
+
+

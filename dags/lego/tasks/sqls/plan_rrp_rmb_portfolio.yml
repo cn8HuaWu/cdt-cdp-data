@@ -1,0 +1,27 @@
+Staging:
+  src_columns:
+    customer text,
+    year text,
+    Jan text,
+    Feb text,
+    Mar text,
+    Apr text,
+    May text,
+    Jun text,
+    Jul text,
+    Aug text,
+    Sep text,
+    Oct text,
+    Nov text,
+    Dec text,
+    year text,
+    plan_vision text
+
+ODS:
+
+EDW:
+  create_table_query:
+    
+  
+  insert_edw_from_ods_query:
+

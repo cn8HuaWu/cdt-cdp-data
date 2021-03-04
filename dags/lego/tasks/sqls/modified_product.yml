@@ -1,11 +1,9 @@
 Staging:
   src_columns:
-    store text,
-    close_date text,
-    reopen_date text,
-    reason text
-
-
+    channel text,
+    temp_product text,
+    shouldbe_product text,
+    flag text
 
 ODS:
 
@@ -14,3 +12,7 @@ EDW:
     
   
   insert_edw_from_ods_query:
+
+
+
+
