@@ -463,6 +463,6 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
-    productcode_index: 3
+    productcode_index: "3"
     column_positions: '{"DLH":{"filename":"BLH.*","all_reg":"0,1,2,3,5,4,-"}}'
     key: date,storecode,transactioncode,productcode
