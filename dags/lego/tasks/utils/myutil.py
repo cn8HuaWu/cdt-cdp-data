@@ -521,8 +521,8 @@ class Myutil:
                 return row[int(idx_chr)]
         # 'all_reg': '', 
         
-        if "productcode_index" in self.get_entity_config(self.entity_name):
-            filename_col_reg = self.get_entity_config(self.entity_name)["productcode_index"]
+        if "column_positions" in self.get_entity_config(self.entity_name):
+            filename_col_reg = self.get_entity_config(self.entity_name)["column_positions"]
         # filename_col_reg = '{"ABC":{"filename":"cal*","sheets": [["blc", "0,1,3,2,-"]]}}'
         sortlist = None
         aj = json.loads(filename_col_reg)
