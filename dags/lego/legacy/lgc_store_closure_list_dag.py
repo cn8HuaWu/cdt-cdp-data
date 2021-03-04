@@ -83,7 +83,7 @@ def load_stg2ods(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
-    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db)
+    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
     stg2ods.start()
 
 
@@ -130,14 +130,14 @@ store_closure_list_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
-#postprocess_store_closure_list_task = PythonOperator(
-#    task_id = 'postprocess_store_closure_list_task',
-#    provide_context = True,
-#    python_callable = post_process_fileload,
-#    op_kwargs = {'is_encrypted': False},
-#    on_failure_callback = dag_failure_handler,
-#    dag = dag,
-#)
+postprocess_store_closure_list_task = PythonOperator(
+    task_id = 'postprocess_store_closure_list_task',
+    provide_context = True,
+    python_callable = post_process_fileload,
+    op_kwargs = {'is_encrypted': False},
+    on_failure_callback = dag_failure_handler,
+    dag = dag,
+)
 
 
-preprocess_store_closure_list_task >> store_closure_list_src2stg_task >> store_closure_list_stg2ods_task
+preprocess_store_closure_list_task >> store_closure_list_src2stg_task >> store_closure_list_stg2ods_task >> postprocess_store_closure_list_task

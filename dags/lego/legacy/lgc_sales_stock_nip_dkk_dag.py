@@ -35,6 +35,7 @@ entity = 'sales_stock_nip_dkk'
 src_entity = 'lgc_sales_stock_nip_dkk'
 DAG_NAME = 'lgc_sales_stock_nip_dkk_dag'
 
+sys.path.insert(0,os.path.abspath(os.path.dirname(__file__)))
 
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
@@ -74,17 +75,17 @@ def load_src2stg(**kwargs):
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, sheetname='Sheet1')
-    src2stg.start()
-
+    src2stg.start(version='v2')
 
 def load_stg2ods(**kwargs):
-    batch_date = kwargs.get('dag_run').conf.get('batch_date')
-    #
+    
     pkey = entity_conf[src_entity]["key"]
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
-    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db )
+    batch_date = kwargs.get('dag_run').conf.get('batch_date')
+    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
     stg2ods.start()
+
 
 args = {
     'owner': 'cdp_admin',
@@ -128,5 +129,14 @@ sales_stock_nip_dkk_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
+postprocess_sales_stock_nip_dkk_task = PythonOperator(
+    task_id = 'postprocess_sales_stock_nip_dkk_task',
+    provide_context = True,
+    python_callable = post_process_fileload,
+    op_kwargs = {'is_encrypted': False},
+    on_failure_callback = dag_failure_handler,
+    dag = dag,
+)
 
-preprocess_sales_stock_nip_dkk_task >> sales_stock_nip_dkk_src2stg_task >> sales_stock_nip_dkk_stg2ods_task
+
+preprocess_sales_stock_nip_dkk_task >> sales_stock_nip_dkk_src2stg_task >> sales_stock_nip_dkk_stg2ods_task >> postprocess_sales_stock_nip_dkk_task

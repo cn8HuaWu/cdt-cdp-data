@@ -35,6 +35,7 @@ entity = 'customer_name_mapping'
 src_entity = 'lgc_customer_name_mapping'
 DAG_NAME = 'lgc_customer_name_mapping_dag'
 
+sys.path.insert(0,os.path.abspath(os.path.dirname(__file__)))
 
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
@@ -74,15 +75,15 @@ def load_src2stg(**kwargs):
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, sheetname='Sheet1')
-    src2stg.start()
+    src2stg.start(version='v2')
 
 def load_stg2ods(**kwargs):
     
     pkey = entity_conf[src_entity]["key"]
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
-    kwargs['task_instance'].xcom_push(key='batch_date', value=batch_date)
-    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = has_head )
+    batch_date = kwargs.get('dag_run').conf.get('batch_date')
+    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
     stg2ods.start()
 
 
@@ -129,4 +130,15 @@ customer_name_mapping_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
-preprocess_customer_name_mapping_task >> customer_name_mapping_src2stg_task >> customer_name_mapping_stg2ods_task
+
+postprocess_customer_name_mapping_task = PythonOperator(
+    task_id = 'postprocess_customer_name_mapping_task',
+    provide_context = True,
+    python_callable = post_process_fileload,
+    op_kwargs = {'is_encrypted': False},
+    on_failure_callback = dag_failure_handler,
+    dag = dag,
+)
+
+
+preprocess_customer_name_mapping_task >> customer_name_mapping_src2stg_task >> customer_name_mapping_stg2ods_task >> postprocess_customer_name_mapping_task
