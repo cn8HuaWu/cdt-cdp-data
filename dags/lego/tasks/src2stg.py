@@ -176,7 +176,7 @@ class Src2stgHandler:
         ## Step 3: Process Data if needed, eg. unzip/decrypt
         target_file_path_list = []
         target_file_path = entity_data_dir
-        if( src_file_path.split('.')[-1].lower() == 'gz' ):
+        if( src_file_path.split('.')[-1].lower() in ( 'gz', 'zip' )):
             target_unpack_file_path = self.myutil.uncompress_gz_file(src_file_path, os.path.join(target_file_path, self.entity_name) )
             for temp_fn in target_file_path:
                 if target_unpack_file_path('.')[-1].lower() in ('xlsx', 'xls') :
