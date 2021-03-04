@@ -1,10 +1,7 @@
 Staging:
   src_columns:
-    store text,
-    close_date text,
-    reopen_date text,
-    reason text,
-    etl_times text
+    customer text,
+    correct_customer text
 
 
 
