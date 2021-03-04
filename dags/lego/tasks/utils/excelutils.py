@@ -33,6 +33,8 @@ import os, csv
 
 #filter out the empty row
 def filter_empty_row( row:list , *args ):
+    if row is None:
+        return row
     if all( [ v is None or str(v).strip(" ")=='' for v in row] ):
         return None
     else :
@@ -180,7 +182,7 @@ class ExcelConverter:
                     # 如果要支持其他文件格式， 则需要重装对应文件的writer，使其支持 writerow(iteror)
                     
                     fdwriter.writerow( newline )
-                    
+
             if not merge:
                 fd.flush()
                 fd.close()
