@@ -22,15 +22,14 @@ STAGING = 'Staging'
 ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
-myutil = Myutil(DAG_HOME)
-db = myutil.get_db()
-
-entity_conf = myutil.get_entity_config()
-email_to_list =  Variable.get('email_to_list').split(',')
 entity = 'sales_stock_pos'
 src_entity = 'lgc_sales_stock_pos'
 DAG_NAME = 'lgc_sales_stock_pos_dag'
 
+myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
+db = myutil.get_db()
+entity_conf = myutil.get_entity_config()
+email_to_list =  Variable.get('email_to_list').split(',')
 
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
     logging.info("current path: " + os.getcwd())
