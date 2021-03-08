@@ -445,7 +445,7 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
-    productcode_index: none
+    productcode_index: "6"
     column_positions: '{"all":{"filename":"store_renovation_record.*","all_reg":"0,1,2,3,4,5"}}'
     key: store,close_date
   
