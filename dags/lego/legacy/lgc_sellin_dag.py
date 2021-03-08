@@ -22,9 +22,9 @@ STAGING = 'Staging'
 ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
-entity = 'instock'
-src_entity = 'lgc_instock'
-DAG_NAME = 'lgc_instock_dag'
+entity = 'sellin'
+src_entity = 'lgc_sellin'
+DAG_NAME = 'lgc_sellin_dag'
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
@@ -100,8 +100,8 @@ dag = DAG(dag_id = DAG_NAME,
             max_active_runs = 1, 
             schedule_interval = None)
 
-preprocess_instock_task = PythonOperator(
-    task_id = 'preprocess_instock_task',
+preprocess_sellin_task = PythonOperator(
+    task_id = 'preprocess_sellin_task',
     provide_context = True,
     python_callable = process_fileload,
     op_kwargs = {'is_encrypted': False},
@@ -109,8 +109,8 @@ preprocess_instock_task = PythonOperator(
     dag = dag,
 )
 
-instock_src2stg_task = PythonOperator(
-    task_id='instock_src2stg_task',
+sellin_src2stg_task = PythonOperator(
+    task_id='sellin_src2stg_task',
     provide_context = True,
     python_callable = load_src2stg,
     on_failure_callback = dag_failure_handler,
@@ -118,8 +118,8 @@ instock_src2stg_task = PythonOperator(
 )
 
 
-instock_stg2ods_task = PythonOperator(
-    task_id='instock_stg2ods_task',
+sellin_stg2ods_task = PythonOperator(
+    task_id='sellin_stg2ods_task',
     provide_context = True,
     python_callable = load_stg2ods,
     on_failure_callback = dag_failure_handler,
@@ -127,8 +127,8 @@ instock_stg2ods_task = PythonOperator(
 )
 
 
-postprocess_instock_task = PythonOperator(
-    task_id = 'postprocess_instock_task',
+postprocess_sellin_task = PythonOperator(
+    task_id = 'postprocess_sellin_task',
     provide_context = True,
     python_callable = post_process_fileload,
     op_kwargs = {'is_encrypted': False},
@@ -136,4 +136,4 @@ postprocess_instock_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_instock_task >> instock_src2stg_task >> instock_stg2ods_task >> postprocess_instock_task
+preprocess_sellin_task >> sellin_src2stg_task >> sellin_stg2ods_task >> postprocess_sellin_task
