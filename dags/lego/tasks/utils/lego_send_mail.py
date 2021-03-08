@@ -6,9 +6,17 @@ import smtplib
 import os
 import imp
 
-SMTP_USER = "airflow@mail.lego.cn"
-smtp_mail_from = "airflow@mail.lego.cn"
-kms_smtp_conf="prd_smtp_pwd"
+env = os.getenv('airflow_env')
+
+
+if env in ('dev', 'qa'):
+    SMTP_USER = "airflow-dev@mail.lego.cn"
+    smtp_mail_from = "airflow-dev@mail.lego.cn"
+    kms_smtp_conf="dev_smtp_pwd"
+else:
+    SMTP_USER = "airflow@mail.lego.cn"
+    smtp_mail_from = "airflow@mail.lego.cn"
+    kms_smtp_conf="prd_smtp_pwd"
 kms_client_path = "/cdp/work_dir/gp_conn_cmd.py"
 
 SMTP_HOST = "smtpdm.aliyun.com"
