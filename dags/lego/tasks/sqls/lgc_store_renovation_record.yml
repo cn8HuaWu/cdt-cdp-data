@@ -4,8 +4,7 @@ Staging:
     close_date text,
     reopen_date text,
     floor text,
-    sales_space text,
-    etl_times text
+    sales_space text
 
 
 
