@@ -421,12 +421,14 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    productcode_index: "6"
     key: c6_linking_level,customer_name,trade_id,store_id
 
   lgc_sales_stock_rrp_rmb:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    productcode_index: "6"
     key: year_week,cust_id,store_id,prod_id
 
   lgc_customer_name_mapping:
@@ -451,12 +453,14 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    productcode_index: "5"
     key: year_week,cust_id,store_id,prod_id
 
   lgc_sellin:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    productcode_index: "5"
     key: date,cust_link,prod_id
 
   lgc_plan_nip_dkk:
