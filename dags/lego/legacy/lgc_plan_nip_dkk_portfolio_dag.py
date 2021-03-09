@@ -22,22 +22,18 @@ STAGING = 'Staging'
 ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
-myutil = Myutil(DAG_HOME)
-gp_host = myutil.get_conf( 'Greenplum', 'GP_HOST')
-gp_port = myutil.get_conf( 'Greenplum', 'GP_PORT')
-gp_db = myutil.get_conf( 'Greenplum', 'GP_DB')
-gp_usr = myutil.get_conf( 'Greenplum', 'GP_USER')
-gp_pw = myutil.get_conf( 'Greenplum', 'GP_PASSWORD')
-db = Mydb(gp_host, gp_port, gp_db, gp_usr, gp_pw)
-entity_conf = myutil.get_entity_config()
-email_to_list =  Variable.get('email_to_list').split(',')
 entity = 'plan_nip_dkk_portfolio'
 src_entity = 'lgc_plan_nip_dkk_portfolio'
 DAG_NAME = 'lgc_plan_nip_dkk_portfolio_dag'
+src_file_sheet_name = ['Fixed_DP02','Floating_DP01','Floating_DP02','Floating_DP03','Floating_DP04','Floating_DP05','Floating_DP06','Floating_DP07','Floating_DP08','Floating_DP09','Floating_DP10','Floating_DP11','Floating_DP12']
 
-sys.path.insert(0,os.path.abspath(os.path.dirname(__file__)))
+myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
+db = myutil.get_db()
+entity_conf = myutil.get_entity_config()
+email_to_list =  Variable.get('email_to_list').split(',')
 
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
+    logging.info("current path: " + os.getcwd())
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     
     # remove the ok file and get the source file
@@ -74,7 +70,8 @@ def load_src2stg(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, sheetname='Sheet1')
+    excel_fun_list = [myutil.filter_modified_product, myutil.rearrange_columns]
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname=src_file_sheet_name, merge =False)
     src2stg.start(version='v2')
 
 def load_stg2ods(**kwargs):
@@ -129,6 +126,7 @@ plan_nip_dkk_portfolio_stg2ods_task = PythonOperator(
     on_failure_callback = dag_failure_handler,
     dag=dag,
 )
+
 
 postprocess_plan_nip_dkk_portfolio_task = PythonOperator(
     task_id = 'postprocess_plan_nip_dkk_portfolio_task',
