@@ -447,6 +447,7 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    productcode_index: ""
     column_positions: '{"store":{"filename":"store.*","all_reg":"0,1,2,3,4"}}'
     key: store,close_date
   
