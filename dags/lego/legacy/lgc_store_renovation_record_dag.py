@@ -78,7 +78,7 @@ def load_stg2ods(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
-    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
+    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = 1 )
     stg2ods.start()
 
 
