@@ -1,16 +1,17 @@
 Staging:
   src_columns:
-    c6_linking_level text,
-    customer_name text,
-    trade_id text,
-    location text,
+    year_week text,
+    cust_link text,
+    cust_name text,
+    cust_id text,
+    cust_loca text,
     store_id text,
-    communication_number text,
-    address text,
-    cst_consumer_sales_qty text,
+    prod_id text,
+    prod_name text,
+    cst_cnsmr_sale_qty text,
     cst_retail_stock_nip text,
     cst_retail_stock_qty text,
-    consumer_sales_net text
+    cnsmr_sale_nip_net text
 
 ODS:
 
@@ -19,6 +20,3 @@ EDW:
     
   
   insert_edw_from_ods_query:
-    
-
-
