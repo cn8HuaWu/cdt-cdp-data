@@ -422,6 +422,7 @@ entities:
     update_type: f
     stg_suffix: di
     productcode_index: "6"
+    column_positions: '{"sales_stock_nip_dkk":{"filename":"sales_stock_nip_dkk.*","all_reg":"0,1,2,3,4,5,6,7,8,9,10,11"}}'
     key: c6_linking_level,customer_name,trade_id,store_id
 
   lgc_sales_stock_rrp_rmb:
@@ -429,6 +430,7 @@ entities:
     update_type: f
     stg_suffix: di
     productcode_index: "6"
+    column_positions: '{"sales_stock_rrp_rmb":{"filename":"sales_stock_rrp_rmb.*","all_reg":"0,1,2,3,4,5,6,7,8,9,10,11"}}'
     key: year_week,cust_id,store_id,prod_id
 
   lgc_customer_name_mapping:
@@ -454,6 +456,7 @@ entities:
     update_type: f
     stg_suffix: di
     productcode_index: "5"
+    column_positions: '{"instock":{"filename":"instock.*","all_reg":"0,1,2,3,4,5,6,7,8,9,10,11,12,13"}}'
     key: year_week,cust_id,store_id,prod_id
 
   lgc_sellin:
@@ -461,6 +464,7 @@ entities:
     update_type: f
     stg_suffix: di
     productcode_index: "5"
+    column_positions: '{"sellin":{"filename":"sellin.*","all_reg":"0,1,2,3,4,5,6,7,8,9,10,11,12,13"}}'
     key: date,cust_link,prod_id
 
   lgc_plan_nip_dkk:
