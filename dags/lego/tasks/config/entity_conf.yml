@@ -471,6 +471,7 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    column_positions: '{"plan_nip_dkk":{"filename":"plan_nip_dkk.*","sheets": [["Fixed_DP02", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Fixed_DP02'"],["Floating_DP01", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP01'"],["Floating_DP02", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP02'"],["Floating_DP03", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP03'"],["Floating_DP04", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP04'"],["Floating_DP05", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP05'"],["Floating_DP06", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP06'"],["Floating_DP07", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP07'"],["Floating_DP08", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP08'"],["Floating_DP09", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP09'"],["Floating_DP10", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP10'"],["Floating_DP11", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP11'"],["Floating_DP12", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,'Floating_DP12'"]]}}'
     key: year,customer,plan_vision
 
   lgc_plan_rrp_rmb:
