@@ -56,7 +56,7 @@ def dag_failure_handler(context):
 
 def load_src2stg(**kwargs):
     # batch_date = kwargs.get('dag_run').conf.get('batch_date')
-    src_filename = kwargs.get('dag_run').conf.get('src_filename')
+    src_filename = target_path
     #
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
