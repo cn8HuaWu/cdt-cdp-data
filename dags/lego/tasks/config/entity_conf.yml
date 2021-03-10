@@ -122,7 +122,7 @@ entities:
   dl_calendar:
     edw_prefix: d
     stg_suffix: yf
-    key: date_id
+    key: id
     update_type: F
   
   dl_city_tier:

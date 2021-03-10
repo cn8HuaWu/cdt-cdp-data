@@ -10,16 +10,14 @@ import logging
 import os, sys
 from pathlib import Path
 from datetime import datetime
-import imp
 
 DAG_HOME =  Variable.get('dag_home').strip().rstrip('/')
 sys.path.append(DAG_HOME + "/tasks/")
 sys.path.append("../tasks/")
-
-from src2stg import Src2stgHandler
 from stg2ods import Stg2odsHandler
 from ods2edw import Ods2edwHandler
 from utils.myutil import Myutil
+from utils.db import Mydb
 from subdags.subdag_sync_rds import sync_subdag
 
 # variable to run the shell scripts
@@ -28,54 +26,63 @@ STAGING = 'Staging'
 ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
-DAG_NAME = 'dl_calendar_dag'
+myutil = Myutil(DAG_HOME)
+gp_host = myutil.get_conf( 'Greenplum', 'GP_HOST')
+gp_port = myutil.get_conf( 'Greenplum', 'GP_PORT')
+gp_db = myutil.get_conf( 'Greenplum', 'GP_DB')
+gp_usr = myutil.get_conf( 'Greenplum', 'GP_USER')
+gp_pw = myutil.get_conf( 'Greenplum', 'GP_PASSWORD')
+db = Mydb(gp_host, gp_port, gp_db, gp_usr, gp_pw)
+entity_conf = myutil.get_entity_config()
+email_to_list =  Variable.get('email_to_list').split(',')
+DAG_NAME = 'dl_calendar_old_dag'
 entity = 'calendar'
 src_entity = 'dl_calendar'
 
-myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
-db = myutil.get_db()
-entity_conf = myutil.get_entity_config()
-email_to_list =  Variable.get('email_to_list').split(',')
-calendar_year =  Variable.get('calendar_year').strip()
-monitor_path = Variable.get('monitor_path')
-if calendar_year == '':
-    calendar_year = datetime.now().strftime('%Y')
-
-target_path = os.path.join(monitor_path, "input/LEGO/calendar",calendar_year +"calendar.csv")
-batch_date = calendar_year
+batch_date = datetime.strftime(datetime.now(),'%Y%m%d')
+data_file_list = Variable.get('calendar_path').split(",")
 
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
-    calenda_gen = imp.load_source("calenda_gen", os.path.join(DAG_HOME, "/tasks/utils/calendar_gen.py"))
-    calenda_gen.start(calendar_year, target_path)
+    bucket = myutil.get_oss_bucket()
+    stg_path = '/'.join((STAGING, SRC_NAME, entity, batch_date))
+    timestamp_str =  datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+    for fd in data_file_list:
+        basename = os.path.basename(fd)
+        backup_path ='/'.join( ('Backup', SRC_NAME, entity, timestamp_str + '_' + basename) )
+        myutil.upload_local_oss(bucket, fd, backup_path)
+
+        # convert excel to csv
+        output_path = fd
+        filepath,fullflname =  os.path.split(fd)
+        fname,ext = os.path.splitext(fullflname)
+        if ( ext.lower() in ('.xlsx', '.xls')):
+            fname = fname + ".csv"
+            output_path = os.path.join(filepath, fname)
+            myutil.read_excel_file(fd, output_path, keephead=False) 
+        elif (ext.lower() == '.csv'):
+            fname = os.path.basename(fd)
+        else:
+            raise ValueError("The product info must be excel or csv")
+
+        myutil.upload_local_oss(bucket, output_path, stg_path + "/" + fname)
+    
 
 def post_process_fileload( **kwargs):
-   pass
-def dag_failure_handler(context):
-    #rename: change prefix to "failed-"
+    #rename: change prefix to "done-"
    pass
 
-def load_src2stg(**kwargs):
-    # batch_date = kwargs.get('dag_run').conf.get('batch_date')
-    src_filename = kwargs.get('dag_run').conf.get('src_filename')
-    #
-    stg_suffix = entity_conf[src_entity]["stg_suffix"]
-    #
-    OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, has_head=False, sheetname='Sheet1', merge =False)
-    src2stg.start(version='v2')
+def dag_failure_handler(context):
+    #rename: change prefix to "failed-"
+    pass
 
 def load_stg2ods(**kwargs):
     pkey = entity_conf[src_entity]["key"]
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
-    #
-    batch_date = kwargs.get('dag_run').conf.get('batch_date')
-    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
+    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db , has_head=0)
     stg2ods.start()
 
 
-
 def load_ods2edw(**kwargs):
-    # batch_date = kwargs.get('dag_run').conf.get('batch_date')
     pkey = entity_conf[src_entity]["key"]
     table_prefix = entity_conf[src_entity]["edw_prefix"]
     update_type = entity_conf[src_entity]["update_type"]
@@ -108,14 +115,6 @@ preprocess_calendar_task = PythonOperator(
     op_kwargs = {'is_encrypted': False},
     on_failure_callback = dag_failure_handler,
     dag = dag,
-)
-
-calendar_src2stg_task = PythonOperator(
-    task_id='calendar_src2stg_task',
-    provide_context = True,
-    python_callable = load_src2stg,
-    on_failure_callback = dag_failure_handler,
-    dag=dag,
 )
 
 calendar_stg2ods_task = PythonOperator(
@@ -152,7 +151,5 @@ postprocess_calendar_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_calendar_task >> calendar_src2stg_task >> calendar_stg2ods_task >> calendar_ods2edw_task 
-calendar_ods2edw_task
-
-# >> calendar_sync_2_rds_task >> postprocess_calendar_task
+preprocess_calendar_task >> calendar_stg2ods_task >> calendar_ods2edw_task 
+calendar_ods2edw_task >> calendar_sync_2_rds_task >> postprocess_calendar_task
