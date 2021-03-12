@@ -36,9 +36,9 @@ myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
 entity_conf = myutil.get_entity_config()
 email_to_list =  Variable.get('email_to_list').split(',')
-calendar_year =  Variable.get('calendar_year').strip('')
+calendar_year =  Variable.get('calendar_year').strip(' ')
 monitor_path = Variable.get('monitor_path')
-if calendar_year == '':
+if calendar_year is None or  calendar_year == '' :
     calendar_year = datetime.now().strftime('%Y')
 
 target_path = os.path.join(monitor_path, "input/LEGO/calendar")
