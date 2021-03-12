@@ -24,7 +24,9 @@ EDW:
         where 
         p.parent_order_id = parent_order_id
         and dl_batch_date='{batch_date}'
-    );
+    )
+    and dl_batch_date='{batch_date}';
+    
     insert into edw.d_oms_promotion_info
     (
       id,
