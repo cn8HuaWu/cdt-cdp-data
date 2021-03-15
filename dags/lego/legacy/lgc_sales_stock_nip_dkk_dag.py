@@ -26,12 +26,8 @@ entity = 'sales_stock_nip_dkk'
 src_entity = 'lgc_sales_stock_nip_dkk'
 DAG_NAME = 'lgc_sales_stock_nip_dkk_dag'
 src_sheet ={
-    "_format_parameters" : {
-        "quoting": csv.QUOTE_ALL,
-        "delimiter":"\t"
-    },
     "Sheet1":{
-        'start_row': 3 ,
+        'start_row': 3,
         'ignore_end_row': 1
     }
     }
