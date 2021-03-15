@@ -25,6 +25,16 @@ TEMP_FOLDER = 'Temp'
 entity = 'sales_stock_nip_dkk'
 src_entity = 'lgc_sales_stock_nip_dkk'
 DAG_NAME = 'lgc_sales_stock_nip_dkk_dag'
+src_sheet ={
+    "_format_parameters" : {
+        "quoting": csv.QUOTE_ALL,
+        "delimiter":"\t"
+    },
+    "Sheet1":{
+        'start_row': 3 ,
+        'ignore_end_row': 1
+    }
+    }
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
@@ -74,8 +84,7 @@ def load_src2stg(**kwargs):
     #
     OK_FILE_PATH = kwargs.get('dag_run').conf.get('ok_file_path')
     excel_fun_list = [myutil.filter_modified_product, myutil.rearrange_columns]
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH,
-                             excel_fun_list=excel_fun_list, has_head=False, sheetname='Sheet1', excel_skip_row=2, merge=False)
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH,excel_fun_list=excel_fun_list, has_head=False, sheetname=src_sheet, merge=False)
     src2stg.start(version='v2')
 
 
