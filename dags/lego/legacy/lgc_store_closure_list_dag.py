@@ -133,8 +133,8 @@ store_closure_list_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
-dly_jd_traffic_ods2edw_task = PythonOperator(
-    task_id='dly_jd_traffic_ods2edw_task',
+store_close_list_ods2edw_task = PythonOperator(
+    task_id='store_close_list_ods2edw_task',
     provide_context = True,
     python_callable = load_ods2edw,
     on_failure_callback = dag_failure_handler,
@@ -150,4 +150,4 @@ postprocess_store_closure_list_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_store_closure_list_task >> store_closure_list_src2stg_task >> store_closure_list_stg2ods_task >> postprocess_store_closure_list_task
+preprocess_store_closure_list_task >> store_closure_list_src2stg_task >> store_closure_list_stg2ods_task >> store_close_list_ods2edw_task >> postprocess_store_closure_list_task
