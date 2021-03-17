@@ -1,0 +1,10 @@
+Staging:
+  src_columns:
+    channel text,
+    temp_product text,
+    shouldbe_product text,
+    flag text
+
+
+
+ODS:
