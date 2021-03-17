@@ -17,7 +17,7 @@ EDW:
     dl_batch_date varchar(8),
     dl_load_time timestamp,
     constraint pk_f_store_close_list primary key(store_code, close_date)
-    )distributed by (store)
+    )distributed by (store_code)
 
   insert_edw_from_ods_query:
     insert into edw.f_store_close_list(
