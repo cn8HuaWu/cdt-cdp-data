@@ -11,8 +11,8 @@ EDW:
   create_table_query:
     CREATE TABLE if not exists edw.f_store_close_list(
     store_code  varchar(50),
-    close_date string,
-    reopen_date string,
+    close_date varchar(8),
+    reopen_date varchar(8),
     reason varchar(200),
     dl_batch_date varchar(8),
     dl_load_time timestamp,
@@ -29,7 +29,7 @@ EDW:
     dl_load_time
     )
     select
-       store_code,
+       store as store_code,
        substr(close_date,1,10)  as close_date,
        substr(reopen_date,1,10) as reopen_date,
        reason,
