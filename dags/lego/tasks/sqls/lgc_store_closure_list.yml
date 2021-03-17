@@ -5,12 +5,34 @@ Staging:
     reopen_date text,
     reason text
 
-
-
 ODS:
 
 EDW:
   create_table_query:
-    
-  
+    CREATE TABLE if not exists edw.f_store_close_list(
+    store_code  varchar(50),
+    close_date string,
+    reopen_date string,
+    reason varchar(200),
+    dl_batch_date varchar(8),
+    dl_load_time timestamp,
+    constraint pk_f_store_close_list primary key(store_code, close_date)
+    )distributed by (store)
+
   insert_edw_from_ods_query:
+    insert into edw.f_store_close_list(
+    store_code,
+    close_date,
+    reopen_date,
+    reason,
+    dl_batch_date,
+    dl_load_time
+    )
+    select
+       store_code,
+       substr(close_date,1,10)  as close_date,
+       substr(reopen_date,1,10) as reopen_date,
+       reason,
+       dl_batch_date,
+       now() as dl_load_time
+    from ods.r_lgc_store_closure_list;
