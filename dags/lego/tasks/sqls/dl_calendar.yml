@@ -57,6 +57,8 @@ EDW:
     )distributed by (id)
   
   insert_edw_from_ods_query:
+    delete from edw.d_dl_calendar where dl_batch_date='{batch_date}';
+
     insert into edw.d_dl_calendar(
     id,
     date_id,
