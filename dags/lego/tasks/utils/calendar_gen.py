@@ -90,7 +90,7 @@ def gen_calendar_day(start_year, mode="day"):
             lego_week_name =  str(start_year)+"WK"+str(lego_week).rjust(2,'0')
             lego_month = year_week_cnt[lego_week]
             lego_month_disp = start_year +'14' + str(year_week_cnt[lego_week]).rjust(2,"0")
-            lego_quarter = math.floor((int(d_month) -1 )/3 + 1) if lego_month >1 else 1
+            lego_quarter = math.floor((int(lego_month) -1 )/3 + 1) #if lego_month >1 else 1
             lego_start_time = t_day.strftime('%Y-%m-%d')
             lego_end_time = t_day.strftime('%Y-%m-%d')
         else:
@@ -132,7 +132,7 @@ def gen_calendar_day(start_year, mode="day"):
             lego_week_name =  str(start_year)+"WK"+str(lego_week).rjust(2,'0')
             lego_month = year_week_cnt[lego_week]
             lego_month_disp = start_year +'14' + str(year_week_cnt[lego_week]).rjust(2,"0")
-            lego_quarter = math.floor((int(d_month) -1 )/3 + 1) if lego_month >1 else 1
+            lego_quarter = math.floor((int(lego_month) -1 )/3 + 1) # if lego_month >1 else 1
             lego_start_time = t_day.strftime('%Y-%m-%d')
             lego_end_time = t_day.strftime('%Y-%m-%d')
         else:
@@ -268,8 +268,8 @@ def gen_calendar_month(week_list:list, year):
                 continue
             if i == int(wk[17]):
                 if lego_month_start is None:
-                    lego_month_start = wk[20]
-                lego_month_end = wk[21]
+                    lego_month_start = wk[21]
+                lego_month_end = wk[22]
             elif  int(wk[17]) > i:
                 break
 
@@ -280,7 +280,7 @@ def gen_calendar_month(week_list:list, year):
         lego_week_name =  ''
         lego_month = i
         lego_month_disp = year +'14' + str(i).rjust(2,"0")
-        lego_quarter =  math.floor((lego_month -1 )/3 + 1) if lego_month >1 else 1
+        lego_quarter =  math.floor((lego_month -1 )/3 + 1) #if lego_month >1 else 1
         lego_start_time = lego_month_start
         lego_end_time = lego_month_end
 
