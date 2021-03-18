@@ -22,9 +22,9 @@ STAGING = 'Staging'
 ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
-entity = 'prodcut_infor'
-src_entity = 'lgc_prodcut_infor'
-DAG_NAME = 'lgc_prodcut_infor_dag'
+entity = 'product_infor'
+src_entity = 'lgc_product_infor'
+DAG_NAME = 'lgc_product_infor_dag'
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
@@ -100,8 +100,8 @@ dag = DAG(dag_id = DAG_NAME,
             max_active_runs = 1, 
             schedule_interval = None)
 
-preprocess_prodcut_infor_task = PythonOperator(
-    task_id = 'preprocess_prodcut_infor_task',
+preprocess_product_infor_task = PythonOperator(
+    task_id = 'preprocess_product_infor_task',
     provide_context = True,
     python_callable = process_fileload,
     op_kwargs = {'is_encrypted': False},
@@ -109,8 +109,8 @@ preprocess_prodcut_infor_task = PythonOperator(
     dag = dag,
 )
 
-prodcut_infor_src2stg_task = PythonOperator(
-    task_id='prodcut_infor_src2stg_task',
+product_infor_src2stg_task = PythonOperator(
+    task_id='product_infor_src2stg_task',
     provide_context = True,
     python_callable = load_src2stg,
     on_failure_callback = dag_failure_handler,
@@ -118,8 +118,8 @@ prodcut_infor_src2stg_task = PythonOperator(
 )
 
 
-prodcut_infor_stg2ods_task = PythonOperator(
-    task_id='prodcut_infor_stg2ods_task',
+product_infor_stg2ods_task = PythonOperator(
+    task_id='product_infor_stg2ods_task',
     provide_context = True,
     python_callable = load_stg2ods,
     on_failure_callback = dag_failure_handler,
@@ -127,8 +127,8 @@ prodcut_infor_stg2ods_task = PythonOperator(
 )
 
 
-postprocess_prodcut_infor_task = PythonOperator(
-    task_id = 'postprocess_prodcut_infor_task',
+postprocess_product_infor_task = PythonOperator(
+    task_id = 'postprocess_product_infor_task',
     provide_context = True,
     python_callable = post_process_fileload,
     op_kwargs = {'is_encrypted': False},
@@ -136,4 +136,4 @@ postprocess_prodcut_infor_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_prodcut_infor_task >> prodcut_infor_src2stg_task >> prodcut_infor_stg2ods_task >> postprocess_prodcut_infor_task
+preprocess_product_infor_task >> product_infor_src2stg_task >> product_infor_stg2ods_task >> postprocess_product_infor_task
