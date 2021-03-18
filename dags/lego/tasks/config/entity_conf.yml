@@ -516,7 +516,8 @@ entities:
   lgc_prodcut_infor:
     edw_prefix: f
     update_type: f
-    stg_suffix: di'{"prodcut_infor":{"filename":"*.list_product.*","all_reg":"-,1,2,3,4,5,6,7,8,11,9,1-,12,13,14,15,16,17,18,2-,19,24,28,21,22,-,25,26,-,27,29,3-,31,32,33,34,35,36,37,38,39,4-,41,42,43,44,45,46,47,48,49,5-,51,52,53,0
+    stg_suffix: di
+    column_positions: '{"prodcut_infor":{"filename":"*.list_product.*","all_reg":"-,1,2,3,4,5,6,7,8,11,9,1-,12,13,14,15,16,17,18,2-,19,24,28,21,22,-,25,26,-,27,29,3-,31,32,33,34,35,36,37,38,39,4-,41,42,43,44,45,46,47,48,49,5-,51,52,53,0
 "}}'
     key: year_version,lego_sku_id
 
