@@ -513,7 +513,7 @@ entities:
     stg_suffix: di
     key: channel,temp_product
 
-  lgc_prodcut_infor:
+  lgc_product_infor:
     edw_prefix: f
     update_type: f
     stg_suffix: di
