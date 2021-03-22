@@ -1,7 +1,7 @@
 Staging:
   src_columns:
-    customer text,
     year text,
+    customer text,
     Jan text,
     Feb text,
     Mar text,
