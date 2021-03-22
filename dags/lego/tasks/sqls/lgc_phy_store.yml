@@ -1,0 +1,22 @@
+Staging:
+  src_columns:
+    sold_to text,
+    ship_to text,
+    trad_id text,
+    store_code text,
+    store_name text,
+    review_channel text,
+    customer text,
+    store_address text,
+    provice text,
+    city text,
+    city_cn text,
+    region text,
+    channel_lv1 text,
+    channel_lv2 text,
+    channel_lv3 text,
+    open_date text,
+    update_week text
+
+ODS:
+
