@@ -9,7 +9,7 @@ ODS:
 
 EDW:
   create_table_query:
-    create table if not exists edw.f_store_close_list(
+    create table if not exists edw.f_lgc_store_closure_list(
     store_code varchar(50),
     close_date varchar(8),
     reopen_date varchar(8),
@@ -20,7 +20,7 @@ EDW:
     )distributed by (store_code);
 
   insert_edw_from_ods_query:
-    insert into edw.f_store_close_list(
+    insert into edw.f_lgc_store_closure_list(
     store_code,
     close_date,
     reopen_date,
