@@ -11,10 +11,10 @@ EDW:
   create_table_query:
     create table if not exists edw.f_lgc_store_closure_list(
     store_code varchar(50),
-    close_date varchar(8),
-    reopen_date varchar(8),
+    close_date varchar(20),
+    reopen_date varchar(20),
     reason varchar(200),
-    dl_batch_date varchar(8),
+    dl_batch_date varchar(20),
     dl_load_time timestamp,
     constraint pk_f_store_close_list primary key(store_code, close_date)
     )distributed by (store_code);
