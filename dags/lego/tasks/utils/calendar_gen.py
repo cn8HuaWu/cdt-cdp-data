@@ -73,7 +73,7 @@ def gen_calendar_day(start_year, mode="day"):
         date_id = t_day.strftime('%Y-%m-%d')
         date_type = 'day'
         d_day = t_day.strftime('%d')
-        d_week = int(t_day.strftime('%W')) + 1 
+        d_week = int(t_day.strftime('%W'))
         d_month = t_day.strftime('%m')
         d_quarter = math.floor((int(d_month) -1 )/3 + 1)
         d_year = t_day.strftime('%Y')
@@ -151,6 +151,46 @@ def gen_calendar_day(start_year, mode="day"):
             is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name, lego_month,lego_month_disp, lego_quarter,lego_year, lego_start_time, lego_end_time]
         day_list.append(lego_day)
     return day_list
+
+def gen_calenday_year(day_list:list, year):
+    year_list = []
+    id = year
+    date_id = ''
+    date_type ='year'
+    d_day = ''
+    d_week = ''
+    d_month = ''
+    d_quarter = ''
+    d_year = year
+    fiscal_year = ''
+    is_chinese_holiday = ''
+    is_holiday = ''
+    start_time =  year+'-01-01'
+    end_time =   year + '-12-31'
+    lego_date = ''
+    lego_year = year
+    lego_week = ''
+    lego_week_code =  ''
+    lego_week_name =  ''
+    lego_month = ''
+    lego_month_disp = ''
+    lego_quarter = ''
+    lego_start_time = None
+    lego_end_time = None
+    for d in day_list:
+        if d[20] == year and lego_start_time is None:
+            lego_start_time = d[1]
+            continue
+        
+        if d[20] == year :
+            lego_end_time = d[1]
+
+    year_list.append( [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year, 
+            fiscal_year, is_chinese_holiday,  
+            is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name, 
+            lego_month, lego_month_disp,lego_quarter,lego_year, lego_start_time, lego_end_time])
+    return year_list
+
 
 def gen_calendar_week(day_list:list, year):
     lego_max_week = max( int(v[14]) if v[14] !='' else 0 for v in day_list )
@@ -388,12 +428,14 @@ def start(year, path):
     month_list = gen_calendar_month(week_list, year)
     quarte_list = gen_calendar_quarter(week_list, year)
     day_hour_list = gen_day_hours(day_list)
+    year_list = gen_calenday_year(day_hour_list, year)
     calender_list = []
     calender_list.extend(day_list)
     calender_list.extend(week_list)
     calender_list.extend(month_list)
     calender_list.extend(quarte_list)
     calender_list.extend(day_hour_list)
+    calender_list.extend(year_list)
 
     str_calendar_list = [",".join( [str(n) if n is not None else '' for n in v])+'\n' for v in calender_list]
     
