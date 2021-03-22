@@ -157,5 +157,5 @@ postprocess_store_closure_list_task = PythonOperator(
     dag=dag,
 )
 
-preprocess_store_closure_list_task >> store_closure_list_src2stg_task >> store_closure_list_stg2ods_task >> store_close_list_ods2edw_task
-store_close_list_ods2edw_task >> postprocess_store_closure_list_task
+preprocess_store_closure_list_task >> store_closure_list_src2stg_task >> store_closure_list_stg2ods_task >> store_closure_list_ods2edw_task
+store_closure_list_ods2edw_task >> postprocess_store_closure_list_task
