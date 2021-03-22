@@ -90,7 +90,7 @@ def load_stg2ods(**kwargs):
 
 
 def load_ods2edw(**kwargs):
-    # batch_date = kwargs.get('dag_run').conf.get('batch_date')
+    batch_date = kwargs.get('dag_run').conf.get('batch_date')
     pkey = entity_conf[src_entity]["key"]
     table_prefix = entity_conf[src_entity]["edw_prefix"]
     update_type = entity_conf[src_entity]["update_type"]
