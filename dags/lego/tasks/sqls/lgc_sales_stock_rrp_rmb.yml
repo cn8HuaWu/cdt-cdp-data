@@ -17,4 +17,38 @@ ODS:
 
 EDW:
   create_table_query:
+    create table if not exists edw.f_sales_instock_rrp_rmb(
+       (date_id                varchar(20),
+       lego_year_week          varchar(20),
+       distributor_code        varchar(20),
+       distributor_name        varchar(100),
+       lego_store_code         varchar(200),
+       lego_sku_id             varchar(200),
+       dist_cnsmr_sale_qty     bigint,
+       dist_cnsmr_sale_rrb     double,
+       dist_retail_stock_qty   double,
+       dist_retail_stock_rrp   bigint,
+       qty_unit                varchar(20),
+       dl_batch_date           varchar(10),
+       dl_load_time            timestamp,
+       constraint pk_f_sales_instock_rrp_rmb primary key(lego_year_week, lego_store_code,lego_sku_id)
+    )distributed by (lego_year_week);
+
   insert_edw_from_ods_query:
+    insert into table edw.f_sales_instock_rrp_rmb
+    select
+        split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as date_id
+       ,split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week
+       ,cust_id                 as distributor_code
+       ,cust_name               as distributor_name
+       ,store_id                as lego_store_code
+       ,prod_id                 as lego_sku_id
+       ,cst_cnsmr_sale_qty      as dist_cnsmr_sale_qty
+       ,cst_cnsmr_sale_rrp      as dist_cnsmr_sale_rrb
+       ,cst_retail_stock_qty    as dist_retail_stock_qty
+       ,cst_retail_stock_rrp    as dist_retail_stock_rrp
+       ,'PC'                    as qty_unit
+       ,dl_batch_date           as dl_batch_date
+       ,now()                   as dl_load_time
+    from
+       ods.r_dl_sales_instock_rrp_rmb;

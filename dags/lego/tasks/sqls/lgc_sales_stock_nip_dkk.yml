@@ -37,8 +37,8 @@ EDW:
   insert_edw_from_ods_query:
     insert into table edw.f_sales_instock_nip_dkk
     select
-        year_week               as date_id
-       ,year_week               as lego_year_week
+        split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as date_id
+       ,split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week
        ,cust_id                 as distributor_code
        ,cust_name               as distributor_name
        ,store_id                as lego_store_code
