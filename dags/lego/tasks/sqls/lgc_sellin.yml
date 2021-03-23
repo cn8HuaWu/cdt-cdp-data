@@ -20,6 +20,47 @@ ODS:
 
 EDW:
   create_table_query:
-    
+    create table if not exists edw.f_lgc_sellin
+    ( date_id                    varchar(20),
+      year_month                 varchar(20),
+      lego_year_week             varchar(20),
+      sale_date                  varchar(20),
+      distributor_code           varchar(20),
+      distributor_name           varchar(100),
+      lego_sku_id                varchar(100),
+      net_sale_invc_amt          double,
+      dlvr_prcs_amt              double,
+      cnfir_open_sale_ordr_amt   double,
+      tot_open_sale_ordr_prtfl_amt double,
+      last_dmnd_plan_amt         double,
+      order_prtfl_percnt         double,
+      bill_calt_qty              bigint,
+      dl_batch_date              varchar(20),
+      dl_load_time               timestamp
+      constraint pk_f_lgc_sellin primary key(sale_date, distributor_code,lego_sku_id)
+    )distributed by (distributor_code);
   
   insert_edw_from_ods_query:
+    insert into edw.f_lgc_sellin
+    select
+        split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1)as date_id                    ,
+        split_part(year_week ,'.',2)||'14'||split_part(year_week ,'.',1) as year_month,
+        split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week,
+        split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1) as sale_date,
+        split_part(cust_link ,'/',length(cust_link)-length(replace(cust_link,'/',''))+1) as distributor_code,
+        cust_name                    as distributor_name,
+        prod_id                      as lego_sku_id,
+        net_sale_invc_amt            as net_sale_invc_amt,
+        dlvr_prcs_amt                as dlvr_prcs_amt,
+        cnfir_open_sale_ordr_amt     as cnfir_open_sale_ordr_amt,
+        tot_open_sale_ordr_prtfl_amt as tot_open_sale_ordr_prtfl_amt,
+        last_dmnd_plan_amt           as last_dmnd_plan_amt,
+        order_prtfl_percnt           as order_prtfl_percnt,
+        bill_calt_qty                as bill_calt_qty,
+        dl_batch_date                as dl_batch_date,
+        now()                        as dl_load_time
+    from
+        ods.r_lgc_sellin
+    where
+        lower(distributor_name) not like'%not assigned'
+        or lower(prod_name) not like'%not assigned';
