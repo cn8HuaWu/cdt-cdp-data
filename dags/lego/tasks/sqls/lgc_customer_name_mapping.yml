@@ -9,6 +9,29 @@ ODS:
 
 EDW:
   create_table_query:
-    
-  
+    create table if not exists edw.f_lgc_customer_name_mapping
+    (-- channel	 varcahr(10)
+     -- distributor_code varcahr(20)
+    cust_name_temp varcahr(100)
+    ,cust_name_new varcahr(100)
+    -- start_date varcahr(20)
+    ,ld_batch_date varcahr(20)
+    ,ld_load_time timestamp
+    ,constraint pk_f_store_close_list primary key(cust_name_temp, cust_name_new)
+    )distributed by (cust_name_temp);
+
   insert_edw_from_ods_query:
+    insert into edw.f_lgc_customer_name_mapping
+      (
+       cust_name_temp,
+       cust_name_new,
+       dl_batch_date,
+       dl_load_time
+      )
+    select
+        customer         as cust_name_temp
+       ,correct_customer as cust_name_new
+       ,dl_batch_date
+       ,now()            as dl_load_time
+    from
+       ods.r_lgc_store_closure_list;
