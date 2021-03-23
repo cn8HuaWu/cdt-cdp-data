@@ -83,6 +83,13 @@ def load_stg2ods(**kwargs):
     stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
     stg2ods.start()
 
+def load_ods2edw(**kwargs):
+    batch_date = kwargs.get('dag_run').conf.get('batch_date')
+    pkey = entity_conf[src_entity]["key"]
+    table_prefix = entity_conf[src_entity]["edw_prefix"]
+    update_type = entity_conf[src_entity]["update_type"]
+    ods2edw = Ods2edwHandler(batch_date, SRC_NAME, entity, pkey, table_prefix, myutil, db)
+    ods2edw.start()
 
 args = {
     'owner': 'cdp_admin',
@@ -127,6 +134,13 @@ plan_nip_dkk_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
+plan_nip_dkk_ods2edw_task = PythonOperator(
+    task_id='plan_nip_dkk_ods2edw_task',
+    provide_context=True,
+    python_callable=load_ods2edw,
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
 
 postprocess_plan_nip_dkk_task = PythonOperator(
     task_id = 'postprocess_plan_nip_dkk_task',
@@ -137,4 +151,5 @@ postprocess_plan_nip_dkk_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_plan_nip_dkk_task >> plan_nip_dkk_src2stg_task >> plan_nip_dkk_stg2ods_task >> postprocess_plan_nip_dkk_task
+preprocess_plan_nip_dkk_task >> plan_nip_dkk_src2stg_task >> plan_nip_dkk_stg2ods_task >> plan_nip_dkk_ods2edw_task
+plan_nip_dkk_ods2edw_task >> postprocess_plan_nip_dkk_task
