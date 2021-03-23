@@ -17,6 +17,38 @@ ODS:
 
 EDW:
   create_table_query:
-    
-  
+    create table if not exists edw.f_sales_instock_nip_dkk(
+       (date_id                varchar(20),
+       lego_year_week          varchar(20),
+       distributor_code        varchar(20),
+       distributor_name        varchar(100),
+       lego_store_code         varchar(200),
+       lego_sku_id             varchar(200),
+       dist_cnsmr_sale_qty     bigint,
+       dist_cnsmr_sale_nip_net double,
+       dist_retail_stock_nip   double,
+       dist_retail_stock_qty   bigint,
+       qty_unit                varchar(20),
+       dl_batch_date           varchar(10),
+       dl_load_time            timestamp,
+       constraint pk_f_store_close_list primary key(lego_year_week, lego_store_code,lego_sku_id)
+    )distributed by (lego_year_week);
+
   insert_edw_from_ods_query:
+    insert into table edw.f_sales_instock_nip_dkk
+    select
+        year_week               as date_id
+       ,year_week               as lego_year_week
+       ,cust_id                 as distributor_code
+       ,cust_name               as distributor_name
+       ,store_id                as lego_store_code
+       ,prod_id                 as lego_sku_id
+       ,cst_cnsmr_sale_qty      as dist_cnsmr_sale_qty
+       ,cnsmr_sale_nip_net      as dist_cnsmr_sale_nip_net
+       ,cst_retail_stock_nip    as dist_retail_stock_nip
+       ,cst_retail_stock_qty    as dist_retail_stock_qty
+       ,'PC'                    as qty_unit
+       ,dl_batch_date           as dl_batch_date
+       ,now()                   as dl_load_time
+    from
+       ods.r_dl_sales_instock_nip_dkk;
