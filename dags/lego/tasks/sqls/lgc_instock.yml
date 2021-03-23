@@ -31,7 +31,7 @@ EDW:
       in_stock_percnt            double,
       dl_batch_date              varchar(20),
       dl_load_time               timestamp
-      constraint pk_f_lgc_sellin primary key(lego_year_week, lego_store_code,lego_sku_id)
+      constraint pk_f_lgc_instock primary key(lego_year_week, lego_store_code,lego_sku_id)
     )distributed by (lego_store_code);
   
   insert_edw_from_ods_query:
