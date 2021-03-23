@@ -25,7 +25,7 @@ TEMP_FOLDER='Temp'
 entity = 'plan_rrp_rmb'
 src_entity = 'lgc_plan_rrp_rmb'
 DAG_NAME = 'lgc_plan_rrp_rmb_dag'
-src_file_sheet_name = ['Fixed_DP02','Floating_DP01','Floating_DP02','Floating_DP03','Floating_DP04','Floating_DP05','Floating_DP06','Floating_DP07','Floating_DP08','Floating_DP09','Floating_DP10','Floating_DP11','Floating_DP12']
+src_file_sheet_name = ['Fixed_DP','Floating_DP01','Floating_DP02','Floating_DP03','Floating_DP04','Floating_DP05','Floating_DP06','Floating_DP07','Floating_DP08','Floating_DP09','Floating_DP10','Floating_DP11','Floating_DP12']
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
