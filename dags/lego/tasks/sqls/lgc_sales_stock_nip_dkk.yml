@@ -17,8 +17,8 @@ ODS:
 
 EDW:
   create_table_query:
-    create table if not exists edw.f_sales_instock_nip_dkk(
-       (date_id                varchar(20),
+    create table if not exists edw.f_sales_instock_nip_dkk
+      (date_id                varchar(20),
        lego_year_week          varchar(20),
        distributor_code        varchar(20),
        distributor_name        varchar(100),
@@ -31,7 +31,7 @@ EDW:
        qty_unit                varchar(20),
        dl_batch_date           varchar(10),
        dl_load_time            timestamp,
-       constraint pk_f_store_close_list primary key(lego_year_week, lego_store_code,lego_sku_id)
+       constraint pk_f_sales_instock_nip_dkk primary key(lego_year_week, lego_store_code,lego_sku_id)
     )distributed by (lego_year_week);
 
   insert_edw_from_ods_query:
