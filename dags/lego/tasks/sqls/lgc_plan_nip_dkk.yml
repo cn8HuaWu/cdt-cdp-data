@@ -21,7 +21,175 @@ ODS:
 
 EDW:
   create_table_query:
-    
-  
-  insert_edw_from_ods_query:
+    create table if not exists edw.f_lgc_plan_nip_dkk(
+       date_id          varchar(20),
+       distributor_code varchar(50),
+       distributor_name varchar(200),
+       year             varchar(10),
+       month            varchar(4),
+       plan_version     varchar(20),
+       plan_value       numeric(17,2),
+       ld_batch_date    varchar(20),
+       ld_load_time     timestamp,
+       constraint pk_f_lgc_plan_nip_dkk primary key(distributor_code, year,month,plan_version)
+    )distributed by (year);
 
+  insert_edw_from_ods_query:
+    insert into edw.f_lgc_plan_nip_dkk
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '01'             as month
+        plan_version     as plan_version
+        Jan              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '02'             as month
+        plan_version     as plan_version
+        Feb              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '03'             as month
+        plan_version     as plan_version
+        Mar              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '04'             as month
+        plan_version     as plan_version
+        Apr              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '05'             as month
+        plan_version     as plan_version
+        May              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '06'             as month
+        plan_version     as plan_version
+        Jun              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '07'             as month
+        plan_version     as plan_version
+        Jul              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '08'             as month
+        plan_version     as plan_version
+        Aug              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '09'             as month
+        plan_version     as plan_version
+        Sep              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '10'             as month
+        plan_version     as plan_version
+        Oct              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '11'             as month
+        plan_version     as plan_version
+        Nov              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk
+    union all
+    select
+        date_id          as date_id
+        null             as distributor_code
+        customer         as distributor_name
+        year             as year
+        '12'             as month
+        plan_version     as plan_version
+        Dec              as plan_value
+        ld_batch_date    as ld_batch_date
+        now()            as ld_load_time
+    from
+        ods.r_lgc_plan_nip_dkk ;
