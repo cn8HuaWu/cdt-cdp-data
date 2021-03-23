@@ -16,7 +16,40 @@ ODS:
 
 EDW:
   create_table_query:
-    
+    create table if not exists edw.f_lgc_intock
+     (date_id                    varchar(20),
+      lego_year_week             varchar(20),
+      distributor_code           varchar(100),
+      distributor_name           varchar(100),
+      lego_store_code            varchar(100),
+      lego_store_name            varchar(100),
+      lego_sku_id                varchar(100),
+      lego_sku_name              varchar(100),
+      cntr_instock_recdr         bigint,
+      cntr_recdr                 bigint,
+      retail_stock_qty           bigint,
+      in_stock_percnt            double,
+      dl_batch_date              varchar(20),
+      dl_load_time               timestamp
+      constraint pk_f_lgc_sellin primary key(lego_year_week, lego_store_code,lego_sku_id)
+    )distributed by (lego_store_code);
   
   insert_edw_from_ods_query:
-
+    insert into edw.f_lgc_intock
+    select
+          split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as date_id,
+          split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week,
+          cust_id            as distributor_code,
+          cust_name          as distributor_name,
+          store_id           as lego_store_code,
+          ''                 as lego_store_name,
+          prod_id            as lego_sku_id,
+          prod_name          as lego_sku_name,
+          cntr_instock_recdr as cntr_instock_recdr,
+          cntr_recdr         as cntr_recdr,
+          retail_stock_qty   as retail_stock_qty,
+          in_stock_percnt    as in_stock_percnt,
+          dl_batch_date      as dl_batch_date,
+          now()              as dl_load_time
+    from
+        ods.r_lgc_instock;
