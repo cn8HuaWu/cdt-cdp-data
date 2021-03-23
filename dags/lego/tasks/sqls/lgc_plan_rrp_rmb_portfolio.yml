@@ -1,6 +1,7 @@
 Staging:
   src_columns:
-    customer text,
+    channel text,
+    cnline text,
     year text,
     Jan text,
     Feb text,
