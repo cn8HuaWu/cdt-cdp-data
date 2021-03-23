@@ -13,7 +13,7 @@ Staging:
     Sep text,
     Oct text,
     Nov text,
-    Dec text,
+    Dec text,s
     year text,
     plan_vision text
 
@@ -21,30 +21,7 @@ ODS:
 
 EDW:
   create_table_query:
-    create table if not exists edw.f_lgc_plan_nip_dkk(
-     distributor_code vachar(100)
-    ,distributor_name vachar(200)
-    ,year vachar(4)
-    ,month vachar(2)
-    ,plan_version vachar(20)
-    ,plan_value double
-    ,ld_batch_date vachar(10)
-    ,ld_load_time timestamp
-    ,constraint pk_f_lgc_plan_nip_dkk primary key(store_code, close_date)
-    )distributed by (year);
+    
   
   insert_edw_from_ods_query:
-    insert into table 
-    select 
-     , as distributor_code
-     , as distributor_name
-     , as year            
-     , as month           
-     , as plan_version    
-     , as plan_value      
-     , as ld_batch_date   
-     , as ld_load_time  
-    from 
-        ods.r_dl_lgc_plan_nip_dkk;
-        
-     
+
