@@ -80,7 +80,15 @@ def load_stg2ods(**kwargs):
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
     stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
     stg2ods.start()
-
+    
+def load_ods2edw(**kwargs):
+    batch_date = kwargs.get('dag_run').conf.get('batch_date')
+    pkey = entity_conf[src_entity]["key"]
+    #table_prefix = entity_conf[src_entity]["edw_prefix"]
+    table_prefix ='f'
+    update_type = entity_conf[src_entity]["update_type"]
+    ods2edw = Ods2edwHandler(batch_date, SRC_NAME, entity, pkey, table_prefix, myutil, db)
+    ods2edw.start()
 
 args = {
     'owner': 'cdp_admin',
@@ -125,6 +133,13 @@ cs_weekly_phasing_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
+cs_weekly_phasing_ods2edw_task = PythonOperator(
+    task_id='cs_weekly_phasing_ods2edw_task',
+    provide_context=True,
+    python_callable=load_ods2edw,
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
 
 postprocess_cs_weekly_phasing_task = PythonOperator(
     task_id = 'postprocess_cs_weekly_phasing_task',
@@ -135,4 +150,5 @@ postprocess_cs_weekly_phasing_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_cs_weekly_phasing_task >> cs_weekly_phasing_src2stg_task >> cs_weekly_phasing_stg2ods_task >> postprocess_cs_weekly_phasing_task
+preprocess_cs_weekly_phasing_task >> cs_weekly_phasing_src2stg_task >> cs_weekly_phasing_stg2ods_task >> cs_weekly_phasing_ods2edw_task
+cs_weekly_phasing_ods2edw_task >> postprocess_cs_weekly_phasing_task
