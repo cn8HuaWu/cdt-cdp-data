@@ -4,7 +4,27 @@ Staging:
     temp_product text,
     shouldbe_product text,
     flag text
-
-
-
 ODS:
+
+EDW:
+  create_table_query:
+    create table if not exists edw.f_lgc_prod_modify
+    (channel varchar(20),
+     lego_sku_id_temp varchar(50),
+     lego_sku_id_corrt varchar(50),
+     modify_type varchar(20)
+     constraint pk_f_lgc_prod_modify primary key(channel, lego_sku_id_temp)
+    )distributed by (channel);
+
+  delete_table_query:
+    delete from edw.f_lgc_prod_modify;
+
+  insert_table_query:
+    insert into edw.f_lgc_prod_modify
+    select
+        channel,
+        temp_product as lego_sku_id_temp,
+        shouldbe_product as lego_sku_id_corrt,
+        flag as modify_type
+    from
+       ods.r_lgc_modified_product;
