@@ -6,7 +6,7 @@ from airflow import DAG
 import logging
 import os, sys
 
-DAG_HOME =  Variable.get('dag_home').strip().rstrip('/')
+DAG_HOME = Variable.get('dag_home').strip().rstrip('/')
 sys.path.append("../tasks/")
 sys.path.append(DAG_HOME + "/tasks/")
 
@@ -17,6 +17,12 @@ from utils.myutil import Myutil
 from utils.db import Mydb
 from subdags.subdag_sync_rds import sync_subdag
 from update_downstream_table import update_downstream
+
+# variable to run the shell scripts
+SRC_NAME = "lgc"
+STAGING = 'Staging'
+ODS = 'ODS'
+TEMP_FOLDER = 'Temp'
 
 # variable to run the shell scripts
 SRC_NAME = "lgc"
@@ -74,14 +80,14 @@ def load_src2stg(**kwargs):
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, has_head=False, sheetname='Sheet1', merge =False)
     src2stg.start(version='v2')
 
-# def load_stg2ods(**kwargs):
-#
-#     pkey = entity_conf[src_entity]["key"]
-#     stg_suffix = entity_conf[src_entity]["stg_suffix"]
-#     #
-#     batch_date = kwargs.get('dag_run').conf.get('batch_date')
-#     stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
-#     stg2ods.start()
+def load_stg2ods(**kwargs):
+
+    pkey = entity_conf[src_entity]["key"]
+    stg_suffix = entity_conf[src_entity]["stg_suffix"]
+    #
+    batch_date = kwargs.get('dag_run').conf.get('batch_date')
+    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
+    stg2ods.start()
 
 
 args = {
@@ -127,38 +133,38 @@ cs_weekly_phasing_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
-# # create edw data task:
-# edw_lgc_cs_week_phase_create = PythonOperator(
-#     task_id='edw_lgc_cs_week_phase_create',
-#     provide_context=True,
-#     python_callable=update_downstream,
-#     op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_cs_weekly_phasing",
-#                'sql_section': 'create_table_query', 'args': args},
-#     on_failure_callback=dag_failure_handler,
-#     dag=dag,
-# )
-#
-# # delete from edw data task:
-# edw_lgc_cs_week_phase_delete = PythonOperator(
-#     task_id='edw_lgc_cs_week_phase_delete',
-#     provide_context=True,
-#     python_callable=update_downstream,
-#     op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_cs_weekly_phasing",
-#                'sql_section': 'delete_table_query', 'args': args},
-#     on_failure_callback=dag_failure_handler,
-#     dag=dag,
-# )
-#
-# # insert into edw data task:
-# edw_lgc_cs_week_phase_insert = PythonOperator(
-#     task_id='edw_lgc_cs_week_phase_insert',
-#     provide_context=True,
-#     python_callable=update_downstream,
-#     op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_cs_weekly_phasing",
-#                'sql_section': 'insert_table_query', 'args': args},
-#     on_failure_callback=dag_failure_handler,
-#     dag=dag,
-# )
+# create edw data task:
+edw_lgc_cs_week_phase_create = PythonOperator(
+    task_id='edw_lgc_cs_week_phase_create',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_cs_weekly_phasing",
+               'sql_section': 'create_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# delete from edw data task:
+edw_lgc_cs_week_phase_delete = PythonOperator(
+    task_id='edw_lgc_cs_week_phase_delete',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_cs_weekly_phasing",
+               'sql_section': 'delete_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# insert into edw data task:
+edw_lgc_cs_week_phase_insert = PythonOperator(
+    task_id='edw_lgc_cs_week_phase_insert',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_cs_weekly_phasing",
+               'sql_section': 'insert_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
 
 postprocess_cs_weekly_phasing_task = PythonOperator(
     task_id = 'postprocess_cs_weekly_phasing_task',
@@ -169,7 +175,5 @@ postprocess_cs_weekly_phasing_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_cs_weekly_phasing_task >> cs_weekly_phasing_src2stg_task >> cs_weekly_phasing_stg2ods_task >> postprocess_cs_weekly_phasing_task
-
-
-#lgc_cs_week_phase_create >> edw_lgc_cs_week_phase_delete >> edw_lgc_cs_week_phase_insert >> postprocess_cs_weekly_phasing_task
+preprocess_cs_weekly_phasing_task >> cs_weekly_phasing_src2stg_task >> cs_weekly_phasing_stg2ods_task >> lgc_cs_week_phase_create
+lgc_cs_week_phase_create >> edw_lgc_cs_week_phase_delete >> edw_lgc_cs_week_phase_insert >> postprocess_cs_weekly_phasing_task
