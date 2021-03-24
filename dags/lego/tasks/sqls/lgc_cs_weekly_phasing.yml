@@ -12,92 +12,81 @@ ODS:
 
 EDW:
   create_table_query:
-    create table if not exists edw.f_lgc_cs_weekly_phasing(
-      distributor_code varchar(100),
-      distributor_name varchar(100),
-      month varchar(20),
-      week_num bigint,
-      plan_value double,
-      ld_batch_date varchar(20),
-      ld_load_time timestampe,
-      constraint pk_f_lgc_cs_weekly_phasing primary key(distributor_name, month,week_num)
-    )distributed by (store_code);
+    create table if not exists edw.f_cs_week_phase(
+       date_id           varchar(20),
+       distributor_code  varchar(50),
+       distributor_name  varchar(100),
+       month             varchar(),
+       week_num          bigint,
+       value             numeric(17,2),
+       ld_batch_date     varchar(20),
+       ld_load_time      timestamp,
+       constraint pk_f_lgc_prod_modify primary key(distributor_name, month,week_num )
+    )distributed by (distributor_name);
 
+
+
+  delete_edw_from_ods_query:
+    delete from exists edw.f_cs_week_phase;
 
   insert_edw_from_ods_query:
-    insert into table edw.f_lgc_cs_weekly_phasing
-      (distributor_code,
-      distributor_name,
-      month,
-      week_num,
-      plan_value,
-      ld_batch_date,
-      ld_load_time
-      )
+    insert into edw.f_cs_week_phase
     select
-       null            as store_code,
-       customer        as distributor_name,
-       month           as month,
-       1               as week_num,
-       first_week      as plan_value
-       dl_batch_date   as dl_batch_date,
-       now()           as dl_load_time
-    from 
-	    ods.r_lgc_cs_weekly_phasing
-	where 
-	   first_week is not null
-       
-	union all
+       month             as date_id,
+       null              as distributor_code,
+       customer          as distributor_name,
+       month             as month,
+       1                 as week_num,
+       first week        as plan_value,
+       ld_batch_date     as ld_batch_date,
+       now()             as ld_load_time
+    from
+        ods.r_lgc_cs_weekly_phasing
+    union all
     select
-       null            as store_code,
-       customer        as distributor_name,
-       month           as month,
-       2               as week_num,
-       second_week     as plan_value
-       dl_batch_date   as dl_batch_date,
-       now()           as dl_load_time
-    from 
-	    ods.r_lgc_cs_weekly_phasing
-	where 
-	   second_week is not null
-	union all
+       month             as date_id,
+       null              as distributor_code,
+       customer          as distributor_name,
+       month             as month,
+       2                 as week_num,
+       second week       as plan_value,
+       ld_batch_date     as ld_batch_date,
+       now()             as ld_load_time
+    from
+        ods.r_lgc_cs_weekly_phasing
+    union all
     select
-       null            as store_code,
-       customer        as distributor_name,
-       month           as month,
-       3               as week_num,
-       third_week      as plan_value
-       dl_batch_date   as dl_batch_date,
-       now()           as dl_load_time
-    from 
-	    ods.r_lgc_cs_weekly_phasing	
-	where 
-	   third_week is not null
-		
-	union all
+       month             as date_id,
+       null              as distributor_code,
+       customer          as distributor_name,
+       month             as month,
+       3                 as week_num,
+       third week        as plan_value,
+       ld_batch_date     as ld_batch_date,
+       now()             as ld_load_time
+    from
+        ods.r_lgc_cs_weekly_phasing
+    union all
     select
-       null            as store_code,
-       customer        as distributor_name,
-       month           as month,
-       4               as week_num,
-       fourth_week     as plan_value
-       dl_batch_date   as dl_batch_date,
-       now()           as dl_load_time
-    from 
-	    ods.r_lgc_cs_weekly_phasing	
-	where 
-	   fourth_week is not null
-	   
-	union all
+       month             as date_id,
+       null              as distributor_code,
+       customer          as distributor_name,
+       month             as month,
+       4                 as week_num,
+       fourth week       as plan_value,
+       ld_batch_date     as ld_batch_date,
+       now()             as ld_load_time
+    from
+        ods.r_lgc_cs_weekly_phasing
+    union all
     select
-       null            as store_code,
-       customer        as distributor_name,
-       month           as month,
-       5               as week_num,
-       fifth_week     as plan_value
-       dl_batch_date   as dl_batch_date,
-       now()           as dl_load_time
-    from 
-	    ods.r_lgc_cs_weekly_phasing	
-	where 
-	   fifth_week is not null;
+       month             as date_id,
+       null              as distributor_code,
+       customer          as distributor_name,
+       month             as month,
+       5                 as week_num,
+       fifth week        as plan_value,
+       ld_batch_date     as ld_batch_date,
+       now()             as ld_load_time
+    from
+        ods.r_lgc_cs_weekly_phasing ;
