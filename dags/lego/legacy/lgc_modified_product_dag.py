@@ -159,6 +159,28 @@ edw_lgc_product_modify_create = PythonOperator(
     dag=dag,
 )
 
+# delete from edw data task:
+edw_lgc_product_modify_delete = PythonOperator(
+    task_id='edw_lgc_product_modify_delete',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_modified_product",
+               'sql_section': 'delete_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# insert into edw data task:
+edw_lgc_product_modify_insert = PythonOperator(
+    task_id='edw_lgc_product_modify_insert',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_modified_product",
+               'sql_section': 'insert_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
 postprocess_modified_product_task = PythonOperator(
     task_id='postprocess_modified_product_task',
     provide_context=True,
@@ -169,4 +191,4 @@ postprocess_modified_product_task = PythonOperator(
 )
 
 preprocess_modified_product_task >> modified_product_src2stg_task >> modified_product_stg2ods_task >> edw_lgc_product_modify_create
-edw_lgc_product_modify_create >> postprocess_modified_product_task
+edw_lgc_product_modify_create >> edw_lgc_product_modify_delete >> edw_lgc_product_modify_insert >> postprocess_modified_product_task
