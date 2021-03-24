@@ -9,10 +9,12 @@ ODS:
 EDW:
   create_table_query:
     create table if not exists edw.f_lgc_prod_modify
-    (channel varchar(20),
-     lego_sku_id_temp varchar(50),
-     lego_sku_id_corrt varchar(50),
-     modify_type varchar(20),
+    (channel           varchar(20) not null,
+     lego_sku_id_temp  varchar(50) not null,
+     lego_sku_id_corrt varchar(50) ,
+     modify_type       varchar(20) ,
+     dl_batch_date     varchar(20) ,
+     dl_load_time      timestamp,
      constraint pk_f_lgc_prod_modify primary key(channel, lego_sku_id_temp)
     )distributed by (channel);
 
@@ -23,8 +25,10 @@ EDW:
     insert into edw.f_lgc_prod_modify
     select
         channel,
-        temp_product as lego_sku_id_temp,
+        temp_product     as lego_sku_id_temp,
         shouldbe_product as lego_sku_id_corrt,
-        flag as modify_type
+        flag             as modify_type,
+        dl_batch_date    as dl_batch_date,
+        now()            as dl_load_time
     from
        ods.r_lgc_modified_product;
