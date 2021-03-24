@@ -12,7 +12,7 @@ EDW:
     (channel varchar(20),
      lego_sku_id_temp varchar(50),
      lego_sku_id_corrt varchar(50),
-     modify_type varchar(20)
+     modify_type varchar(20),
      constraint pk_f_lgc_prod_modify primary key(channel, lego_sku_id_temp)
     )distributed by (channel);
 
