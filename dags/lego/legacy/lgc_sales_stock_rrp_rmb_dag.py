@@ -15,6 +15,7 @@ from stg2ods import Stg2odsHandler
 from ods2edw import Ods2edwHandler
 from utils.myutil import Myutil
 from utils.db import Mydb
+from update_downstream_table import update_downstream
 
 # variable to run the shell scripts
 SRC_NAME = "lgc"
