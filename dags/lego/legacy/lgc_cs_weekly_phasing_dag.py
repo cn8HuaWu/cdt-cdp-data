@@ -138,7 +138,7 @@ cs_weekly_phasing_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
-# create edw data task:
+# ccreate edw data task:
 edw_lgc_cs_week_phase_create = PythonOperator(
     task_id='edw_lgc_cs_week_phase_create',
     provide_context=True,
@@ -155,7 +155,7 @@ edw_lgc_cs_week_phase_delete = PythonOperator(
     provide_context=True,
     python_callable=update_downstream,
     op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_cs_weekly_phasing",
-               'sql_section': 'delete_table_query', 'args': args},
+               'sql_section': 'delete_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
@@ -166,7 +166,7 @@ edw_lgc_cs_week_phase_insert = PythonOperator(
     provide_context=True,
     python_callable=update_downstream,
     op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_cs_weekly_phasing",
-               'sql_section': 'insert_table_query', 'args': args},
+               'sql_section': 'insert_edw_from_ods_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
