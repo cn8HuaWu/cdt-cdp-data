@@ -16,7 +16,7 @@ EDW:
        date_id           varchar(20),
        distributor_code  varchar(50),
        distributor_name  varchar(100),
-       month             varchar(),
+       month             varchar(4),
        week_num          bigint,
        value             numeric(17,2),
        ld_batch_date     varchar(20),
