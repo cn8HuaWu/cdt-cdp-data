@@ -82,7 +82,6 @@ def load_stg2ods(**kwargs):
     stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
     stg2ods.start()
 
-
 args = {
     'owner': 'cdp_admin',
     'email': email_to_list,
@@ -127,6 +126,40 @@ sales_stock_rrp_rmb_stg2ods_task = PythonOperator(
 )
 
 
+# create if not exists edw data task:
+edw_lgc_sales_stock_rrp_rmb_create = PythonOperator(
+    task_id='edw_lgc_sales_stock_rrp_rmb_create',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_sales_stock_rrp_rmb",
+               'sql_section': 'create_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+
+# delete edw data task:
+edw_lgc_sales_stock_rrp_rmb_delete = PythonOperator(
+    task_id='edw_lgc_sales_stock_rrp_rmb_delete',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_sales_stock_rrp_rmb",
+               'sql_section': 'delete_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# insert into edw data task:
+edw_lgc_sales_stock_rrp_rmb_insert = PythonOperator(
+    task_id='edw_lgc_sales_stock_rrp_rmb_insert',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_sales_stock_rrp_rmb",
+               'sql_section': 'insert_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
 postprocess_sales_stock_rrp_rmb_task = PythonOperator(
     task_id = 'postprocess_sales_stock_rrp_rmb_task',
     provide_context = True,
@@ -136,4 +169,5 @@ postprocess_sales_stock_rrp_rmb_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_sales_stock_rrp_rmb_task >> sales_stock_rrp_rmb_src2stg_task >> sales_stock_rrp_rmb_stg2ods_task >> postprocess_sales_stock_rrp_rmb_task
+preprocess_sales_stock_rrp_rmb_task >> sales_stock_rrp_rmb_src2stg_task >> sales_stock_rrp_rmb_stg2ods_task >> edw_lgc_sales_stock_rrp_rmb_create
+edw_lgc_sales_stock_rrp_rmb_create >> edw_lgc_sales_stock_rrp_rmb_delete >> edw_lgc_sales_stock_rrp_rmb_insert >> postprocess_sales_stock_rrp_rmb_task
