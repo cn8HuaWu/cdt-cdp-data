@@ -93,15 +93,6 @@ def load_stg2ods(**kwargs):
                              has_head=False)
     stg2ods.start()
 
-
-def load_ods2edw(**kwargs):
-    batch_date = kwargs.get('dag_run').conf.get('batch_date')
-    pkey = entity_conf[src_entity]["key"]
-    table_prefix = entity_conf[src_entity]["edw_prefix"]
-    update_type = entity_conf[src_entity]["update_type"]
-    ods2edw = Ods2edwHandler(batch_date, SRC_NAME, entity, pkey, table_prefix, myutil, db)
-    ods2edw.start()
-
 args = {
     'owner': 'cdp_admin',
     'email': email_to_list,
@@ -144,13 +135,40 @@ sales_stock_nip_dkk_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
-sales_stock_nip_dkk_ods2edw_task = PythonOperator(
-    task_id='sales_stock_nip_dkk_ods2edw_task',
+# create edw data task:
+edw_lgc_sales_stock_nip_dkk_create = PythonOperator(
+    task_id='edw_lgc_sales_stock_nip_dkk_create',
     provide_context=True,
-    python_callable=load_ods2edw,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_sales_stock_nip_dkk",
+               'sql_section': 'create_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
+
+
+# delete edw data task:
+edw_lgc_sales_stock_nip_dkk_delete = PythonOperator(
+    task_id='edw_lgc_sales_stock_nip_dkk_delete',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_sales_stock_nip_dkk",
+               'sql_section': 'delete_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# insert into edw data task:
+edw_lgc_sales_stock_nip_dkk_insert = PythonOperator(
+    task_id='edw_lgc_sales_stock_nip_dkk_insert',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_sales_stock_nip_dkk",
+               'sql_section': 'insert_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
 
 postprocess_sales_stock_nip_dkk_task = PythonOperator(
     task_id='postprocess_sales_stock_nip_dkk_task',
@@ -161,5 +179,5 @@ postprocess_sales_stock_nip_dkk_task = PythonOperator(
     dag=dag,
 )
 
-preprocess_sales_stock_nip_dkk_task >> sales_stock_nip_dkk_src2stg_task >> sales_stock_nip_dkk_stg2ods_task >> sales_stock_nip_dkk_ods2edw_task
-sales_stock_nip_dkk_ods2edw_task >> postprocess_sales_stock_nip_dkk_task
+preprocess_sales_stock_nip_dkk_task >> sales_stock_nip_dkk_src2stg_task >> sales_stock_nip_dkk_stg2ods_task >> edw_lgc_sales_stock_nip_dkk_create
+edw_lgc_sales_stock_nip_dkk_create >> edw_lgc_sales_stock_nip_dkk_delete >> edw_lgc_sales_stock_nip_dkk_insert >> postprocess_sales_stock_nip_dkk_task
