@@ -27,7 +27,7 @@ EDW:
 
 
   delete_edw_from_ods_query:
-    delete from exists edw.f_lgc_cs_week_phase;
+    delete from edw.f_lgc_cs_week_phase;
 
   insert_edw_from_ods_query:
     insert into edw.f_lgc_cs_week_phase
@@ -37,7 +37,7 @@ EDW:
        customer          as distributor_name,
        month             as month,
        1                 as week_num,
-       first week        as plan_value,
+       cast(first_week as numeric(17,2))as value,
        ld_batch_date     as ld_batch_date,
        now()             as ld_load_time
     from
@@ -49,7 +49,7 @@ EDW:
        customer          as distributor_name,
        month             as month,
        2                 as week_num,
-       second week       as plan_value,
+       cast(second_week as numeric(17,2))as value,
        ld_batch_date     as ld_batch_date,
        now()             as ld_load_time
     from
@@ -61,7 +61,7 @@ EDW:
        customer          as distributor_name,
        month             as month,
        3                 as week_num,
-       third week        as plan_value,
+       cast(third_week as numeric(17,2))as value,
        ld_batch_date     as ld_batch_date,
        now()             as ld_load_time
     from
@@ -73,7 +73,7 @@ EDW:
        customer          as distributor_name,
        month             as month,
        4                 as week_num,
-       fourth week       as plan_value,
+       cast(fourth_week as numeric(17,2))as value,
        ld_batch_date     as ld_batch_date,
        now()             as ld_load_time
     from
@@ -85,7 +85,7 @@ EDW:
        customer          as distributor_name,
        month             as month,
        5                 as week_num,
-       fifth week        as plan_value,
+       cast(fifth_week as numeric(17,2))as value,
        ld_batch_date     as ld_batch_date,
        now()             as ld_load_time
     from
