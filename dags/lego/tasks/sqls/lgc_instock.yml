@@ -15,7 +15,7 @@ Staging:
 ODS:
 
 EDW:
-  create_table_query:
+  create_edw_table_query:
     create table if not exists edw.f_lgc_intock
      (date_id                    varchar(20),
       lego_year_week             varchar(20),
@@ -28,27 +28,30 @@ EDW:
       cntr_instock_recdr         bigint,
       cntr_recdr                 bigint,
       retail_stock_qty           bigint,
-      in_stock_percnt            double,
+      in_stock_percnt            numeric(17,4),
       dl_batch_date              varchar(20),
-      dl_load_time               timestamp
-      constraint pk_f_lgc_instock primary key(lego_year_week, lego_store_code,lego_sku_id)
-    )distributed by (lego_store_code);
-  
-  insert_edw_from_ods_query:
+      dl_load_time               timestamp,
+      constraint pk_f_lgc_instock primary key(lego_year_week,distributor_code, lego_store_code,lego_sku_id)
+    )distributed by (distributor_code);
+
+  delete_edw_table_query:
+    delete from edw.f_lgc_intock;
+
+  insert_edw_table_query:
     insert into edw.f_lgc_intock
     select
           split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as date_id,
           split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week,
-          cust_id            as distributor_code,
-          cust_name          as distributor_name,
-          store_id           as lego_store_code,
-          ''                 as lego_store_name,
-          prod_id            as lego_sku_id,
-          prod_name          as lego_sku_name,
-          cntr_instock_recdr as cntr_instock_recdr,
-          cntr_recdr         as cntr_recdr,
-          retail_stock_qty   as retail_stock_qty,
-          in_stock_percnt    as in_stock_percnt,
+          cust_id                          as distributor_code,
+          cust_name                        as distributor_name,
+          store_id                         as lego_store_code,
+          null                             as lego_store_name,
+          prod_id                          as lego_sku_id,
+          prod_name                        as lego_sku_name,
+          cast(cntr_instock_recdr as int)  as cntr_instock_recdr,
+          cast(cntr_recdr as int)          as cntr_recdr,
+          cast(retail_stock_qty as int)    as retail_stock_qty,
+          cast(in_stock_percnt as numeric(17,4)) as in_stock_percnt,
           dl_batch_date      as dl_batch_date,
           now()              as dl_load_time
     from

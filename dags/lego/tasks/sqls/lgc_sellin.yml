@@ -28,39 +28,42 @@ EDW:
       distributor_code           varchar(20),
       distributor_name           varchar(100),
       lego_sku_id                varchar(100),
-      net_sale_invc_amt          double,
-      dlvr_prcs_amt              double,
-      cnfir_open_sale_ordr_amt   double,
-      tot_open_sale_ordr_prtfl_amt double,
-      last_dmnd_plan_amt         double,
-      order_prtfl_percnt         double,
-      bill_calt_qty              bigint,
+      net_sale_invc_amt          numeric(17,2),
+      dlvr_prcs_amt              numeric(17,2),
+      cnfir_open_sale_ordr_amt   numeric(17,2),
+      tot_open_sale_ordr_prtfl_amt numeric(17,2),
+      last_dmnd_plan_amt         numeric(17,2),
+      order_prtfl_percnt         numeric(17,4),
+      bill_calt_qty              numeric(17,4),
       dl_batch_date              varchar(20),
-      dl_load_time               timestamp
+      dl_load_time               timestamp,
       constraint pk_f_lgc_sellin primary key(sale_date, distributor_code,lego_sku_id)
     )distributed by (distributor_code);
-  
+
+  delete_edw_table_query:
+    delete from edw.f_lgc_sellin;
+
   insert_edw_from_ods_query:
     insert into edw.f_lgc_sellin
     select
-        split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1)as date_id                    ,
-        split_part(year_week ,'.',2)||'14'||split_part(year_week ,'.',1) as year_month,
-        split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week,
-        split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1) as sale_date,
+        split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1)         as date_id                    ,
+        split_part(year_week ,'.',2)||'14'||split_part(year_week ,'.',1)                 as year_month,
+        split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1)                 as lego_year_week,
+        split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1)         as sale_date,
         split_part(cust_link ,'/',length(cust_link)-length(replace(cust_link,'/',''))+1) as distributor_code,
-        cust_name                    as distributor_name,
-        prod_id                      as lego_sku_id,
-        net_sale_invc_amt            as net_sale_invc_amt,
-        dlvr_prcs_amt                as dlvr_prcs_amt,
-        cnfir_open_sale_ordr_amt     as cnfir_open_sale_ordr_amt,
-        tot_open_sale_ordr_prtfl_amt as tot_open_sale_ordr_prtfl_amt,
-        last_dmnd_plan_amt           as last_dmnd_plan_amt,
-        order_prtfl_percnt           as order_prtfl_percnt,
-        bill_calt_qty                as bill_calt_qty,
-        dl_batch_date                as dl_batch_date,
-        now()                        as dl_load_time
+        cust_name                                           as distributor_name,
+        prod_id                                             as lego_sku_id,
+        cast(net_sale_invc_amt as numeric(17,2))            as net_sale_invc_amt,
+        cast(dlvr_prcs_amt as numeric(17,2))                as dlvr_prcs_amt,
+        cast(cnfir_open_sale_ordr_amt as numeric(17,2))     as cnfir_open_sale_ordr_amt,
+        cast(tot_open_sale_ordr_prtfl_amt as numeric(17,2)) as tot_open_sale_ordr_prtfl_amt,
+        cast(last_dmnd_plan_amt as numeric(17,2))           as last_dmnd_plan_amt,
+        cast(order_prtfl_percnt as numeric(17,4))           as order_prtfl_percnt,
+        cast(bill_calt_qty as  numeric(17,2))               as bill_calt_qty,
+        dl_batch_date                                       as dl_batch_date,
+        now()                                               as dl_load_time
     from
         ods.r_lgc_sellin
     where
-        lower(distributor_name) not like'%not assigned'
+        lower(cust_name) not like'%not assigned'
         or lower(prod_name) not like'%not assigned';
