@@ -26,7 +26,7 @@ EDW:
 
 
 
-  delete_edw_from_ods_query:
+  delete_edw_table_query:
     delete from edw.f_lgc_cs_week_phase;
 
   insert_edw_from_ods_query:
