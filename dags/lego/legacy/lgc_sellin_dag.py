@@ -15,6 +15,7 @@ from stg2ods import Stg2odsHandler
 from ods2edw import Ods2edwHandler
 from utils.myutil import Myutil
 from utils.db import Mydb
+from update_downstream_table import update_downstream
 
 # variable to run the shell scripts
 SRC_NAME = "lgc"
@@ -82,13 +83,6 @@ def load_stg2ods(**kwargs):
     stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
     stg2ods.start()
 
-def load_ods2edw(**kwargs):
-    batch_date = kwargs.get('dag_run').conf.get('batch_date')
-    pkey = entity_conf[src_entity]["key"]
-    table_prefix = entity_conf[src_entity]["edw_prefix"]
-    update_type = entity_conf[src_entity]["update_type"]
-    ods2edw = Ods2edwHandler(batch_date, SRC_NAME, entity, pkey, table_prefix, myutil, db)
-    ods2edw.start()
 
 args = {
     'owner': 'cdp_admin',
@@ -133,10 +127,35 @@ sellin_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
-sellin_ods2edw_task = PythonOperator(
-    task_id='sellin_ods2edw_task',
+# create edw data task:
+edw_lgc_sellin_create = PythonOperator(
+    task_id='edw_lgc_sellin_create',
     provide_context=True,
-    python_callable=load_ods2edw,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_sellin",
+               'sql_section': 'create_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# delete edw data task:
+edw_lgc_sellin_delete = PythonOperator(
+    task_id='edw_lgc_sellin_delete',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_sellin",
+               'sql_section': 'delete_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# insert into edw data task:
+edw_lgc_sellin_insert = PythonOperator(
+    task_id='edw_lgc_sellin_insert',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_sellin",
+               'sql_section': 'insert_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
@@ -150,5 +169,5 @@ postprocess_sellin_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_sellin_task >> sellin_src2stg_task >> sellin_stg2ods_task >> sellin_ods2edw_task
-sellin_ods2edw_task >> postprocess_sellin_task
+preprocess_sellin_task >> sellin_src2stg_task >> sellin_stg2ods_task >> edw_lgc_sellin_create
+edw_lgc_sellin_create >> edw_lgc_sellin_delete >> edw_lgc_sellin_insert >> postprocess_sellin_task
