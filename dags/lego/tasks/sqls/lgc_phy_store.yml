@@ -20,3 +20,55 @@ Staging:
 
 ODS:
 
+EDW:
+  create_edw_table_query:
+    create table if not exists edw.f_lgc_phy_store
+	(sold_to varchar(100),
+     ship_to varchar(100),
+     trad_id varchar(100),
+     lego_store_code varchar(100),
+     store_name varchar(100),
+     review_channel varchar(100),
+     customer varchar(100),
+     store_address varchar(200),
+     provice varchar(100),
+     city varchar(100),
+     city_cn varchar(100),
+     region varchar(100),
+     channel_lv1 varchar(100),
+     channel_lv2 varchar(100),
+     channel_lv3 varchar(100),
+     open_date varchar(20),
+     update_week varchar(20),
+     ld_batch_date varchar(20),
+     ld_load_time timestamp,
+     constraint pk_f_lgc_phy_store primary key(lego_store_code)
+    )distributed by (review_channel);
+
+  delete_edw_table_query:
+    delete from edw.f_lgc_phy_store;
+
+  insert_edw_table_query:
+    insert into edw.f_lgc_phy_store
+	select
+	    sold_to                        as sold_to,
+        ship_to                        as ship_to,
+        trad_id                        as trad_id,
+        lego_store_code                as lego_store_code,
+        store_name                     as store_name,
+        review_channel                 as review_channel,
+        customer                       as customer,
+        store_address                  as store_address,
+        provice                        as provice,
+        city                           as city,
+        city_cn                        as city_cn,
+        region                         as region,
+        channel_lv1                    as channel_lv1,
+        channel_lv2                    as channel_lv2,
+        channel_lv3                    as channel_lv3,
+        open_date                      as open_date,
+        replace(update_week,'WK','13') as update_week,
+        ld_batch_date                  as ld_batch_date,
+        now()                          as ld_load_time
+	from
+	    ods.r_dl_lgc_phy_store;
