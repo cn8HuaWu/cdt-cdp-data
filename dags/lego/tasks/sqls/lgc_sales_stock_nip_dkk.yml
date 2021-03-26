@@ -38,7 +38,7 @@ EDW:
     delete from edw.f_lgc_sales_stock_nip_dkk;
 
   insert_edw_table_query:
-    insert into table edw.f_lgc_sales_stock_nip_dkk
+    insert into edw.f_lgc_sales_stock_nip_dkk
     select
         split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as date_id
        ,split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week
