@@ -318,14 +318,14 @@ product_update_dly_sales_rpt_oms = PythonOperator(
 #     dag=dag,
 # )
 
-product_update_dl_tm_shopper = PythonOperator(
-    task_id='product_update_dl_tm_shopper',
-    provide_context = True,
-    python_callable = update_downstream,
-    op_kwargs = {'myutil':myutil, 'gpdb': db, 'sql_file_name':"dl_tm_shopper" , 'sql_section': 'update_by_oms_order_dtl', 'args': args},
-    on_failure_callback = dag_failure_handler,
-    dag=dag,
-)
+# product_update_dl_tm_shopper = PythonOperator(
+#     task_id='product_update_dl_tm_shopper',
+#     provide_context = True,
+#     python_callable = update_downstream,
+#     op_kwargs = {'myutil':myutil, 'gpdb': db, 'sql_file_name':"dl_tm_shopper" , 'sql_section': 'update_by_oms_order_dtl', 'args': args},
+#     on_failure_callback = dag_failure_handler,
+#     dag=dag,
+# )
 
 product_update_dl_shopper = PythonOperator(
     task_id='product_update_dl_shopper',
@@ -372,7 +372,8 @@ product_update_pop_order_dtl >> product_update_pop_order >> product_update_dl_or
 
 product_update_product_status_daily >> product_update_oms_order_dtl >> product_update_dly_sales_rpt_oms 
 # product_update_product_status_daily >> product_update_oms_order_dtl >> product_update_mly_sales_rpt_oms
-product_update_product_status_daily >> product_update_oms_order_dtl >> product_update_dl_tm_shopper >> product_info_sync_2_rds_task  
+# product_update_product_status_daily >> product_update_oms_order_dtl >> product_update_dl_tm_shopper >> product_info_sync_2_rds_task
+product_update_product_status_daily >> product_update_oms_order_dtl >> product_info_sync_2_rds_task    
 
 product_update_pop_order_dtl >> product_update_dl_shopper >> product_info_sync_2_rds_task  
 product_update_b2b_order_dtl >> product_update_dl_shopper >> product_info_sync_2_rds_task  

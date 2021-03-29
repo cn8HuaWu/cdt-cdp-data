@@ -31,6 +31,8 @@ EDW:
       gmv_amt decimal(17,2),
       piece_cnt decimal(15),
       current_row varchar(255),
+      store_type varchar(255),
+      rsp numeric(17,6),
       dl_batch_date varchar(8),
       dl_load_time timestamp
     )distributed by (year, month, week, start_time, end_time,brand,lego_sku_id,sku_cn_name,platform,shop );
@@ -47,16 +49,22 @@ EDW:
       brand,
       lego_sku_id,
       sku_cn_name,
-      lower(platform) as platform,
-      shop,
+      lower(a.platform) as platform,
+      a.shop,
       sum(case when gmv_amt ~ E'\\d+' then replace(trim(gmv_amt),',','')::decimal(17,2) else null end) as gmv_amt,
       sum(case when piece_cnt ~ E'\\d+' then replace(trim(piece_cnt),',','')::decimal(15) else null end) as piece_cnt,
       'Y' as current_row,
+      max(case when lower(a.platform) ='tb' then '淘宝' 
+           when lower(a.platform) ='tmall' and b.platform is not null then b.store_type
+           when lower(a.platform) ='tmall' and b.platform is null then '天猫B店' 
+           else null 
+        end) as store_type,
       dl_batch_date,
       now()
-    from ods.r_qbt_sku_monitor
+    from ods.r_qbt_sku_monitor a
+      left join edw.d_qbt_competitor_store_mapping b on lower(a.platform) = lower(b.platform) and lower(a.shop) = lower(b.shop)
     where dl_batch_date = '{batch_date}'
-    group by year, month, week, start_time, end_time,brand,lego_sku_id,sku_cn_name,platform,shop,dl_batch_date;
+    group by year, month, week, start_time, end_time,brand,lego_sku_id,sku_cn_name, a.platform,a.shop,dl_batch_date;
 
     update edw.f_qbt_sku_monitor a
       set current_row = 'N'
@@ -87,11 +95,44 @@ EDW:
       gmv_amt, 
       piece_cnt,
       current_row,
+      store_type,
       dl_batch_date,
       dl_load_time
     ) 
     select * from t1;
+
     
+    update edw.f_qbt_sku_monitor a
+    set  rsp = p1.rsp
+    from (
+          select * from(
+            select 
+              row_number() over(partition by m.year, m.month, m.week, m.start_time,m.brand, m.lego_sku_id, m.platform, m.shop order by case when year >= p.year_version::int then year - p.year_version::int else (year - p.year_version::int)*-1 + 100 end) as rsp_gap,
+              m.year,
+              m.month, 
+              m.week,
+              m.start_time,
+              m.end_time,
+              m.brand,
+              m.lego_sku_id,
+              m.platform,
+              m.shop,
+              p.rsp
+          from edw.f_qbt_sku_monitor m 
+              left join edw.d_dl_product_info p on m.lego_sku_id =p.lego_sku_id
+          ) t1 where rsp_gap=1
+        )p1 
+    where a.year = p1.year
+        and a.month = p1.month
+        and a.start_time = p1.start_time
+        and a.end_time = p1.end_time
+        and a.brand = p1.brand
+        and a.lego_sku_id = p1.lego_sku_id
+        and lower(a.platform) = lower(p1.platform)
+        and lower(a.shop) = lower(p1.shop)
+        and a.dl_batch_date = '{batch_date}'
+        
+
   # updated_by_sku_monitor:
   #   delete from dm.a_dl_qbt_sku_monitor;
 

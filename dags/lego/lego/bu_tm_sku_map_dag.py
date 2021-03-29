@@ -207,14 +207,14 @@ tm_sku_map_update_dly_sales_rpt = PythonOperator(
 #     dag=dag,
 # )
 
-tm_gwp_update_dl_shopper = PythonOperator(
-    task_id='tm_gwp_update_dl_shopper',
-    provide_context = True,
-    python_callable = update_downstream,
-    op_kwargs = {'myutil':myutil, 'gpdb': db, 'sql_file_name':"dl_tm_shopper" , 'sql_section': 'update_by_oms_order_dtl', 'args': args},
-    on_failure_callback = dag_failure_handler,
-    dag=dag,
-)
+# tm_gwp_update_dl_shopper = PythonOperator(
+#     task_id='tm_gwp_update_dl_shopper',
+#     provide_context = True,
+#     python_callable = update_downstream,
+#     op_kwargs = {'myutil':myutil, 'gpdb': db, 'sql_file_name':"dl_tm_shopper" , 'sql_section': 'update_by_oms_order_dtl', 'args': args},
+#     on_failure_callback = dag_failure_handler,
+#     dag=dag,
+# )
 
 tm_sku_map_sync_2_rds_task = SubDagOperator(
     task_id='tm_sku_map_sync_2_rds_task',
@@ -245,4 +245,5 @@ branch_skip_load_tm_sku_map >> preprocess_tm_sku_map_task
 preprocess_tm_sku_map_task >> tm_sku_map_src2stg_task >> tm_sku_map_stg2ods_task >> tm_sku_map_ods2edw_task  >> tm_sku_map_update_oms_order_dtl
 tm_sku_map_update_oms_order_dtl >> tm_sku_map_update_dly_sales_rpt >> tm_sku_map_sync_2_rds_task >> postprocess_tm_sku_map_task
 # tm_sku_map_update_oms_order_dtl >> tm_sku_map_update_mly_sales_rpt >>  tm_sku_map_sync_2_rds_task >> postprocess_tm_sku_map_task
-tm_sku_map_update_oms_order_dtl >> tm_gwp_update_dl_shopper >> tm_sku_map_sync_2_rds_task >> postprocess_tm_sku_map_task
+tm_sku_map_update_oms_order_dtl >> tm_sku_map_sync_2_rds_task >> postprocess_tm_sku_map_task
+# tm_sku_map_update_oms_order_dtl >> tm_gwp_update_dl_shopper >> tm_sku_map_sync_2_rds_task >> postprocess_tm_sku_map_task
