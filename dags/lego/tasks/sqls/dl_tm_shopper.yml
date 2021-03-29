@@ -348,7 +348,7 @@ EDW:
           case when extract(day from now() - min(payment_confirm_date))<=180 then 'Y' else 'N' end as new_0to6m,
           case when extract(day from now() - min(payment_confirm_date))<=90 then 'Y' else 'N' end as new_0to3m,
           case when extract(day from now() - min(payment_confirm_date))<=30 then 'Y' else 'N' end as new_0to1m,
-          case when extract(day from now() - min(payment_confirm_date))<=30 then 'Y' else 'N' end as new_0to1w,
+          case when extract(day from now() - min(payment_confirm_date))<=7 then 'Y' else 'N' end as new_0to1w,
           case when extract(day from now() - min(payment_confirm_date))<=1 then 'Y' else 'N' end as new_0to1d,
           case when extract(day from now() - min(payment_confirm_date))>=90 and extract(day from now() - min(payment_confirm_date))<180 then 'Y' else 'N' end as new_3to6m,
           case when extract(day from now() - min(payment_confirm_date))>=180 and extract(day from now() - min(payment_confirm_date))<270  then 'Y' else 'N' end as new_6to9m,
