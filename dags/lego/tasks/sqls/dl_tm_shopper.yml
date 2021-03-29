@@ -403,6 +403,7 @@ EDW:
       sum(piece_cnt) as piece_cnt,
       sum(order_gmv_amount) as order_gmv_amount,
       sum(lego_sku_rrp_price *piece_cnt) as rrp_gmv ,
+
       last_order_rk, 
       first_order_rk
     from (
