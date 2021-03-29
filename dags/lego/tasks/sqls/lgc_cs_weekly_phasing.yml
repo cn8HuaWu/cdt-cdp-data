@@ -11,7 +11,7 @@ Staging:
 ODS:
 
 EDW:
-  create_table_query:
+  create_edw_table_query:
     create table if not exists edw.f_lgc_cs_week_phase(
        date_id           varchar(20),
        distributor_code  varchar(50),
@@ -19,8 +19,8 @@ EDW:
        month             varchar(4),
        week_num          bigint,
        value             numeric(17,2),
-       ld_batch_date     varchar(20),
-       ld_load_time      timestamp,
+       dl_batch_date     varchar(20),
+       dl_load_time      timestamp,
        constraint pk_f_lgc_cs_week_phase primary key(distributor_name, month,week_num )
     )distributed by (distributor_name);
 
@@ -29,7 +29,7 @@ EDW:
   delete_edw_table_query:
     delete from edw.f_lgc_cs_week_phase;
 
-  insert_edw_from_ods_query:
+  insert_edw_table_query:
     insert into edw.f_lgc_cs_week_phase
     select
        month             as date_id,
@@ -38,8 +38,8 @@ EDW:
        month             as month,
        1                 as week_num,
        cast(first_week as numeric(17,2))as value,
-       ld_batch_date     as ld_batch_date,
-       now()             as ld_load_time
+       dl_batch_date     as dl_batch_date,
+       now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
     union all
@@ -50,8 +50,8 @@ EDW:
        month             as month,
        2                 as week_num,
        cast(second_week as numeric(17,2))as value,
-       ld_batch_date     as ld_batch_date,
-       now()             as ld_load_time
+       dl_batch_date     as dl_batch_date,
+       now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
     union all
@@ -62,8 +62,8 @@ EDW:
        month             as month,
        3                 as week_num,
        cast(third_week as numeric(17,2))as value,
-       ld_batch_date     as ld_batch_date,
-       now()             as ld_load_time
+       dl_batch_date     as dl_batch_date,
+       now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
     union all
@@ -74,8 +74,8 @@ EDW:
        month             as month,
        4                 as week_num,
        cast(fourth_week as numeric(17,2))as value,
-       ld_batch_date     as ld_batch_date,
-       now()             as ld_load_time
+       dl_batch_date     as dl_batch_date,
+       now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
     union all
@@ -86,7 +86,7 @@ EDW:
        month             as month,
        5                 as week_num,
        cast(fifth_week as numeric(17,2))as value,
-       ld_batch_date     as ld_batch_date,
-       now()             as ld_load_time
+       dl_batch_date     as dl_batch_date,
+       now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing ;
