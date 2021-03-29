@@ -395,7 +395,17 @@ EDW:
 
   tm_order_theme_update:
     create temp table order_collect as 
-    select * from (
+    select 
+      shopperid,
+      parent_order_id,
+      payment_confirm_time,
+      top_theme,
+      sum(piece_cnt) as piece_cnt,
+      sum(order_gmv_amount) as order_gmv_amount,
+      sum(rrp_gmv) as rrp_gmv ,
+      last_order_rk, 
+      first_order_rk
+    from (
       select 
         o.shopperid ,
         o.parent_order_id ,
@@ -415,7 +425,9 @@ EDW:
                 )pp where pp.rk = 1
             )p on od.lego_sku_id = p.lego_sku_id
       where od.is_gwp='N' and o.shopperid is not null and od.lego_sku_id !='4581715'
-    )a where last_order_rk =1 or first_order_rk =1 ;
+    )a 
+    group by shopperid,parent_order_id,payment_confirm_time,top_theme,last_order_rk, first_order_rk
+    where last_order_rk =1 or first_order_rk =1 ;
 
     insert into edw.tm_order_theme
     select 
@@ -425,7 +437,7 @@ EDW:
       c.top_theme,
       c.piece_cnt,
       c.order_gmv_amount,
-      c.lego_sku_rrp_price,
+      c.rrp_gmv,
       'first'
     from order_collect c left join (select * from edw.tm_order_theme where type='first' ) t on c.shopperid =t.shopperid
     where c.first_order_rk = 1
@@ -447,7 +459,7 @@ EDW:
       c.top_theme,
       c.piece_cnt,
       c.order_gmv_amount,
-      c.lego_sku_rrp_price,
+      c.rrp_gmv,
       'last'
     from order_collect c left join (select * from edw.tm_order_theme where type='last' ) t on c.shopperid = t.shopperid
     where c.last_order_rk = 1
