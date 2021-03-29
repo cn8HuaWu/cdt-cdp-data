@@ -54,4 +54,4 @@ EDW:
        ,dl_batch_date                as dl_batch_date
        ,now()                        as dl_load_time
     from
-       ods.r_dl_sales_stock_nip_dkk;
+       ods.r_lgc_sales_stock_nip_dkk;
