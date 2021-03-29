@@ -1,9 +1,14 @@
 # create dev branch CD 
 name: dev CD
-on:
-  push, pull_request:
+on: 
+  push:
     branches:
       - qa
+      
+  pull_request:
+    branches:
+      - qa
+
 jobs:
   qa-deploy:
     runs-on: [self-hosted, linux]
