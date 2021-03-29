@@ -5,7 +5,7 @@ on:
     branches:
       - dev
 jobs:
-  legacy-deploy:
+  dev-deploy:
     runs-on: [self-hosted, linux]
     steps:
     - uses: actions/checkout@v1

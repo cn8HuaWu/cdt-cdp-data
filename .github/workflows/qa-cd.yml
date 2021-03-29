@@ -1,11 +1,11 @@
 # create dev branch CD 
 name: dev CD
 on:
-  push:
+  [push, pull_request]:
     branches:
       - qa
 jobs:
-  legacy-deploy:
+  qa-deploy:
     runs-on: [self-hosted, linux]
     steps:
     - uses: actions/checkout@v1
@@ -29,4 +29,4 @@ jobs:
         cp -rf ./dags/lego/tasks/stg2ods.py  /cdp/airflow/dags/lego/tasks/
         cp -rf ./dags/lego/tasks/ods2edw.py  /cdp/airflow/dags/lego/tasks/
         cp -rf ./dags/lego/monitor_file_dag.py  /cdp/airflow/dags/lego/
-        cp -rf ./dags/plugins/* /cdp/airflow/
+        cp -rf ./plugins/* /cdp/airflow/plugins/
