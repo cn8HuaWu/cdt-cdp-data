@@ -425,9 +425,8 @@ EDW:
                 )pp where pp.rk = 1
             )p on od.lego_sku_id = p.lego_sku_id
       where od.is_gwp='N' and o.shopperid is not null and od.lego_sku_id !='4581715'
-    )a 
-    group by shopperid,parent_order_id,payment_confirm_time,top_theme,last_order_rk,first_order_rk
-    where last_order_rk =1 or first_order_rk =1 ;
+    )a where last_order_rk =1 or first_order_rk =1 
+    group by shopperid,parent_order_id,payment_confirm_time,top_theme,last_order_rk,first_order_rk ;
 
     insert into edw.tm_order_theme
     select 
