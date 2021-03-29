@@ -353,14 +353,14 @@ EDW:
           case when extract(day from now() - min(payment_confirm_date))>=90 and extract(day from now() - min(payment_confirm_date))<180 then 'Y' else 'N' end as new_3to6m,
           case when extract(day from now() - min(payment_confirm_date))>=180 and extract(day from now() - min(payment_confirm_date))<270  then 'Y' else 'N' end as new_6to9m,
           case when extract(day from now() - min(payment_confirm_date))>=270 and extract(day from now() - min(payment_confirm_date))<360 then 'Y' else 'N' end as new_9to12m,
-          case when extract(day from now() - max(payment_confirm_date))<=365 and
-              max(case when extract(day from now() - payment_confirm_date) >= 360 and extract(day from now() - payment_confirm_date)<720  then 'Y'  else null end)='Y' then 'Y'else 'N' end as existing_retained,
-          case when extract(day from now() - max(payment_confirm_date))<=365 and
+          case when extract(day from now() - max(payment_confirm_date))<=365
+              and max(case when extract(day from now() - payment_confirm_date) >= 360 and extract(day from now() - payment_confirm_date)<720  then 'Y'  else null end)='Y' then 'Y'else 'N' end as existing_retained,
+          case when extract(day from now() - max(payment_confirm_date))<=365
               and max(case when extract(day from now() - payment_confirm_date) >= 360 and extract(day from now() - payment_confirm_date)<720  then 'Y'  else null end) is null
               and max(case when extract(day from now() - payment_confirm_date) >= 720 and extract(day from now() - payment_confirm_date)<1080 then 'Y'  else null end)='Y' then 'Y' else 'N' end as existing_reactivated_24,
-          case when extract(day from now() - max(payment_confirm_date))<=365 and
+          case when extract(day from now() - max(payment_confirm_date))<=365
               and max(case when extract(day from now() - payment_confirm_date) >= 360 and extract(day from now() - payment_confirm_date)<1080  then 'Y'  else null end) is null
-              max(case when extract(day from now() - payment_confirm_date) >= 1080  then 'Y'  else null end)='Y' then 'Y' else 'N' end as existing_reactivated_36,
+              and max(case when extract(day from now() - payment_confirm_date) >= 1080  then 'Y'  else null end)='Y' then 'Y' else 'N' end as existing_reactivated_36,
           count(distinct parent_order_id) as accu_order_cnt,
           sum(order_gmv_amount) as accu_order_gmv,
           sum(net_order_rrp) as accu_order_rrp,
