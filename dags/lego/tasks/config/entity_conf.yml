@@ -5,14 +5,14 @@ entities:
     key: id
     update_type: F
     dm_dependicies: jd_b2b_order,jd_pop_order_dtl,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper,jd_member
-  
+
   jd_member:
     edw_prefix: d_dl
     stg_suffix: di
     key: member_id
     update_type: SCD2
     dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper
-    
+
   jd_pop_order:
     edw_prefix: f
     stg_suffix: di
@@ -44,7 +44,7 @@ entities:
     update_type: F
     dm_sync: False
     dm_dependicies: jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper
-    
+
 
   bu_jd_b2b_sku_map:
     edw_prefix: d
@@ -60,7 +60,7 @@ entities:
     key: store_sku_id
     update_type: F
     dm_sync: False
-    dm_dependicies: dl_product_info,oms_order_dtl,dl_dly_sales_rpt
+    dm_dependicies: dl_product_info,oms_order_dtl,dl_dly_sales_rpt,dl_tm_shopper
 
   bu_mly_jd_traffic:
     edw_prefix: a
@@ -93,7 +93,7 @@ entities:
     stg_suffix: df
     key: material_id,year_version
     update_type: F
-    dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,oms_order_dtl,dl_jd_shopper
+    dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,oms_order_dtl,dl_jd_shopper,dl_tm_shopper
 
   bu_tm_gwp:
     edw_prefix: d
@@ -101,8 +101,8 @@ entities:
     key: store_sku_id
     update_type: F
     dm_sync: False
-    dm_dependicies: oms_order_dtl,dl_dly_sales_rpt
-  
+    dm_dependicies: oms_order_dtl,dl_dly_sales_rpt,dl_tm_shopper
+
   bu_jd_b2b_gwp:
     edw_prefix: d
     stg_suffix: df
@@ -124,7 +124,7 @@ entities:
     stg_suffix: yf
     key: id
     update_type: F
-  
+
   dl_city_tier:
     edw_prefix: d
     stg_suffix: yf
@@ -163,7 +163,7 @@ entities:
     stg_suffix: mi
     key: parent_order_id,store_sku_id
     update_type: F
-  
+
   jd_b2b_order_dtl_his:
     edw_prefix: f
     stg_suffix: mi
@@ -175,15 +175,15 @@ entities:
     stg_suffix: di
     key: id
     update_type: F
-    dm_dependicies: dl_dly_sales_rpt,oms_order_dtl
-    
+    dm_dependicies: dl_dly_sales_rpt,oms_order_dtl,dl_tm_shopper
+
 
   oms_order_dtl:
     edw_prefix: f
     stg_suffix: di
     key: id
     update_type: F
-    dm_dependicies: dl_dly_sales_rpt,oms_order
+    dm_dependicies: dl_dly_sales_rpt,oms_order,dl_tm_shopper
 
   oms_return_order:
     edw_prefix: f
@@ -223,14 +223,14 @@ entities:
   dl_mly_sales_rpt:
     key: yearmonth,kpi_name,store
     dm_dependicies: dl_mly_sales_rpt
-    
+
   tm_member_his:
     edw_prefix: d_dl
     update_type: SCD2-MD5
     stg_suffix: mi
     key: shopperid
     to_encrypt_columns: mobile
-  
+
   tm_member_1st_purchase_his:
     edw_prefix: d_dl
     update_type: F
@@ -244,7 +244,7 @@ entities:
     key: shopperid
     dm_dependicies: dl_dly_sales_rpt,oms_order_dtl
     dm_sync: False
-  
+
   qbt_sku_monitor:
     edw_prefix: f
     update_type: SCD3
@@ -279,7 +279,7 @@ entities:
     stg_suffix: mi
     key: platform,year,month,primary_category,second_category
     dm_sync: False
-    
+
   qbt_building_toy_industry_sales:
     edw_prefix: f
     update_type: F
@@ -293,7 +293,7 @@ entities:
     stg_suffix: di
     key: distributor,distributor_store_code,parent_order_id
     dm_sync: False
-  
+
   phy_store_order_dtl:
     edw_prefix: f
     update_type: F
@@ -335,7 +335,7 @@ entities:
     stg_suffix: di
     key: distributor,lego_store_code
     dm_sync: False
-  
+
   phy_store_handwork:
     edw_prefix: f
     update_type: SCD2
@@ -410,7 +410,7 @@ entities:
     update_type: F
     stg_suffix: di
     key: id,flag
-  
+
   dl_mini_member_distribution:
     edw_prefix: f
     update_type: SCD3
@@ -450,7 +450,7 @@ entities:
     update_type: f
     stg_suffix: di
     key: store,close_date
-  
+
   lgc_instock:
     edw_prefix: f
     update_type: f
@@ -471,7 +471,7 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
-    column_positions: '{"plan_nip_dkk":{"filename":"plan_nip_dkk.*","all_reg":"0,-,1,2,3,4,5,6,7,8,9,10,11,12,13,-"}}'
+    column_positions: '{"plan_nip_dkk":{"filename":"plan_nip_dkk.*","sheets":"0,-,1,2,3,4,5,6,7,8,9,10,11,12,13,-"}}'
     key: year,customer,plan_vision
 
   lgc_plan_rrp_rmb:
@@ -499,8 +499,9 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    column_positions: '{"cs_weekly_phasing":{"filename":"cs_weekly_phasing.*","all_reg":"0,1,2,3,4,5,6"}}'
     key: customer,month
- 
+
   lgc_lcs_store_bd:
     edw_prefix: f
     update_type: f
@@ -519,6 +520,13 @@ entities:
     stg_suffix: di
     column_positions: '{"prodcut_infor":{"filename":"*.list_product.*","all_reg":"-,0,1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,19,18,23,27,20,21,-,24,25,-,26,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,-
 "}}'
+    key: year_version,lego_sku_id
+
+  lgc_phy_store:
+    edw_prefix: f
+    update_type: f
+    stg_suffix: di
+    column_positions: '{"Storelist_All_Channels":{"filename":"*StoreList_B2B2F.*","all_reg":"0,1,2,3,6,10,5,7,8,9,4,12,13,14,15,16,11"},{"filename":"*StoreList_Collaboration.*","all_reg":"0,1,2,5,7,3,6,8,9,10,4,12,13,14,15,16,11"},{"filename":"*StoreList_Collaboration.*","all_reg":"0,1,2,5,7,3,6,8,9,10,4,12,13,14,15,16,11"},{"filename":"*StoreList_EMP.*","all_reg":"0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"},{"filename":"*StoreList_Kidsland.*","all_reg":"1,2,3,5,6,4,0,15,9,8,13,7,10,11,12,16,14"},{"filename":"*StoreList_Kidswant.*","all_reg":"1,2,0,4,5,9,12,10,8,7,3,6,13,14,15,16,11"},{"filename":"*StoreList_LDC.*","all_reg":"3,4,5,6,7,0,1,12,9,10,2,8,13,14,15,16,11"},{"filename":"*StoreList_TRU.*","all_reg":"2,3,4,7,8,0,1,9,11,10,5,6,13,14,15,16,12"},{"filename":"*StoreList_LCS.*","all_reg":"2,3,4,10,12,0,1,16,14,15,6,7,18,19,20,9,17"}}'
     key: year_version,lego_sku_id
 
   lgc_sales_stock_pos:
