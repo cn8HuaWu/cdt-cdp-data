@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - qa
-      
   pull_request:
     branches:
       - qa
