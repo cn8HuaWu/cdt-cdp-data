@@ -12,7 +12,7 @@ on:
 
 jobs:
   qa-deploy:
-    runs-on: [self-hosted, linux]
+    runs-on: [self-hosted, linux, qa]
     steps:
     - uses: actions/checkout@v1
     - name: copy source code to target
