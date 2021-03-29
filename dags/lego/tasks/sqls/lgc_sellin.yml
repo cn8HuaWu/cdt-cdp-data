@@ -19,7 +19,7 @@ Staging:
 ODS:
 
 EDW:
-  create_table_query:
+  create_edw_table_query:
     create table if not exists edw.f_lgc_sellin
     ( date_id                    varchar(20),
       year_month                 varchar(20),
