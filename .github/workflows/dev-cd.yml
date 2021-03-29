@@ -1,5 +1,7 @@
 # create dev branch CD 
 name: dev CD
+env:
+  SERVER: lego_cdp_dev_github_runner
 on:
   push:
     branches:
