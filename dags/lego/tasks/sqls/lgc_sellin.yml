@@ -43,7 +43,7 @@ EDW:
   delete_edw_table_query:
     delete from edw.f_lgc_sellin;
 
-  insert_edw_from_ods_query:
+  insert_edw_from_query:
     insert into edw.f_lgc_sellin
     select
         split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1)         as date_id                    ,
