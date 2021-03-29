@@ -1,5 +1,5 @@
 
-create view edw.vw_ana_lewin_order_enhancemen as
+create view edw.vw_ana_lewin_order_enhancement as
 select 
     order_or_return,
     parent_order_id,
