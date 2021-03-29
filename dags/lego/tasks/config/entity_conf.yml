@@ -60,7 +60,7 @@ entities:
     key: store_sku_id
     update_type: F
     dm_sync: False
-    dm_dependicies: dl_product_info,oms_order_dtl,dl_dly_sales_rpt,dl_tm_shopper
+    dm_dependicies: dl_product_info,oms_order_dtl,dl_dly_sales_rpt
 
   bu_mly_jd_traffic:
     edw_prefix: a
@@ -93,7 +93,7 @@ entities:
     stg_suffix: df
     key: material_id,year_version
     update_type: F
-    dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,oms_order_dtl,dl_jd_shopper,dl_tm_shopper
+    dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,oms_order_dtl,dl_jd_shopper
 
   bu_tm_gwp:
     edw_prefix: d
@@ -101,7 +101,7 @@ entities:
     key: store_sku_id
     update_type: F
     dm_sync: False
-    dm_dependicies: oms_order_dtl,dl_dly_sales_rpt,dl_tm_shopper
+    dm_dependicies: oms_order_dtl,dl_dly_sales_rpt
   
   bu_jd_b2b_gwp:
     edw_prefix: d
@@ -175,7 +175,7 @@ entities:
     stg_suffix: di
     key: id
     update_type: F
-    dm_dependicies: dl_dly_sales_rpt,oms_order_dtl,dl_tm_shopper
+    dm_dependicies: dl_dly_sales_rpt,oms_order_dtl
     
 
   oms_order_dtl:
@@ -183,7 +183,7 @@ entities:
     stg_suffix: di
     key: id
     update_type: F
-    dm_dependicies: dl_dly_sales_rpt,oms_order,dl_tm_shopper
+    dm_dependicies: dl_dly_sales_rpt,oms_order
 
   oms_return_order:
     edw_prefix: f
