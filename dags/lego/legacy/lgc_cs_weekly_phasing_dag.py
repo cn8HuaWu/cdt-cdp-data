@@ -80,11 +80,10 @@ def load_src2stg(**kwargs):
     #
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
-    OK_FILE_PATH = kwargs.get('dag_run').conf.get('ok_file_path')
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH,
-                             has_head=False, sheetname='Sheet1', merge=False)
+    OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
+    excel_fun_list = [myutil.rearrange_columns]
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname='Sheet1', merge =False)
     src2stg.start(version='v2')
-
 
 def load_stg2ods(**kwargs):
     pkey = entity_conf[src_entity]["key"]
@@ -144,7 +143,7 @@ edw_lgc_cs_week_phase_create = PythonOperator(
     provide_context=True,
     python_callable=update_downstream,
     op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_cs_weekly_phasing",
-               'sql_section': 'create_table_query', 'args': args},
+               'sql_section': 'create_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
@@ -166,7 +165,7 @@ edw_lgc_cs_week_phase_insert = PythonOperator(
     provide_context=True,
     python_callable=update_downstream,
     op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_cs_weekly_phasing",
-               'sql_section': 'insert_edw_from_ods_query', 'args': args},
+               'sql_section': 'insert_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
