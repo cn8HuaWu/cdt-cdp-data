@@ -387,9 +387,9 @@ EDW:
           max(case when asc_rk = 1 then net_order_rrp else 0 end) as  first_order_rrp
       from shopip_collect s
       group by shopperid
-    )t1 inner join consignee_mobile t2 on t1.shopperid = t2.shopperid
-        inner join consignee_city t3 on t1.shopperid = t3.shopperid
-        inner join consignee_name t4 on t1.shopperid = t4.shopperid
+    )t1 left join consignee_mobile t2 on t1.shopperid = t2.shopperid
+        left join consignee_city t3 on t1.shopperid = t3.shopperid
+        left join consignee_name t4 on t1.shopperid = t4.shopperid
         left join (select * from edw.d_tm_member  where current_row='Y') m on t1.shopperid = m.shopperid
         left join edw.d_dl_tm_shopper_agerange g on extract(year from now()) - m.birth_year = g.age;
 
