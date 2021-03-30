@@ -4,6 +4,7 @@ Staging:
     cust_link text,
     cust_name text,
     cust_id text,
+    sales_district_ship_to text,
     cust_loca text,
     store_id text,
     prod_id text,
