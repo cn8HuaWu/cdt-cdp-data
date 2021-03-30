@@ -17,7 +17,7 @@ ODS:
 
 EDW:
   create_edw_table_query:
-    create table if not exists edw.f_lgc_sales_instock_rrp_rmb
+    create table if not exists edw.f_lgc_sales_stock_rrp_rmb
        (date_id                varchar(20),
        lego_year_week          varchar(20),
        distributor_code        varchar(20),
@@ -31,14 +31,14 @@ EDW:
        qty_unit                varchar(20),
        dl_batch_date           varchar(10),
        dl_load_time            timestamp,
-       constraint pk_f_lgc_sales_instock_rrp_rmb primary key(lego_year_week, lego_store_code,lego_sku_id)
+       constraint pk_f_lgc_sales_stock_rrp_rmb primary key(lego_year_week, lego_store_code,lego_sku_id)
     )distributed by (lego_year_week);
 
   delete_edw_table_query:
-    delete from edw.f_lgc_sales_instock_rrp_rmb;
+    delete from edw.f_lgc_sales_stock_rrp_rmb;
 
   insert_edw_table_query:
-    insert into edw.f_lgc_sales_instock_rrp_rmb
+    insert into edw.f_lgc_sales_stock_rrp_rmb
     select
         split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as date_id
        ,split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week
@@ -54,4 +54,8 @@ EDW:
        ,dl_batch_date           as dl_batch_date
        ,now()                   as dl_load_time
     from
-       ods.r_lgc_sales_stock_rrp_rmb;
+       ods.r_lgc_sales_stock_rrp_rmb
+    where
+       cust_id is  not null
+       and prod_id is not null
+       and cst_cnsmr_sale_qty <> 'PC';
