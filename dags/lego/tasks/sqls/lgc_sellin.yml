@@ -21,7 +21,7 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_sellin
-    ( date_id                    varchar(20),
+      (date_id                   varchar(20),
       year_month                 varchar(20),
       lego_year_week             varchar(20),
       sale_date                  varchar(20),
@@ -46,7 +46,7 @@ EDW:
   insert_edw_table_query:
     insert into edw.f_lgc_sellin
     select
-        split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1)         as date_id                    ,
+        split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1)         as date_id,                   ,
         split_part(year_week ,'.',2)||'14'||split_part(year_week ,'.',1)                 as year_month,
         split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1)                 as lego_year_week,
         split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1)         as sale_date,
