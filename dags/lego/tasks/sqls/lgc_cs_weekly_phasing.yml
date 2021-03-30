@@ -6,7 +6,13 @@ Staging:
     second_week text,
     third_week text,
     fourth_week text,
-    fifth_week text
+    fifth_week text,
+    total text,
+    first_week_percent text,
+    second_week_percent text,
+    third_week_percent text,
+    fourth_week_percent text,
+    fifth_week_percent text
 
 ODS:
 
