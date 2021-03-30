@@ -180,7 +180,7 @@ EDW:
                 count(distinct id) mobile_cnt ,
                 max(COALESCE(payment_confirm_time, order_start_date)) as order_start_date
             FROM edw.f_oms_order
-            where city is not null
+            where consignee_mobile is not null
             group by shopperid, consignee_mobile
         )a
     )b where b.rk =1
@@ -217,7 +217,7 @@ EDW:
               count(distinct id) name_cnt ,
               max(COALESCE(payment_confirm_time, order_start_date)) as order_start_date
             FROM edw.f_oms_order
-            where city is not null
+            where consignee_name is not null
             group by shopperid, consignee_name
         )a
       )b where b.rk =1
@@ -290,10 +290,10 @@ EDW:
       t3.consignee_province,
       t3.city_tier,
       case when m.shopperid is not null then 'Y' else 'N' end as is_member,
-      m.name,
-      m.gender,
+      case when trim(m.name)='' then null else trim(m.name) end as name,
+      case when trim(m.gender)='' then null else trim(m.gender) end as gender,
       m.mobile,
-      m.birthday,
+      case when trim(m.birthday)='' then null else trim(m.birthday) end as birthday,
       extract(year from now()) - m.birth_year as age,
       case when extract(year from now()) - m.birth_year > 99 then '99+' else g.range end as age_group,
       m.member_grade,
