@@ -22,13 +22,13 @@ EDW:
        date_id           varchar(20),
        distributor_code  varchar(50),
        distributor_name  varchar(100),
-       month             varchar(4),
+       month             varchar(20),
        week_num          bigint,
        value             numeric(17,2),
        dl_batch_date     varchar(20),
        dl_load_time      timestamp,
        constraint pk_f_lgc_cs_week_phase primary key(distributor_name, month,week_num )
-    )distributed by (distributor_name);
+    )distributed by (month);
 
 
 
