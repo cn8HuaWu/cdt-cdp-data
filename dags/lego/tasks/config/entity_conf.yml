@@ -88,12 +88,21 @@ entities:
     update_type: F
     dm_dependicies: dl_dly_sales_rpt
 
+  # dl_product_info:
+  #   edw_prefix: d
+  #   stg_suffix: df
+  #   key: material_id,year_version
+  #   update_type: F
+  #   dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,oms_order_dtl,dl_jd_shopper,dl_tm_shopper
+  
   dl_product_info:
     edw_prefix: d
     stg_suffix: df
     key: material_id,year_version
     update_type: F
-    dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,oms_order_dtl,dl_jd_shopper,dl_tm_shopper
+    column_positions: '{"prodcut_info":{"filename":"\d{4}\sMG China Assortment.*","all_reg":"0,1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20,21,22,/,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53
+"}}'
+    dm_dependicies: jd_b2b_order_dtl,jd_b2b_order,jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,oms_order_dtl,dl_jd_shopper
 
   bu_tm_gwp:
     edw_prefix: d

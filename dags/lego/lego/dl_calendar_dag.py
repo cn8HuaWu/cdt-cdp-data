@@ -1,14 +1,9 @@
 from airflow.operators.python_operator import PythonOperator
-from airflow.operators.subdag_operator import SubDagOperator
-from airflow.executors.sequential_executor import SequentialExecutor
 from airflow.models import Variable
 from airflow.utils.dates import days_ago
-from airflow import configuration as conf
 from airflow import DAG
 
-import logging
 import os, sys
-from pathlib import Path
 from datetime import datetime
 import imp
 
