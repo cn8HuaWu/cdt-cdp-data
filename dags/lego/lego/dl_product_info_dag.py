@@ -119,6 +119,7 @@ def  format_cn_launch_date(row:list, *args):
             cn_data = rs.group(1)
             cn_data_list = list(reversed(cn_data.split('/')))
             row[14] = '-'.join(cn_data_list)
+            
     return row 
      
 
@@ -129,7 +130,7 @@ def load_src2stg(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    excel_fun_list = [ myutil.rearrange_columns, format_cn_launch_date, add_yearversion]
+    excel_fun_list = [add_yearversion, format_cn_launch_date, myutil.rearrange_columns ]
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=True, excel_skip_row=2, sheetname='China BU Product Plan', merge =False)
     src2stg.start(version='v2')
 
