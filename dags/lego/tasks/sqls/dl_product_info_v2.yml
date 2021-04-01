@@ -58,7 +58,7 @@ ODS:
 
 EDW:
   create_table_query:
-    CREATE TABLE if not exists edw.d_dl_product_info(
+    CREATE TABLE if not exists edw.d_dl_product_info_v2(
     year_version varchar(4),
     lego_sku_id varchar(50),
     material_id varchar(50),
@@ -124,7 +124,7 @@ EDW:
     )distributed by (year_version,material_id)
   
   insert_edw_from_ods_query:
-    insert into edw.d_dl_product_info(
+    insert into edw.d_dl_product_info_v2(
     year_version,
     lego_sku_id,
     material_id,
@@ -241,7 +241,7 @@ EDW:
       case when new_ldc_extended_line_list_price ~ E'^\\d+$' then new_ldc_extended_line_list_price::decimal(15) else null end  as new_ldc_extended_line_list_price,
       dl_batch_date,
       now()
-    from ods.r_dl_product_info
+    from ods.r_dl_product_info_v2
     where year_version <> '' and material_id<>'';
 
     # REMOVE THE STORE SKU IDs in the data model

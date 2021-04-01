@@ -30,9 +30,9 @@ STAGING = 'Staging'
 ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
-entity = 'product_info'
-src_entity = 'dl_product_info'
-DAG_NAME = 'dl_product_info_dag'
+entity = 'product_info_v2'
+src_entity = 'dl_product_info_v2'
+DAG_NAME = 'dl_product_info_v2_dag'
 email_to_list =  Variable.get('email_to_list').split(',')
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
@@ -141,8 +141,8 @@ def load_stg2ods(**kwargs):
     stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, product_batchdate, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head=0)
     stg2ods.start()
 
-preprocess_product_info_task = PythonOperator(
-    task_id = 'preprocess_product_info_task',
+preprocess_product_info_v2_task = PythonOperator(
+    task_id = 'preprocess_product_info_v2_task',
     provide_context = True,
     python_callable = process_fileload,
     op_kwargs = {'is_encrypted': False},
@@ -150,12 +150,12 @@ preprocess_product_info_task = PythonOperator(
     dag = dag,
 )
 
-product_info_src2stg_task = PythonOperator(
-    task_id='product_info_src2stg_task',
+product_info_v2_src2stg_task = PythonOperator(
+    task_id='product_info_v2_src2stg_task',
     provide_context = True,
     python_callable = load_src2stg,
     on_failure_callback = dag_failure_handler,
     dag=dag,
 )
 
-preprocess_product_info_task >> product_info_src2stg_task
+preprocess_product_info_v2_task >> product_info_v2_src2stg_task
