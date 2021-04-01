@@ -92,7 +92,7 @@ def post_process_fileload( **kwargs):
 def dag_failure_handler(context):
     cleanup_xcom(context)
 
-def add_yearversion( row:list , excel_path ):
+def add_yearversion( row:list , excel_path, *args ):
     if row is None:
         return row
     filename = os.path.basename(excel_path)
