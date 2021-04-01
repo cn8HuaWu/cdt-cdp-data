@@ -9,6 +9,7 @@ from airflow.utils.db import provide_session
 from airflow.models import XCom
 
 import logging
+import re
 import os, sys
 from datetime import datetime
 
@@ -81,7 +82,6 @@ def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
 
     myutil.modify_ok_file_prefix( old_prefix=None, prefix="running", ok_file_path=OK_FILE_PATH)
 
-
 @provide_session
 def cleanup_xcom(context, session=None):
     session.query(XCom).filter(XCom.dag_id == DAG_NAME).delete()
@@ -92,6 +92,16 @@ def post_process_fileload( **kwargs):
 def dag_failure_handler(context):
     cleanup_xcom(context)
 
+def add_yearversion( row:list , excel_path ):
+    if row is None:
+        return row
+    filename = os.path.basename(excel_path)
+    rs = re.match('\\d{4}.*', filename)
+    if rs:
+        row.insert(0, rs.group(1))
+    return row
+    
+
 def load_src2stg(**kwargs):
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
     src_filename = kwargs.get('dag_run').conf.get('src_filename')
@@ -99,7 +109,7 @@ def load_src2stg(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    excel_fun_list = [ myutil.rearrange_columns]
+    excel_fun_list = [ myutil.rearrange_columns, add_yearversion]
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=True, excel_skip_row=2, sheetname='China BU Product Plan', merge =False)
     src2stg.start(version='v2')
 
