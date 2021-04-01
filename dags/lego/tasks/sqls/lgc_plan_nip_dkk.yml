@@ -13,8 +13,7 @@ Staging:
     sep text,
     oct text,
     nov text,
-    dec text,s
-    year text,
+    dec text,
     plan_vision text
 
 ODS:
