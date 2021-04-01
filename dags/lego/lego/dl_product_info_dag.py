@@ -96,7 +96,7 @@ def add_yearversion( row:list , excel_path, *args ):
     if row is None:
         return row
     filename = os.path.basename(excel_path)
-    rs = re.match('\\d{4}.*', filename)
+    rs = re.match('\d{4}.*', filename)
     if rs:
         row.insert(0, rs.group(1))
     return row
