@@ -59,13 +59,14 @@ args = {
 dag = DAG(dag_id = DAG_NAME,
             default_args = args,
             concurrency = 1, 
-            max_active_runs = 1, 
+            max_active_runs = 1,
+            catchup=False, 
             # schedule_interval = product_interval,
 )
 
 
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
-    logging.info("current path: " + os.getcwd())
+    # logging.info("current path: " + os.getcwd())
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     
     # remove the ok file and get the source file
