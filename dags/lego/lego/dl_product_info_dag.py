@@ -92,15 +92,35 @@ def post_process_fileload( **kwargs):
 def dag_failure_handler(context):
     cleanup_xcom(context)
 
+# 在文件的第一列插入product的年份
 def add_yearversion( row:list , excel_path, *args ):
     if row is None:
         return row
     filename = os.path.basename(excel_path)
-    rs = re.match('\d{4}.*', filename)
+    rs = re.match('(\\d{4}).*', filename)
     if rs:
         row.insert(0, rs.group(1))
     return row
-    
+
+# china launch date 可能是非日期格式的
+def  format_cn_launch_date(row:list, *args):
+    if row is None:
+        return row
+    lcs_date = row[15]
+    cn_launch_date = row[14]
+    if re.match('\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}', lcs_date):
+        row[14] = lcs_date
+        return row
+    if re.match('\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}', cn_launch_date):
+        return row
+    else:
+        rs = re.match('.*(\\d{2}/\\d{2}/\\d{4}).*', cn_launch_date, re.M)
+        if rs:
+            cn_data = rs.group(1)
+            cn_data_list = list(reversed(cn_data.split('/')))
+            row[14] = '-'.join(cn_data_list)
+    return row 
+     
 
 def load_src2stg(**kwargs):
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
@@ -109,7 +129,7 @@ def load_src2stg(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    excel_fun_list = [ myutil.rearrange_columns, add_yearversion]
+    excel_fun_list = [ myutil.rearrange_columns, format_cn_launch_date, add_yearversion]
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=True, excel_skip_row=2, sheetname='China BU Product Plan', merge =False)
     src2stg.start(version='v2')
 
