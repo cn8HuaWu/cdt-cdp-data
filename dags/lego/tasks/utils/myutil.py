@@ -529,36 +529,36 @@ class Myutil:
         # 'all_reg': '',
 
         # logging.warning("entity name: " + self.entity_name)
-        entity_cfg = self.get_entity_config()[self.entity_name]
-        if "column_positions" in entity_cfg:
-            filename_col_reg = entity_cfg["column_positions"]
-        # filename_col_reg = '{"ABC":{"filename":"cal*","sheets": [["blc", "0,1,3,2,-"]]}}'
-        sortlist = None
-        aj = json.loads(filename_col_reg)
-        for k in aj.keys():
-            cl = dict(aj[k])
-            filename_reg = cl['filename']
-            if re.match(filename_reg, file_name):
-                if 'all_reg' in cl:
-                    sortlist = cl['all_reg']
-                    # print(sortlist)
-                    break
+        # elf._entity_cfg = None
+        if not hasattr(self, "_entity_cfg") and  self._entity_cfg is None:
+            self._entity_cfg = self.get_entity_config()[self.entity_name]
+            self._sortlist = None
+            if "column_positions" in self._entity_cfg:
+                filename_col_reg = self._entity_cfg["column_positions"]
+            # filename_col_reg = '{"ABC":{"filename":"cal*","sheets": [["blc", "0,1,3,2,-"]]}}'
+            aj = json.loads(filename_col_reg)
+            for k in aj.keys():
+                cl = dict(aj[k])
+                filename_reg = cl['filename']
+                if re.match(filename_reg, file_name):
+                    if 'all_reg' in cl:
+                        self._sortlist = cl['all_reg']
+                        break
 
-                if 'sheets' in cl and sheetname is not None:
-                    for tmpsn, sl in cl['sheets']:
-                        if tmpsn == sheetname:
-                            sortlist = sl
-                            break
+                    if 'sheets' in cl and sheetname is not None:
+                        for tmpsn, sl in cl['sheets']:
+                            if tmpsn == sheetname:
+                                sortlist = sl
+                                break
 
-                if sortlist is not None:
-                    # print(sortlist)
-                    break
+                    if self._sortlist is not None:
+                        break
 
-        if sortlist is None:
+        if self._sortlist is None:
             return row
         else:
             new_row = []
-            for inx in sortlist.split(","):
+            for inx in self._sortlist.split(","):
                 col =  new_column(inx)
                 if col:
                     new_row.append(col)
