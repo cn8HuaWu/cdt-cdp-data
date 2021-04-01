@@ -530,7 +530,7 @@ class Myutil:
 
         # logging.warning("entity name: " + self.entity_name)
         # elf._entity_cfg = None
-        if not hasattr(self, "_entity_cfg") and  self._entity_cfg is None:
+        if not hasattr(self, "_entity_cfg") or  self._entity_cfg is None:
             self._entity_cfg = self.get_entity_config()[self.entity_name]
             self._sortlist = None
             if "column_positions" in self._entity_cfg:
