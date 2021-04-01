@@ -557,8 +557,14 @@ class Myutil:
         if sortlist is None:
             return row
         else:
-            new_row = [ new_column(inx) for inx in sortlist.split(",")]
-            new_row = list(filter(lambda x: x is not None, new_row))
+            new_row = []
+            for inx in sortlist.split(","):
+                col =  new_column(inx)
+                if col:
+                    new_row.append(col)
+
+            # new_row = [  ]
+            # new_row = list(filter(lambda x: x is not None, new_row))
             return new_row
 
     def send_failure_mail(self):
