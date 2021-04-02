@@ -32,7 +32,7 @@ TEMP_FOLDER='Temp'
 
 entity = 'product_info_v2'
 src_entity = 'dl_product_info_v2'
-DAG_NAME = 'dl_product_info_v2_daily_update_dag'
+DAG_NAME = 'dl_product_info_v2_dag'
 email_to_list =  Variable.get('email_to_list').split(',')
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
