@@ -89,7 +89,7 @@ EDW:
       b2b2f_launch_date  date,
       exclusive_products  varchar(255),
       bu_cn_delete_date  date,
-      product_status  varchar(10),
+      product_status  varchar(50),
       in_and_out  varchar(1),
       super_segment  varchar(255),
       prod_category  varchar(255),
@@ -118,6 +118,7 @@ EDW:
       cn_jd_b2b_substatus varchar(10),
       cn_jd_pop_substatus varchar(10),
       cn_jd_substatus varchar(10),
+      dl_batch_date varchar(8),
       dl_load_time timestamp,
       constraint pk_product_info_v2_id primary key( year_version,material_id)
     )distributed by (year_version,material_id)
@@ -239,26 +240,8 @@ EDW:
     from ods.r_dl_product_info_v2
     where year_version <> '' and material_id<>'';
 
-    # REMOVE THE STORE SKU IDs in the data model
-    # update edw.d_dl_product_info p0
-    # set tmall_sku_id = b.tsku,
-    #   jd_pop_sku_id = b.psku,
-    #   jd_b2b_sku_id = b.bsku
-    # from(
-    #   select distinct p1.year_version , p1.material_id , tm.store_sku_id tsku, pm.store_sku_id psku, bm.store_sku_id bsku
-    #   from edw.d_dl_product_info p1 
-    #       left join edw.d_bu_tm_sku_map tm on p1.lego_sku_id = tm.lego_sku_id
-    #     left join edw.d_bu_jd_pop_sku_map pm on p1.lego_sku_id = pm.lego_sku_id
-    #     left join edw.d_bu_jd_b2b_sku_map bm on p1.lego_sku_id = bm.lego_sku_id
-    #   where  tm.lego_sku_id is not null and trim(tm.lego_sku_id)<>''
-    #   and pm.lego_sku_id is not null and  trim(pm.lego_sku_id)<>''
-    #   and bm.lego_sku_id is not null and trim(bm.lego_sku_id)<>''
-    #   )b
-    # where p0.year_version = b.year_version
-    #   and p0.material_id = b.material_id ;
-  
   daily_update_product_status:
-    update edw.d_dl_product_info p
+    update edw.d_dl_product_info_v2 p
     set cn_tm_substatus =  case 
                 when  date_part('day', now() - cn_tm_launch_date )<0 then null
                 when date_part('day', now() - cn_tm_launch_date ) <= 90   then 'N0-3'
@@ -289,6 +272,28 @@ EDW:
                 else null end
         where product_status='N';
 
+  update_product_sales_category:
+    update edw.d_dl_product_info_v2
+      set product_sales_category = case 
+        when top_theme ='' or top_theme is null then null
+        when product_bu = 'Merch. & Promotion' then 'LEL'
+        when product_category ='D2C Driven' then 'D2C'
+        else 'Standard' end;
+
+  update_product_core_line:
+    update edw.d_dl_product_info_v2
+      set core_line = case when top_theme in ('CITY', 'DUPLO', 'FRIENDS', 'NINJAGO', 'MONKIE KID') then 'Y'
+                                else 'N' end;
+  update_product_status:
+    update edw.d_dl_product_info_v2
+      set product_status = case 
+        when bu_cn_delete_date is null  or extract( year from bu_cn_delete_date) < year_version::int then 'Deleted'
+        when extract( year from bu_cn_launch_date) < year_version::int and extract( year from bu_cn_delete_date) = year_version::int then 'Outgoing'
+        when extract( year from bu_cn_launch_date) < year_version::int and extract( year from bu_cn_delete_date) > year_version::int then 'CarryOver'
+        when extract( year from bu_cn_launch_date) = year_version::int and extract( year from bu_cn_delete_date) = year_version::int then 'Provisional'
+          when extract( year from bu_cn_launch_date) = year_version::int and extract( year from bu_cn_delete_date) > year_version::int then 'Novelty'
+          else null end
+
   sync_to_rds_dm:
     create table if not exists dm.d_dl_product_info (like frn.d_dl_product_info);
     delete from dm.d_dl_product_info;
@@ -296,51 +301,3 @@ EDW:
     insert into dm.d_dl_product_info
     select * 
     from frn.d_dl_product_info;
-
-  #jd_b2b_sku_map(lego_sku_id,store_sku_id) 
-  # ->
-  # product_info(jd_b2b_sku_id)
-  update_by_b2b_sku_map:
-    # update edw.d_dl_product_info a
-    # set jd_b2b_sku_id = c.store_sku_id
-    # FROM  (
-    #   select year_version, material_id , store_sku_id
-    #     from(
-    #       select  p.year_version , p.material_id , b.store_sku_id , row_number() over(partition by material_id, year_version order by year_version desc) rk
-    #       from edw.d_dl_product_info p 
-    #         left join edw.d_bu_jd_b2b_sku_map b on p.lego_sku_id  = b.lego_sku_id 
-    # )d where d.rk =1
-    # ) c where a.year_version  = c.year_version
-    # and a.material_id = c.material_id;
-  
-
-  # tm_sku_map(lego_sku_id,store_sku_id) ->product_info(tmall_sku_id)
-  update_by_tm_sku_map:
-    # update edw.d_dl_product_info a
-    # set jd_b2b_sku_id = c.store_sku_id
-    # FROM  (
-    #   select year_version, material_id , store_sku_id
-    #     from(
-    #       select  p.year_version , p.material_id , b.store_sku_id , row_number() over(partition by material_id, year_version order by year_version desc) rk
-    #       from edw.d_dl_product_info p 
-    #         left join edw.d_bu_tm_sku_map b on p.lego_sku_id  = b.lego_sku_id 
-    # )d where d.rk =1
-    # ) c where a.year_version  = c.year_version
-    # and a.material_id = c.material_id;
-    
-  # pop_sku_map(lego_sku_id,store_sku_id)
-  # ->
-  # _product_info(jd_pop_sku_id)
-  update_by_pop_sku_map:
-    # update edw.d_dl_product_info a
-    #   set jd_pop_sku_id = c.store_sku_id
-    # FROM  (
-    #   select year_version, material_id , store_sku_id
-    #   from(
-    #     select  p.year_version , p.material_id , b.store_sku_id , row_number() over(partition by material_id, year_version order by year_version desc) rk
-    #     from edw.d_dl_product_info p 
-    #     left join edw.d_bu_jd_pop_sku_map b on p.lego_sku_id  = b.lego_sku_id 
-    # )d where d.rk =1
-    # ) c where a.year_version  = c.year_version
-    # and a.material_id = c.material_id;
-    

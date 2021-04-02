@@ -42,7 +42,7 @@ entity_conf = myutil.get_entity_config()
 # product_interval = Variable.get('interval_product').strip()
 dag_start_date = Variable.get('dag_start_date').strip()
 # product_batchdate = datetime.strftime(datetime.now(),'%Y%m%d')
-
+update_attributions = ['update_product_sales_category', 'update_product_core_line']
 
 args = {
     'owner': 'cdp_admin',
@@ -65,7 +65,6 @@ dag = DAG(dag_id = DAG_NAME,
             # schedule_interval = product_interval,
 )
 
-
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
     # logging.info("current path: " + os.getcwd())
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
@@ -83,6 +82,14 @@ def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
         raise IOError("Source file not found") 
 
     myutil.modify_ok_file_prefix( old_prefix=None, prefix="running", ok_file_path=OK_FILE_PATH)
+
+def run_composit_task(query_sections:list, **kwargs):
+    sql_dict = myutil.get_sql_yml_fd(src_entity)
+    # batch_date = kwargs.get('dag_run').conf.get('batch_date')
+    with db.create_session() as session:
+        for set in query_sections:
+            query = (sql_dict['EDW'][set])
+            session.execute(query)
 
 @provide_session
 def cleanup_xcom(context, session=None):
@@ -183,5 +190,31 @@ product_info_ods2edw_v2_task = PythonOperator(
     dag=dag,
 )
 
+shopper_member_update_task = PythonOperator(
+    task_id='shopper_member_update_task',
+    provide_context = True,
+    python_callable = run_composit_task,
+    op_kwargs = {'query_sections': update_attributions},
+    on_failure_callback = dag_failure_handler,
+    dag=dag,
+)
 
-preprocess_product_info_v2_task >> product_info_v2_src2stg_task >> product_info_ods2edw_v2_task
+product_info_v2_sync_2_rds_task = SubDagOperator(
+    task_id='product_info_v2_sync_2_rds_task',
+    subdag=sync_subdag(DAG_NAME, 'product_info_v2_sync_2_rds_task', myutil, entity_conf, args, entity),
+    default_args=args,
+    executor=SequentialExecutor(),
+    on_failure_callback = dag_failure_handler,
+    dag=dag,
+)
+
+postprocess_product_info_v2_task = PythonOperator(
+    task_id = 'postprocess_product_info_v2_task',
+    provide_context = True,
+    python_callable = post_process_fileload,
+    op_kwargs = {'is_encrypted': False},
+    on_failure_callback = dag_failure_handler,
+    dag = dag,
+)
+preprocess_product_info_v2_task >> product_info_v2_src2stg_task >> product_info_stg2ods_v2_task >> product_info_ods2edw_v2_task 
+product_info_ods2edw_v2_task >> shopper_member_update_task >> product_info_sync_2_rds_task  >> postprocess_product_info_task
