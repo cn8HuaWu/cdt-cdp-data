@@ -41,7 +41,8 @@ entity_conf = myutil.get_entity_config()
 
 # product_interval = Variable.get('interval_product').strip()
 dag_start_date = Variable.get('dag_start_date').strip()
-product_batchdate = datetime.strftime(datetime.now(),'%Y%m%d')
+# product_batchdate = datetime.strftime(datetime.now(),'%Y%m%d')
+
 
 args = {
     'owner': 'cdp_admin',
@@ -126,8 +127,9 @@ def  format_cn_launch_date(row:list, *args):
 def load_stg2ods(**kwargs):
     pkey = entity_conf[src_entity]["key"]
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
+    batch_date = kwargs.get('dag_run').conf.get('batch_date')
     # my_batch_date = kwargs['task_instance'].xcom_pull(key='batch_date', task_ids='branch_external_trigger')
-    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, product_batchdate, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head=0)
+    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head=0)
     stg2ods.start()     
 
 def load_src2stg(**kwargs):
