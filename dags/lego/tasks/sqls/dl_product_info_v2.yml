@@ -270,7 +270,7 @@ EDW:
                 when date_part('day', now() -  least(cn_jd_b2b_launch_date,cn_jd_pop_launch_date) ) <= 270 then 'N6-9'
                 when date_part('day', now() -  least(cn_jd_b2b_launch_date,cn_jd_pop_launch_date) ) > 270 then 'N9-12'
                 else null end
-        where product_status='N';
+        where product_status='Novelty';
 
   update_product_sales_category:
     update edw.d_dl_product_info_v2
@@ -295,9 +295,9 @@ EDW:
           else null end
 
   sync_to_rds_dm:
-    create table if not exists dm.d_dl_product_info (like frn.d_dl_product_info);
-    delete from dm.d_dl_product_info;
-    delete from dm.d_dl_product_info;
-    insert into dm.d_dl_product_info
+    create table if not exists dm.d_dl_product_info_v2 (like frn.d_dl_product_info_v2);
+    delete from dm.d_dl_product_info_v2;
+    delete from dm.d_dl_product_info_v2;
+    insert into dm.d_dl_product_info_v2
     select * 
-    from frn.d_dl_product_info;
+    from frn.d_dl_product_info_v2;
