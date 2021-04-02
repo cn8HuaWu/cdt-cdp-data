@@ -143,6 +143,13 @@ def load_src2stg(**kwargs):
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=True, excel_skip_row=2, sheetname='China BU Product Plan', merge =False)
     src2stg.start(version='v2')
 
+def load_ods2edw(**kwargs):
+    pkey = entity_conf[src_entity]["key"]
+    table_prefix = entity_conf[src_entity]["edw_prefix"]
+    my_batch_date = kwargs['task_instance'].xcom_pull(key='batch_date', task_ids='branch_external_trigger')
+    ods2edw = Ods2edwHandler( my_batch_date, SRC_NAME, entity, pkey,table_prefix, myutil, db )
+    ods2edw.start()
+
 preprocess_product_info_v2_task = PythonOperator(
     task_id = 'preprocess_product_info_v2_task',
     provide_context = True,
@@ -160,14 +167,21 @@ product_info_v2_src2stg_task = PythonOperator(
     dag=dag,
 )
 
-product_info_stg2ods_task = PythonOperator(
-    task_id='product_info_stg2ods_task',
+product_info_stg2ods_v2_task = PythonOperator(
+    task_id='product_info_stg2ods_v2_task',
     provide_context = True,
     python_callable = load_stg2ods,
     on_failure_callback = dag_failure_handler,
     dag=dag,
 )
 
+product_info_ods2edw_v2_task = PythonOperator(
+    task_id='product_info_ods2edw_v2_task',
+    provide_context = True,
+    python_callable = load_ods2edw,
+    on_failure_callback = dag_failure_handler,
+    dag=dag,
+)
 
 
-preprocess_product_info_v2_task >> product_info_v2_src2stg_task >> product_info_stg2ods_task
+preprocess_product_info_v2_task >> product_info_v2_src2stg_task >> product_info_ods2edw_v2_task
