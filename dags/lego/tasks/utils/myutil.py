@@ -560,7 +560,7 @@ class Myutil:
             new_row = []
             for inx in self._sortlist.split(","):
                 col =  new_column(inx)
-                if col:
+                if col is not None:
                     new_row.append(col)
 
             # new_row = [  ]
