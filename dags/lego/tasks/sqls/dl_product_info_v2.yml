@@ -277,7 +277,7 @@ EDW:
       set product_sales_category = case 
         when top_theme ='' or top_theme is null then null
         when product_bu = 'Merch. & Promotion' then 'LEL'
-        when product_category ='D2C Driven' then 'D2C'
+        when prod_category ='D2C Driven' then 'D2C'
         else 'Standard' end;
 
   update_product_core_line:

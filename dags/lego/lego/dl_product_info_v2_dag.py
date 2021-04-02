@@ -32,14 +32,13 @@ TEMP_FOLDER='Temp'
 
 entity = 'product_info_v2'
 src_entity = 'dl_product_info_v2'
-DAG_NAME = 'dl_product_info_v2_dag'
+DAG_NAME = 'dl_product_info_v2_daily_update_dag'
 email_to_list =  Variable.get('email_to_list').split(',')
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
 entity_conf = myutil.get_entity_config()
 
-# product_interval = Variable.get('interval_product').strip()
 dag_start_date = Variable.get('dag_start_date').strip()
 # product_batchdate = datetime.strftime(datetime.now(),'%Y%m%d')
 update_attributions = ['update_product_sales_category', 'update_product_core_line']
@@ -190,8 +189,8 @@ product_info_ods2edw_v2_task = PythonOperator(
     dag=dag,
 )
 
-shopper_member_update_task = PythonOperator(
-    task_id='shopper_member_update_task',
+product_info_v2_update_task = PythonOperator(
+    task_id='product_info_v2_update_task',
     provide_context = True,
     python_callable = run_composit_task,
     op_kwargs = {'query_sections': update_attributions},
@@ -217,4 +216,4 @@ postprocess_product_info_v2_task = PythonOperator(
     dag = dag,
 )
 preprocess_product_info_v2_task >> product_info_v2_src2stg_task >> product_info_stg2ods_v2_task >> product_info_ods2edw_v2_task 
-product_info_ods2edw_v2_task >> shopper_member_update_task >> product_info_sync_2_rds_task  >> postprocess_product_info_task
+product_info_ods2edw_v2_task >> product_info_v2_update_task >> product_info_v2_sync_2_rds_task  >> postprocess_product_info_v2_task
