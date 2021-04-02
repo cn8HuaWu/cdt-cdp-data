@@ -122,7 +122,13 @@ def  format_cn_launch_date(row:list, *args):
             row[14] = '-'.join(cn_data_list)
             
     return row 
-     
+
+def load_stg2ods(**kwargs):
+    pkey = entity_conf[src_entity]["key"]
+    stg_suffix = entity_conf[src_entity]["stg_suffix"]
+    # my_batch_date = kwargs['task_instance'].xcom_pull(key='batch_date', task_ids='branch_external_trigger')
+    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, product_batchdate, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head=0)
+    stg2ods.start()     
 
 def load_src2stg(**kwargs):
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
@@ -134,13 +140,6 @@ def load_src2stg(**kwargs):
     excel_fun_list = [add_yearversion, format_cn_launch_date, myutil.rearrange_columns ]
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=True, excel_skip_row=2, sheetname='China BU Product Plan', merge =False)
     src2stg.start(version='v2')
-
-def load_stg2ods(**kwargs):
-    pkey = entity_conf[src_entity]["key"]
-    stg_suffix = entity_conf[src_entity]["stg_suffix"]
-    # my_batch_date = kwargs['task_instance'].xcom_pull(key='batch_date', task_ids='branch_external_trigger')
-    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, product_batchdate, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head=0)
-    stg2ods.start()
 
 preprocess_product_info_v2_task = PythonOperator(
     task_id = 'preprocess_product_info_v2_task',
@@ -159,4 +158,14 @@ product_info_v2_src2stg_task = PythonOperator(
     dag=dag,
 )
 
-preprocess_product_info_v2_task >> product_info_v2_src2stg_task
+product_info_stg2ods_task = PythonOperator(
+    task_id='product_info_stg2ods_task',
+    provide_context = True,
+    python_callable = load_stg2ods,
+    on_failure_callback = dag_failure_handler,
+    dag=dag,
+)
+
+
+
+preprocess_product_info_v2_task >> product_info_v2_src2stg_task >> product_info_stg2ods_task
