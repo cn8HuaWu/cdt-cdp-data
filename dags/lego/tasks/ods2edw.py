@@ -30,6 +30,7 @@ class Ods2edwHandler:
         self.DL_AES_IV = DL_AES_IV
         self.has_param = has_param
         self.sql_dict = self.myutil.get_sql_yml_fd( self.datasource.lower() + "_" + self.entity_name )
+        self.edw_renamed_tables = {'product_info_v2':'product_info'}
 
     def process_ods2edw(self):
         debug_flg = self.myutil.get_conf('ETL','SQL_DEBUG')
@@ -43,7 +44,7 @@ class Ods2edwHandler:
         conn =  self.db.create_conn( engine )
         var_map = {
             "SRC" : self.datasource,
-            "ENTITY": self.entity_name,
+            "ENTITY": self.edw_renamed_tables[self.entity_name] if self.entity_name in self.edw_renamed_tables else '',
             "KEY": self.table_key,
             "batch_date": self.batch_date,
             "EDW_PREFIX": self.table_prefix,
