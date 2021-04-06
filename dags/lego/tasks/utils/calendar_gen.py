@@ -7,31 +7,31 @@ import calendar, os
 # CalendarRecord = namedtuple("CalendarRecord", "id date_id date_type d_day d_week d_month d_quarter d_year fiscal_year is_chinese_holiday is_holiday start_time end_time lego_day lego_week lego_week_code lego_week_name lego_month lego_quarter lego_year lego_start_time lego_end_time")
 
 month_week_52 = {
-    1:1, 2:1, 3:1,4:1, 
+    1:1, 2:1, 3:1,4:1,
     5:2, 6:2, 7:2, 8:2,
     9:3, 10:3, 11:3, 12:3, 13:3,
-    14:4, 15:4, 16:4, 17:4, 
+    14:4, 15:4, 16:4, 17:4,
     18:5, 19:5, 20:5, 21:5,
     22:6, 23:6, 24:6, 25:6, 26:6,
-    27:7, 28:7, 29:7, 30:7, 
+    27:7, 28:7, 29:7, 30:7,
     31:8, 32:8, 33:8, 34:8,
     35:9, 36:9, 37:9, 38:9, 39:9,
-    40:10, 41:10, 42:10, 43:10, 
+    40:10, 41:10, 42:10, 43:10,
     44:11, 45:11, 46:11, 47:11,
     48:12, 49:12, 50:12, 51:12, 52:12
 }
 
 month_week_53 = {
-    1:1, 2:1, 3:1,4:1, 
+    1:1, 2:1, 3:1,4:1,
     5:2, 6:2, 7:2, 8:2,
     9:3, 10:3, 11:3, 12:3, 13:3,
-    14:4, 15:4, 16:4, 17:4, 
+    14:4, 15:4, 16:4, 17:4,
     18:5, 19:5, 20:5, 21:5,
     22:6, 23:6, 24:6, 25:6, 26:6,
-    27:7, 28:7, 29:7, 30:7, 
+    27:7, 28:7, 29:7, 30:7,
     31:8, 32:8, 33:8, 34:8,
     35:9, 36:9, 37:9, 38:9, 39:9,
-    40:10, 41:10, 42:10, 43:10, 
+    40:10, 41:10, 42:10, 43:10,
     44:11, 45:11, 46:11, 47:11, 48:11,
     49:12, 50:12, 51:12, 52:12, 53:12
 }
@@ -45,14 +45,14 @@ def gen_calendar_day(start_year, mode="day"):
         start_day = year_first_day - timedelta(days = first_weekday )
     else:
         start_day = year_first_day + timedelta(days = 7 - first_weekday )
-    
+
     year_end_day = datetime.strptime(start_year+"-12-31", "%Y-%m-%d")
     end_weekday = year_end_day.weekday()
     if end_weekday < 3:
         end_day = year_end_day - timedelta(days =  end_weekday + 1 )
     else:
         end_day = year_end_day + timedelta(days = 6 - end_weekday )
-    
+
     if (end_day - start_day ).days + 1 >= 370:
         year_week_cnt = month_week_53
     else:
@@ -108,7 +108,7 @@ def gen_calendar_day(start_year, mode="day"):
         lego_day = [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year, fiscal_year, is_chinese_holiday,
             is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name, lego_month,lego_month_disp, lego_quarter, lego_year,lego_start_time, lego_end_time]
         day_list.append(lego_day)
-        
+
         t_day = t_day + timedelta(days = 1)
     else:
         id = t_day.strftime('%Y%m%d')
@@ -147,7 +147,7 @@ def gen_calendar_day(start_year, mode="day"):
             lego_start_time = ''
             lego_end_time = ''
 
-        lego_day = [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year, fiscal_year, is_chinese_holiday,  
+        lego_day = [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year, fiscal_year, is_chinese_holiday,
             is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name, lego_month,lego_month_disp, lego_quarter,lego_year, lego_start_time, lego_end_time]
         day_list.append(lego_day)
     return day_list
@@ -181,13 +181,13 @@ def gen_calenday_year(day_list:list, year):
         if d[20] == year and lego_start_time is None:
             lego_start_time = d[1]
             continue
-        
+
         if d[20] == year :
             lego_end_time = d[1]
 
-    year_list.append( [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year, 
-            fiscal_year, is_chinese_holiday,  
-            is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name, 
+    year_list.append( [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year,
+            fiscal_year, is_chinese_holiday,
+            is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name,
             lego_month, lego_month_disp,lego_quarter,lego_year, lego_start_time, lego_end_time])
     return year_list
 
@@ -207,15 +207,15 @@ def gen_calendar_week(day_list:list, year):
         i += 1
         n_start_date = None
         n_end_date = None
-        
+
         for d in day_list:
             if int(d[4]) == i and d[7] == year:
-                n_end_date = d[1] 
+                n_end_date = d[1]
                 if n_start_date is None:
                     n_start_date = d[1]
             elif int(d[4]) > i and d[7] == year:
                 break
-        
+
         l_start_date = None
         l_end_date = None
         for d in day_list:
@@ -226,7 +226,7 @@ def gen_calendar_week(day_list:list, year):
                 if l_start_date is not None:
                     break
             l_end_date = d[1]
-        
+
         id = year + "13" + str(i).rjust(2,'0')
         date_id = ''
         date_type = 'week'
@@ -275,15 +275,15 @@ def gen_calendar_week(day_list:list, year):
             lego_quarter = ''
             lego_start_time = ''
             lego_end_time = ''
-        lego_week = [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year, 
-            fiscal_year, is_chinese_holiday,  
-            is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name, 
+        lego_week = [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year,
+            fiscal_year, is_chinese_holiday,
+            is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name,
             lego_month, lego_month_disp,lego_quarter,lego_year, lego_start_time, lego_end_time]
         week_list.append(lego_week)
     return week_list
 
 def gen_calendar_month(week_list:list, year):
-    
+
     lego_month_list = []
     for i in range(12):
         i += 1
@@ -324,13 +324,13 @@ def gen_calendar_month(week_list:list, year):
         lego_start_time = lego_month_start
         lego_end_time = lego_month_end
 
-        lego_month = [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year, 
-            fiscal_year, is_chinese_holiday,  
-            is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name, 
+        lego_month = [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year,
+            fiscal_year, is_chinese_holiday,
+            is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name,
             lego_month,lego_month_disp, lego_quarter,lego_year, lego_start_time, lego_end_time]
         lego_month_list.append(lego_month)
     return lego_month_list
-    
+
 
 def gen_calendar_quarter(month_list:list, year):
     quarter_list = []
@@ -359,7 +359,7 @@ def gen_calendar_quarter(month_list:list, year):
         elif i ==4:
             start_time =  year+'-10-01'
             end_time =   year + '-12-31'
-        
+
         lego_date = ''
         lego_year = year
         lego_week = ''
@@ -380,11 +380,11 @@ def gen_calendar_quarter(month_list:list, year):
             elif  int(m[18]) > i:
                 break
 
-        lego_quarter_name = [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year, 
-            fiscal_year, is_chinese_holiday,  
-            is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name, 
+        lego_quarter_name = [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year,
+            fiscal_year, is_chinese_holiday,
+            is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name,
             lego_month,lego_month_disp, lego_quarter,lego_year, lego_quarter_start, lego_quarter_end]
-        
+
         quarter_list.append(lego_quarter_name)
     return quarter_list
 
@@ -416,12 +416,29 @@ def gen_day_hours(day_list:list):
             lego_year = d[20]
             lego_start_time = d[21] + " " +str(i).rjust(2,'0') +":00:00" if d[21] !='' else ''
             lego_end_time = d[22] + " " +str(i).rjust(2,'0') +":59:59" if d[22] !='' else ''
-           
+
             lego_day = [id, date_id, date_type, d_day, d_week, d_month, d_quarter,d_year, fiscal_year, is_chinese_holiday,
                 is_holiday, start_time, end_time, lego_date, lego_week,lego_week_code, lego_week_name, lego_month, lego_month_disp, lego_quarter, lego_year,lego_start_time, lego_end_time]
             day_hour_list.append(lego_day)
     return day_hour_list
 
+def get_calendar_day_by_date(date_str):
+    start_year = date_str[:4]
+    day_list = gen_calendar_day(start_year = start_year)
+    for day in day_list:
+        if day[0] == date_str and day[19] != '':
+            return day
+    if int(date_str[4:6]) == 1:
+        day_list = gen_calendar_day(start_year = str(int(start_year) -1))
+    elif int(date_str[4:6]) == 12:
+        day_list  = gen_calendar_day(start_year = str(int(start_year) +1))
+    else:
+        day_list = None
+
+    if day_list is not None:
+        for day in day_list:
+            if day[0] == date_str and day[19] != '':
+                return day
 def start(year, path):
     day_list = gen_calendar_day(start_year = year)
     week_list = gen_calendar_week(day_list, year)
@@ -438,7 +455,7 @@ def start(year, path):
     calender_list.extend(year_list)
 
     str_calendar_list = [",".join( [str(n) if n is not None else '' for n in v])+'\n' for v in calender_list]
-    
+
     target_path = os.path.join(path, str(year))
     if not os.path.exists(target_path):
         os.makedirs(target_path)
@@ -450,7 +467,7 @@ if __name__ == "__main__":
     pass
     # start('2021', r'C:\workspace\project\LEGO\code\CDP-CR\POC')
     # parser = argparse.ArgumentParser(description="Send out mail")
-    # parser.add_argument('-s', "--start") 
+    # parser.add_argument('-s', "--start")
     # args = parser.parse_args()
     # start_year = args.start
     # if start_year is None:
@@ -480,6 +497,3 @@ if __name__ == "__main__":
 
     # for d in calender_list:
     #     print(",".join([ str(v) for v in d]))
-    
-    
-
