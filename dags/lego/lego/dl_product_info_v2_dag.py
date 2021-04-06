@@ -96,6 +96,22 @@ def cleanup_xcom(context, session=None):
 
 def post_process_fileload( **kwargs):
     cleanup_xcom(kwargs)
+    # OK file trigger
+    OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
+    
+    # remove the ok file and get the source file
+    if( OK_FILE_PATH is None or not os.path.exists(OK_FILE_PATH) ):
+        logging.error("OK_FILE_PATH: %s, ok file does not exist. ", OK_FILE_PATH)
+        raise IOError("OK_FILE_PATH not found") 
+    # else:
+    #     os.remove(OK_FILE_PATH)
+
+    if( not os.path.isfile(OK_FILE_PATH[:-3]) ):
+        logging.error("Source file does not exist. File path: %s", OK_FILE_PATH[:-3])
+        ## source file does not exist, set the Job failed
+        raise IOError("Source file not found") 
+
+    myutil.modify_ok_file_prefix( old_prefix=None, prefix="running", ok_file_path=OK_FILE_PATH)
 
 def dag_failure_handler(context):
     cleanup_xcom(context)
