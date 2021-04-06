@@ -23,7 +23,7 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_phy_store
-	(sold_to varchar(100),
+	  (sold_to varchar(100),
      ship_to varchar(100),
      trad_id varchar(100),
      lego_store_code varchar(100),
@@ -50,7 +50,7 @@ EDW:
 
   insert_edw_table_query:
     insert into edw.f_lgc_phy_store
-	select
+	  select
 	    sold_to                        as sold_to,
         ship_to                        as ship_to,
         trad_id                        as trad_id,
@@ -70,5 +70,5 @@ EDW:
         replace(update_week,'WK','13') as update_week,
         ld_batch_date                  as ld_batch_date,
         now()                          as ld_load_time
-	from
+	  from
 	    ods.r_dl_lgc_phy_store;
