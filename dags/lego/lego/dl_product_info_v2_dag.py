@@ -99,7 +99,9 @@ def post_process_fileload( **kwargs):
 
 def dag_failure_handler(context):
     cleanup_xcom(context)
-
+    OK_FILE_PATH = context.get('dag_run').conf.get('ok_file_path')
+    myutil.modify_ok_file_prefix("running", "failed", OK_FILE_PATH)
+    
 # 在文件的第一列插入product的年份
 def add_yearversion( row:list , excel_path, *args ):
     if row is None:
@@ -152,8 +154,8 @@ def load_src2stg(**kwargs):
 def load_ods2edw(**kwargs):
     pkey = entity_conf[src_entity]["key"]
     table_prefix = entity_conf[src_entity]["edw_prefix"]
-    my_batch_date = kwargs['task_instance'].xcom_pull(key='batch_date', task_ids='branch_external_trigger')
-    ods2edw = Ods2edwHandler( my_batch_date, SRC_NAME, entity, pkey,table_prefix, myutil, db )
+    batch_date = kwargs.get('dag_run').conf.get('batch_date')
+    ods2edw = Ods2edwHandler( batch_date, SRC_NAME, entity, pkey,table_prefix, myutil, db )
     ods2edw.start()
 
 preprocess_product_info_v2_task = PythonOperator(
