@@ -61,7 +61,7 @@ dag = DAG(dag_id = DAG_NAME,
             concurrency = 1, 
             max_active_runs = 1,
             catchup=False, 
-            # schedule_interval = product_interval,
+            schedule_interval = None,
 )
 
 def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
