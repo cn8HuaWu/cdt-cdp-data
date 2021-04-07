@@ -26,13 +26,13 @@ TEMP_FOLDER = 'Temp'
 entity = 'sales_stock_nip_dkk'
 src_entity = 'lgc_sales_stock_nip_dkk'
 DAG_NAME = 'lgc_sales_stock_nip_dkk_dag'
-src_sheet ={
-    "Sheet1":{
-        'start_row': 3,
-        'ignore_end_row': 1
-    }
-    }
-
+# src_sheet ={
+#     "Sheet1":{
+#         'start_row': 3,
+#         'ignore_end_row': 1
+#     }
+#     }
+# 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
 entity_conf = myutil.get_entity_config()
@@ -79,9 +79,9 @@ def load_src2stg(**kwargs):
     #
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
-    OK_FILE_PATH = kwargs.get('dag_run').conf.get('ok_file_path')
+    OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     excel_fun_list = [myutil.filter_modified_product, myutil.rearrange_columns]
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH,excel_fun_list=excel_fun_list, has_head=False, merge=False, **src_sheet)
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname='Sheet1', merge =False)
     src2stg.start(version='v2')
 
 
