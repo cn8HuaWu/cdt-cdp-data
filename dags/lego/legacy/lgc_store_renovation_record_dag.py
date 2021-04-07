@@ -82,6 +82,7 @@ def load_stg2ods(**kwargs):
     stg2ods.start()
 
 
+
 args = {
     'owner': 'cdp_admin',
     'email': email_to_list,
@@ -125,6 +126,39 @@ store_renovation_record_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
+# create edw data task:
+edw_lgc_store_revn_list_create = PythonOperator(
+    task_id='edw_lgc_store_revn_list_create',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_store_revn_list",
+               'sql_section': 'create_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+
+# delete edw data task:
+edw_lgc_store_revn_list_delete = PythonOperator(
+    task_id='edw_lgc_store_revn_list_delete',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_store_revn_list",
+               'sql_section': 'delete_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# insert into edw data task:
+edw_lgc_store_revn_list_insert = PythonOperator(
+    task_id='edw_lgc_store_revn_list_insert',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_store_revn_list",
+               'sql_section': 'insert_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
 
 postprocess_store_renovation_record_task = PythonOperator(
     task_id = 'postprocess_store_renovation_record_task',
@@ -135,4 +169,5 @@ postprocess_store_renovation_record_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_store_renovation_record_task >> store_renovation_record_src2stg_task >> store_renovation_record_stg2ods_task >> postprocess_store_renovation_record_task
+preprocess_store_renovation_record_task >> store_renovation_record_src2stg_task >> store_renovation_record_stg2ods_task >> edw_lgc_store_revn_list_create
+edw_lgc_store_revn_list_create >> edw_lgc_store_revn_list_delete >> edw_lgc_store_revn_list_insert >> postprocess_store_renovation_record_task

@@ -11,7 +11,33 @@ Staging:
 ODS:
 
 EDW:
-  create_table_query:
-    
-  
-  insert_edw_from_ods_query:
+  create_edw_table_query:
+    create table if not exists edw.f_lgc_store_revn_list(
+    date_id varchar(20),
+    lego_store_code varchar(100),
+    close_date varchar(20),
+    reopen_date varchar(20),
+    store_floor varchar(100),
+    sales_space double(17,2),
+    ld_batch_date varchar(20),
+    ld_load_time timestamp,
+    constraint pk_f_lgc_store_revn_list primary key(store_code, close_date)
+    )distributed by (store_code)
+    comment'store_renovation_record';
+
+  delete_edw_table_query:
+    delete from edw.f_lgc_store_revn_list;
+
+  insert_edw_table_query:
+     insert into edw.f_lgc_store_revn_list
+     select 
+         close_date         as date_id,
+         store              as lego_store_code,
+         close_date         as close_date,
+         reopen_date        as reopen_date,
+         store_floor        as store_floor,
+         sales_space        as sales_space,
+         ld_batch_date      as ld_batch_date,
+         now()              as ld_load_time
+     from 
+        ods.r_dl_lgc_store_renovation_record;
