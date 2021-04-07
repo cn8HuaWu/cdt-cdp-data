@@ -422,23 +422,45 @@ def gen_day_hours(day_list:list):
             day_hour_list.append(lego_day)
     return day_hour_list
 
+# date_str: yyyymmdd
 def get_calendar_day_by_date(date_str):
-    start_year = date_str[:4]
-    day_list = gen_calendar_day(start_year = start_year)
-    for day in day_list:
-        if day[0] == date_str and day[19] != '':
-            return day
+    date_year = date_str[:4]
+
+    def get_day_list(day_list):
+        solar_week = 0
+        solar_week_offset = 1
+        lego_week = 0
+        lego_week_offset = 1
+        for day in day_list:
+            if day[4] != solar_week:
+                solar_week = day[4]
+                solar_week_offset =1
+            else:
+                solar_week_offset +=1
+
+            if day[14] != lego_week:
+                lego_week = day[14]
+                lego_week_offset =1
+            else:
+                lego_week_offset +=1
+
+            if day[0] == date_str and day[19] != '':
+                # day, solar week, solar week offset, solar month, solar year, lego week, lego week offset, lego month, lego year
+                return [day[3], solar_week, solar_week_offset, day[5], day[7], lego_week, lego_week_offset,day[17],day[20] ]
+
+    day_list = gen_calendar_day(start_year = date_year)
+    day_disp = get_day_list(day_list)
+    if day_disp is not None:
+        return day_disp
     if int(date_str[4:6]) == 1:
-        day_list = gen_calendar_day(start_year = str(int(start_year) -1))
+        day_list = gen_calendar_day(start_year = str(int(date_year) -1))
     elif int(date_str[4:6]) == 12:
-        day_list  = gen_calendar_day(start_year = str(int(start_year) +1))
+        day_list  = gen_calendar_day(start_year = str(int(date_year) +1))
     else:
         day_list = None
 
-    if day_list is not None:
-        for day in day_list:
-            if day[0] == date_str and day[19] != '':
-                return day
+    return get_day_list(day_list)
+    
 def start(year, path):
     day_list = gen_calendar_day(start_year = year)
     week_list = gen_calendar_week(day_list, year)
