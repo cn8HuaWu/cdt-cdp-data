@@ -6,8 +6,6 @@ Staging:
     floor text,
     sales_space text
 
-
-
 ODS:
 
 EDW:
@@ -19,8 +17,8 @@ EDW:
     reopen_date varchar(20),
     store_floor varchar(100),
     sales_space numeric(17,2),
-    ld_batch_date varchar(20),
-    ld_load_time timestamp,
+    dl_batch_date varchar(20),
+    dl_load_time timestamp,
     constraint pk_f_lgc_store_revn_list primary key(lego_store_code, close_date)
     )distributed by (lego_store_code);
 
@@ -28,15 +26,15 @@ EDW:
     delete from edw.f_lgc_store_revn_list;
 
   insert_edw_table_query:
-     insert into edw.f_lgc_store_revn_list
-     select 
-         close_date         as date_id,
-         store              as lego_store_code,
-         close_date         as close_date,
-         reopen_date        as reopen_date,
-         store_floor        as store_floor,
-         sales_space        as sales_space,
-         ld_batch_date      as ld_batch_date,
-         now()              as ld_load_time
-     from 
-        ods.r_dl_lgc_store_renovation_record;
+    insert into edw.f_lgc_store_revn_list
+    select 
+        to_char(to_date(close_date, 'dd/mm/yyyy'),'yyyymmdd')  as date_id,
+        store              as lego_store_code,
+        to_char(to_date(close_date, 'dd/mm/yyyy'),'yyyymmdd')  as close_date,
+        to_char(to_date(reopen_date, 'dd/mm/yyyy'),'yyyymmdd') as reopen_date,
+        floor              as store_floor,
+        sales_space        as sales_space,
+        dl_batch_date      as dl_batch_date,
+        now()              as dl_load_time
+    from 
+       ods.r_lgc_store_renovation_record;
