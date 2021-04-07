@@ -18,12 +18,12 @@ EDW:
     close_date varchar(20),
     reopen_date varchar(20),
     store_floor varchar(100),
-    sales_space double(17,2),
+    sales_space numeric(17,2),
     ld_batch_date varchar(20),
     ld_load_time timestamp,
-    constraint pk_f_lgc_store_revn_list primary key(store_code, close_date)
-    )distributed by (store_code)
-    comment'store_renovation_record';
+    constraint pk_f_lgc_store_revn_list primary key(lego_store_code, close_date)
+    )distributed by (lego_store_code);
+    drop table edw.f_lgc_store_revn_list;
 
   delete_edw_table_query:
     delete from edw.f_lgc_store_revn_list;
