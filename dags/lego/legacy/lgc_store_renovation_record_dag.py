@@ -170,5 +170,6 @@ postprocess_store_renovation_record_task = PythonOperator(
     dag = dag,
 )
 
+
 preprocess_store_renovation_record_task >> store_renovation_record_src2stg_task >> store_renovation_record_stg2ods_task >> edw_lgc_store_revn_list_create
 edw_lgc_store_revn_list_create >> edw_lgc_store_revn_list_delete >> edw_lgc_store_revn_list_insert >> postprocess_store_renovation_record_task
