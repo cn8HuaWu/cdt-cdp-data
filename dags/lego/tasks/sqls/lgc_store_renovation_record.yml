@@ -23,7 +23,6 @@ EDW:
     ld_load_time timestamp,
     constraint pk_f_lgc_store_revn_list primary key(lego_store_code, close_date)
     )distributed by (lego_store_code);
-    drop table edw.f_lgc_store_revn_list;
 
   delete_edw_table_query:
     delete from edw.f_lgc_store_revn_list;
