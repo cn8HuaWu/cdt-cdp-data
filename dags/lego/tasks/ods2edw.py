@@ -1,18 +1,18 @@
 import logging
 
 class Ods2edwHandler:
-    def __init__(self, 
-        batch_date, 
-        datasource, 
-        entity_name, 
-        table_key, 
+    def __init__(self,
+        batch_date,
+        datasource,
+        entity_name,
+        table_key,
         table_prefix,
-        myutil, 
-        db, 
-        update_type='F', 
+        myutil,
+        db,
+        update_type='F',
         has_param=False,
         AES_ENCODING='hex',
-        AES_KEY=None, 
+        AES_KEY=None,
         DL_AES_KEY=None,
         DL_AES_IV=None,
         ):
@@ -38,13 +38,13 @@ class Ods2edwHandler:
             dgb_ind = True
         else:
             dgb_ind = False
-        
+
         engine = self.db.create_engine(debug_flag = dgb_ind)
         engine = self.db.create_engine()
         conn =  self.db.create_conn( engine )
         var_map = {
             "SRC" : self.datasource,
-            "ENTITY": self.edw_renamed_tables[self.entity_name] if self.entity_name in self.edw_renamed_tables else '',
+            "ENTITY": self.edw_renamed_tables[self.entity_name] if self.entity_name in self.edw_renamed_tables else self.entity_name,
             "KEY": self.table_key,
             "batch_date": self.batch_date,
             "EDW_PREFIX": self.table_prefix,
@@ -54,14 +54,14 @@ class Ods2edwHandler:
             "DL_AES_IV": self.DL_AES_IV
         }
         create_table_columns = self.sql_dict['EDW']['create_table_query']
-        
+
         ## Step 1: Build EDW table
         logging.info("Step 1: Build EDW table")
         self.db.execute( create_table_columns, conn )
 
         ## Step 2: Load ODS table to EDW table
         logging.info("Step 2: Load ODS table to EDW table")
-        
+
         # !!! TODO SCD !!!
         edw_table = 'edw.{EDW_PREFIX}_{SRC}_{ENTITY};'.format_map(var_map)
         logging.info("Load type is %s", self.update_type)
@@ -90,23 +90,23 @@ class Ods2edwHandler:
         logging.info("SCD2 load table %s ", tablename)
         if ( self.has_param ):
             scd2_update_sql =  self.sql_dict['EDW']['scd2_update_query'].format_map(params)
-        else: 
+        else:
             scd2_update_sql =  self.sql_dict['EDW']['scd2_update_query']
         self.db.execute( scd2_update_sql, conn )
-    
+
     def _scd3_load(self, tablename, conn, params):
         logging.info("SCD3 load table %s ", tablename)
         if ( self.has_param ):
             scd3_update_sql =  self.sql_dict['EDW']['scd3_update_query'].format_map(params)
-        else: 
+        else:
             scd3_update_sql =  self.sql_dict['EDW']['scd3_update_query']
         self.db.execute( scd3_update_sql, conn )
-        
+
     def _scd2_md5_load(self, tablename, conn, params):
         logging.info("SCD2 load table %s ", tablename)
         if ( self.has_param ):
             scd2_update_sql =  self.sql_dict['EDW']['scd2_md5_update_query'].format_map(params)
-        else: 
+        else:
             scd2_update_sql =  self.sql_dict['EDW']['scd2_md5_update_query']
         self.db.execute( scd2_update_sql, conn )
 
