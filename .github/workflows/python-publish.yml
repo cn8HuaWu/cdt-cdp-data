@@ -16,6 +16,7 @@ jobs:
         cp -rf ./dags/lego/tasks/sqls/lgc_* /cdp/airflow/dags/lego/tasks/sqls/
         cp -rf ./dags/lego/tasks/sqls/dl_calendar.yml /cdp/airflow/dags/lego/tasks/sqls/
         cp -rf ./dags/lego/tasks/sqls/dl_product_info_v2.yml /cdp/airflow/dags/lego/tasks/sqls/
+        cp -rf ./dags/lego/tasks/sqls/dl_phy_store.yml /cdp/airflow/dags/lego/tasks/sqls/
         cp -rf ./dags/lego/tasks/config/entity_conf.yml  /cdp/airflow/dags/lego/tasks/config/
         cp -rf ./dags/lego/lego/dl_product_info_v2_dag.py  /cdp/airflow/dags/lego/lego/
         cp -rf ./dags/lego/lego/dl_product_info_v2_daily_update_dag.py  /cdp/airflow/dags/lego/lego/
