@@ -535,7 +535,8 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
-    column_positions: '{"Storelist_All_Channels":[{"filename":"StoreList_B2B2F.*","all_reg":"0,1,2,3,6,10,5,7,8,9,4,12,13,14,15,16,11"},{"filename":"StoreList_Collaboration.*","all_reg":"0,1,2,5,7,3,6,8,9,10,4,12,13,14,15,16,11"},{"filename":"StoreList_Collaboration.*","all_reg":"0,1,2,5,7,3,6,8,9,10,4,12,13,14,15,16,11"},{"filename":"StoreList_EMP.*","all_reg":"0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"},{"filename":"StoreList_Kidsland.*","all_reg":"1,2,3,5,6,4,0,15,9,8,13,7,10,11,12,16,14"},{"filename":"StoreList_Kidswant.*","all_reg":"1,2,0,4,5,9,12,10,8,7,3,6,13,14,15,16,11"},{"filename":"StoreList_LDC.*","all_reg":"3,4,5,6,7,0,1,12,9,10,2,8,13,14,15,16,11"},{"filename":"StoreList_TRU.*","all_reg":"2,3,4,7,8,0,1,9,11,10,5,6,13,14,15,16,12"},{"filename":"StoreList_LCS.*","all_reg":"2,3,4,10,12,0,1,16,14,15,6,7,18,19,20,9,17"},{"filename":"StoreList_LBR.*","all_reg":"2,3,4,10,12,0,1,15,13,14,6,8,17,18,19,9,16"}]}'
+    column_positions: '{"Storelist_All_Channels":[{"filename":"StoreList_B2B2F.*","all_reg":"0,1,2,10,4,3,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,38,39,40,-,36,37
+"}]}'
     key: store_code
 
   lgc_plan_lbr_net_dkk_portfolio:
