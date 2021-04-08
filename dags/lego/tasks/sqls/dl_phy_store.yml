@@ -1,0 +1,75 @@
+EDW:
+  create_table_query:
+    create table edw.d_dl_phy_store(
+      distributor varchar(255)  NULL,
+      lego_store_code varchar(255)  NULL,
+      distributor_store_code varchar(255)  NULL,
+      store_name varchar(255) NULL,
+      province varchar(255) NULL,
+      region varchar(100) ,
+      city varchar(255) NULL,
+      province_cn varchar(255) NULL,
+      city_en varchar(100) NULL,
+      city_cn varchar(100) NULL,
+      county varchar(255) NULL,
+      open_date date NULL,
+      store_address varchar(500) NULL,
+      sold_to varchar(100) NULL,
+      ship_to varchar(100) NULL,
+      trad_id varchar(100) NULL,
+      review_channel varchar(100) NULL,
+      channel_lv1 varchar(100) NULL,
+      channel_lv2 varchar(100) NULL,
+      channel_lv3 varchar(100) NULL,
+      open_date varchar(20) NULL,
+      update_week varchar(20) NULL
+    )
+    DISTRIBUTED BY (distributor);
+
+  merge_lgc_lewin_stores:
+    insert into edw.d_dl_phy_store(
+      distributor,
+      lego_store_code,
+      distributor_store_code,
+      store_name,
+      province,
+      region,
+      province_cn,
+      city_en,
+      city_cn,
+      county,
+      open_date,
+      store_address,
+      sold_to,
+      ship_to,
+      trad_id,
+      review_channel,
+      channel_lv1,
+      channel_lv2,
+      channel_lv3,
+      update_week
+    )
+    select 
+      coalesce(ls.customer, ps.distributor) as  distributor,
+      coalesce(ls.lego_store_code, ps.lego_store_code) as lego_store_code,
+      ps.distributor_store_code,
+      coalesce(ls.store_name, ps.store_name) as store_name,
+      coalesce(ls.province, ps.province) as province,
+      ls.region,
+      province_cn,
+      ls.city as city_en,
+      coalesce(ls.city_cn,ps.city ) as city_cn,
+      county,
+      coalesce(to_date(ls.open_date,'yyyymmdd'), ps.open_date) as open_date,
+      coalesce(ls.store_address , ps.address) as store_address,
+      ls.sold_to,
+      ls.ship_to,
+      ls.trad_id,
+      ls.review_channel,
+      ls.channel_lv1,
+      ls.channel_lv2,
+      ls.channel_lv3,
+      ls.open_date,
+      ls.update_week
+    from edw.d_lgc_phy_store ls 
+      full outer join edw.f_phy_store ps on ls.lego_store_code  = ps.lego_store_code  and ls.customer  = ps.distributor ;
