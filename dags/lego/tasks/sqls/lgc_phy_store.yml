@@ -39,7 +39,6 @@ Staging:
     citylevel text,
     phase text,
     visited_store text,
-    sold_to text,
     extra_col2 text,
     channel_lv3_extra text,
     channel_lv3_name text
