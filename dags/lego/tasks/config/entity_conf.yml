@@ -457,6 +457,7 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    column_positions: '{"lgc_store_renovation_record":{"filename":"lgc_store_renovation.*","all_reg":"0,1,2,3,4"}}'
     key: store,close_date
 
   lgc_instock:
