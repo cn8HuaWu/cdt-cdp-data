@@ -33,7 +33,7 @@ EDW:
         to_char(to_date(close_date, 'dd/mm/yyyy'),'yyyymmdd')  as close_date,
         to_char(to_date(reopen_date, 'dd/mm/yyyy'),'yyyymmdd') as reopen_date,
         floor                              as store_floor,
-        cast(sales_space as numeric(17,2)  as sales_space,
+        cast(sales_space as numeric(17,2)) as sales_space,
         dl_batch_date                      as dl_batch_date,
         now()                              as dl_load_time
     from 
