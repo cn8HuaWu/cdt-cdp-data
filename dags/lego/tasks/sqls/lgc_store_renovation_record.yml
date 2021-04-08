@@ -29,12 +29,12 @@ EDW:
     insert into edw.f_lgc_store_revn_list
     select 
         to_char(to_date(close_date, 'dd/mm/yyyy'),'yyyymmdd')  as date_id,
-        store              as lego_store_code,
+        store                              as lego_store_code,
         to_char(to_date(close_date, 'dd/mm/yyyy'),'yyyymmdd')  as close_date,
         to_char(to_date(reopen_date, 'dd/mm/yyyy'),'yyyymmdd') as reopen_date,
-        floor              as store_floor,
-        sales_space        as sales_space,
-        dl_batch_date      as dl_batch_date,
-        now()              as dl_load_time
+        floor                              as store_floor,
+        cast(sales_space as numeric(17,2)  as sales_space,
+        dl_batch_date                      as dl_batch_date,
+        now()                              as dl_load_time
     from 
        ods.r_lgc_store_renovation_record;
