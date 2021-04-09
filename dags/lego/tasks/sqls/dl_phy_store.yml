@@ -22,11 +22,14 @@ EDW:
       channel_lv2 varchar(100) NULL,
       channel_lv3 varchar(100) NULL,
       open_date varchar(20) NULL,
-      update_week varchar(20) NULL
+      update_week varchar(20) NULL,
+      dl_batch_date varchar(8),
+      dl_load_time timestamp,
     )
     DISTRIBUTED BY (distributor);
 
   merge_lgc_lewin_stores:
+    truncate table edw.d_dl_phy_store;
     insert into edw.d_dl_phy_store(
       distributor,
       lego_store_code,
@@ -47,10 +50,12 @@ EDW:
       channel_lv1,
       channel_lv2,
       channel_lv3,
-      update_week
+      update_week,
+      dl_batch_date,
+      dl_load_time
     )
     select 
-      coalesce(ls.customer, ps.distributor) as  distributor,
+      coalesce(ls.new_customer, ps.distributor) as  distributor,
       coalesce(ls.lego_store_code, ps.lego_store_code) as lego_store_code,
       ps.distributor_store_code,
       coalesce(ls.store_name, ps.store_name) as store_name,
@@ -70,6 +75,11 @@ EDW:
       ls.channel_lv2,
       ls.channel_lv3,
       ls.open_date,
-      ls.update_week
-    from edw.d_lgc_phy_store ls 
-      full outer join edw.f_phy_store ps on ls.lego_store_code  = ps.lego_store_code  and ls.customer  = ps.distributor ;
+      ls.update_week,
+      to_char(now(),'yyyymmdd'),
+      now()
+    from (
+      select *, case when customer='LW' then 'LEWIN' else customer end as new_customer  from edw.d_lgc_phy_store 
+    
+    )ls 
+      full outer join edw.f_phy_store ps on ls.lego_store_code  = ps.lego_store_code  and ls.new_customer  = ps.distributor ;
