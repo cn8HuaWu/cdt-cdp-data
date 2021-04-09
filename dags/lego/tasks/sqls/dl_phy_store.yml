@@ -7,7 +7,6 @@ EDW:
       store_name varchar(255) NULL,
       province varchar(255) NULL,
       region varchar(100) ,
-      city varchar(255) NULL,
       province_cn varchar(255) NULL,
       city_en varchar(100) NULL,
       city_cn varchar(100) NULL,
@@ -53,7 +52,7 @@ EDW:
       dl_batch_date,
       dl_load_time
     )
-    select 
+    select
       coalesce(ls.new_customer, ps.distributor) as  distributor,
       coalesce(ls.lego_store_code, ps.lego_store_code) as lego_store_code,
       ps.distributor_store_code,
@@ -77,7 +76,7 @@ EDW:
       to_char(now(),'yyyymmdd'),
       now()
     from (
-      select *, case when customer='LW' then 'LEWIN' else customer end as new_customer  from edw.d_lgc_phy_store 
-    
-    )ls 
+      select *, case when customer='LW' then 'LEWIN' else customer end as new_customer  from edw.d_lgc_phy_store
+
+    )ls
       full outer join edw.f_phy_store ps on ls.lego_store_code  = ps.lego_store_code  and ls.new_customer  = ps.distributor ;
