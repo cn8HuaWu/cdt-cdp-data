@@ -73,7 +73,6 @@ EDW:
       ls.channel_lv1,
       ls.channel_lv2,
       ls.channel_lv3,
-      ls.open_date,
       ls.update_week,
       to_char(now(),'yyyymmdd'),
       now()
