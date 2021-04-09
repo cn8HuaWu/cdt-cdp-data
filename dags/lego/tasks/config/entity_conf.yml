@@ -430,7 +430,7 @@ entities:
     update_type: f
     stg_suffix: di
     productcode_index: "6"
-    column_positions: '{"sales_stock_nip_dkk":{"filename":"sales_stock_nip_dkk.*","all_reg":"0,1,2,3,4,5,6,7,8,9,10,11,12"}}'
+    column_positions: '{"sales_stock_nip_dkk":{"filename":"sales_stock_nip_dkk.*","all_reg":"0,1,2,3,4,5,6,7,8,9,10,11"}}'
     key: year_week,cust_id,store_id,prod_id
 
   lgc_sales_stock_rrp_rmb:
