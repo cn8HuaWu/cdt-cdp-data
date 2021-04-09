@@ -3,14 +3,14 @@ Staging:
     sold_to text,
     ship_to text,
     trad_id text,
-    reviewchannel text,
-    citycn text,
     store_code text,
+    citycn text,
     customer text,
     store_name text,
     store_address text,
     province text,
     city text,
+    reviewchannel text,
     upd_week text,
     region text,
     channel_lv1 text,
@@ -31,18 +31,20 @@ Staging:
     sales_office text,
     sales_group text,
     cgrp text,
-    extra_col1 text,
     channelgroup text,
     is_online text,
     storestatus text,
     is_new text,
+    channel_lv3_extra text,
+    channel_lv3_name text,
     citylevel text,
     phase text,
     visited_store text,
+    extra_col1 text,
     extra_col2 text,
-    channel_lv3_extra text,
-    channel_lv3_name text
-
+    extra_col3 text,
+    extra_col4 text,
+    extra_col5 text
 
 ODS:
 
