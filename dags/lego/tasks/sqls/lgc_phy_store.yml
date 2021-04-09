@@ -82,7 +82,7 @@ EDW:
         sold_to                        as sold_to,
         ship_to                        as ship_to,
         trad_id                        as trad_id,
-        lego_store_code                as lego_store_code,
+        store_code                     as lego_store_code,
         store_name                     as store_name,
         review_channel                 as review_channel,
         customer                       as customer,
@@ -94,7 +94,7 @@ EDW:
         channel_lv1                    as channel_lv1,
         channel_lv2                    as channel_lv2,
         channel_lv3                    as channel_lv3,
-        open_date                      as open_date,
+        to_char(to_date(opendate,'dd/mm/yyyy'),'yyyymmdd') as open_date,
         replace(update_week,'WK','13') as update_week,
         ld_batch_date                  as ld_batch_date,
         now()                          as ld_load_time
