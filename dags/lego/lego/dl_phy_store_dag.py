@@ -23,6 +23,7 @@ entity = 'phy_store_dag'
 src_entity = 'dl_phy_store'
 DAG_NAME = 'dl_phy_store_dag'
 email_to_list =  Variable.get('email_to_list').split(',')
+dl_phy_store_interval =  Variable.get('dl_phy_store_interval').strip(' ')
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
@@ -47,7 +48,7 @@ dag = DAG(dag_id = DAG_NAME,
             concurrency = 1, 
             max_active_runs = 1,
             catchup=False, 
-            schedule_interval = None,
+            schedule_interval = dl_phy_store_interval,
 )
 
 def run_composit_task(query_sections:list, **kwargs):

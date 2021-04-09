@@ -21,10 +21,9 @@ EDW:
       channel_lv1 varchar(100) NULL,
       channel_lv2 varchar(100) NULL,
       channel_lv3 varchar(100) NULL,
-      open_date varchar(20) NULL,
       update_week varchar(20) NULL,
       dl_batch_date varchar(8),
-      dl_load_time timestamp,
+      dl_load_time timestamp
     )
     DISTRIBUTED BY (distributor);
 
