@@ -44,7 +44,9 @@ Staging:
     extra_col2 text,
     extra_col3 text,
     extra_col4 text,
-    extra_col5 text
+    extra_col5 text,
+    extra_col6 text,
+    extra_col7 text
 
 ODS:
 
