@@ -73,7 +73,7 @@ def gen_calendar_day(start_year, mode="day"):
         date_id = t_day.strftime('%Y-%m-%d')
         date_type = 'day'
         d_day = t_day.strftime('%d')
-        d_week = int(t_day.strftime('%W'))
+        d_week = int(t_day.strftime('%W')) + 1
         d_month = t_day.strftime('%m')
         d_quarter = math.floor((int(d_month) -1 )/3 + 1)
         d_year = t_day.strftime('%Y')
@@ -460,7 +460,7 @@ def get_calendar_day_by_date(date_str):
         day_list = None
 
     return get_day_list(day_list)
-    
+
 def start(year, path):
     day_list = gen_calendar_day(start_year = year)
     week_list = gen_calendar_week(day_list, year)
