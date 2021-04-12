@@ -26,7 +26,12 @@ entity = 'store_closure_list'
 src_entity = 'lgc_store_closure_list'
 DAG_NAME = 'lgc_store_closure_list_dag'
 
-
+sheet ={
+"Sheet1":{
+    'start_column': 1,
+    'column_width': 5
+}
+}
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
@@ -87,7 +92,7 @@ def load_stg2ods(**kwargs):
     #
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
     stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db,
-                             has_head=0)
+                             has_head=False)
     stg2ods.start()
 
 
