@@ -16,3 +16,4 @@ jobs:
         cp -rf ./dags/lego/tasks/utils/ /cdp/airflow/dags/lego/tasks/
         cp -rf ./dags/lego/tasks/src2stg.py  /cdp/airflow/dags/lego/tasks/
         cp -rf ./dags/lego/tasks/sqls/dl_tm_shopper.yml  /cdp/airflow/dags/lego/tasks/sqls/
+        cp -rf ./dags/lego/tasks/utils/config/env.conf /cdp/airflow/dags/lego/tasks/config/
