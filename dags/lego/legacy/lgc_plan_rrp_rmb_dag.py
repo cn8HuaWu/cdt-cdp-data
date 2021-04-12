@@ -27,6 +27,61 @@ src_entity = 'lgc_plan_rrp_rmb'
 DAG_NAME = 'lgc_plan_rrp_rmb_dag'
 src_file_sheet_name = ['Fixed_DP','Floating_DP01','Floating_DP02','Floating_DP03','Floating_DP04','Floating_DP05','Floating_DP06','Floating_DP07','Floating_DP08','Floating_DP09','Floating_DP10','Floating_DP11','Floating_DP12']
 
+sheet ={
+"Fixed_DP02":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP01":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP02":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP03":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP04":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP05":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP06":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP07":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP08":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP09":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP010":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP011":{
+    'start_column': 1,
+    'column_width': 13
+},
+"Floating_DP012":{
+    'start_column': 1,
+    'column_width': 13
+},
+}
+
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
 entity_conf = myutil.get_entity_config()
@@ -71,7 +126,7 @@ def load_src2stg(**kwargs):
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     excel_fun_list = [myutil.filter_modified_product, myutil.rearrange_columns]
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname = src_file_sheet_name, merge = False)
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname = src_file_sheet_name, merge = False,**sheet)
     src2stg.start(version='v2')
 
 def load_stg2ods(**kwargs):

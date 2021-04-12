@@ -28,6 +28,13 @@ entity = 'modified_product'
 src_entity = 'lgc_modified_product'
 DAG_NAME = 'lgc_modified_product_dag'
 
+sheet ={
+"Sheet1":{
+    'start_colum':1,
+    'column_width':4
+}
+}
+
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
 entity_conf = myutil.get_entity_config()
@@ -76,7 +83,7 @@ def load_src2stg(**kwargs):
     #
     OK_FILE_PATH = kwargs.get('dag_run').conf.get('ok_file_path')
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH,
-                             has_head=False, sheetname='sheet1', merge=False)
+                             has_head=False, sheetname='sheet1', merge=False,**sheet)
     src2stg.start(version='v2')
 
 

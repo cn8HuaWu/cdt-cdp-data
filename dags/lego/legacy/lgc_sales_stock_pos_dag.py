@@ -26,6 +26,13 @@ entity = 'sales_stock_pos'
 src_entity = 'lgc_sales_stock_pos'
 DAG_NAME = 'lgc_sales_stock_pos_dag'
 
+sheet ={
+"Sheet1":{
+    'start_colum':1,
+    'column_width':6
+}
+}
+
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
 entity_conf = myutil.get_entity_config()
@@ -70,7 +77,7 @@ def load_src2stg(**kwargs):
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     excel_fun_list = [myutil.filter_modified_product, myutil.rearrange_columns]
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname='POS', merge =False)
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname='POS', merge =False，**sheet)
     src2stg.start(version='v2')
 
 def load_stg2ods(**kwargs):

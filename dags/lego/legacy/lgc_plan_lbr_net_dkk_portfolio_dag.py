@@ -27,6 +27,13 @@ entity = 'plan_lbr_net_dkk_portfolio'
 src_entity = 'lgc_plan_lbr_net_dkk_portfolio'
 DAG_NAME = 'lgc_plan_lbr_net_dkk_portfolio_dag'
 
+sheet ={
+"Sheet1":{
+    'start_colum':1,
+    'column_width':7
+}
+}
+
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
 entity_conf = myutil.get_entity_config()
@@ -76,7 +83,7 @@ def load_src2stg(**kwargs):
     OK_FILE_PATH = kwargs.get('dag_run').conf.get('ok_file_path')
     excel_fun_list = [myutil.rearrange_columns]
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH,
-                             excel_fun_list=excel_fun_list, has_head=False, sheetname='Sheet1', merge=False)
+                             excel_fun_list=excel_fun_list, has_head=False, sheetname='Sheet1', merge=False,**sheet)
     src2stg.start(version='v2')
 
 
