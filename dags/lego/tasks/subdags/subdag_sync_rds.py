@@ -3,8 +3,7 @@ from airflow.models import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.models import Variable
 import logging
-import sys
-
+import sys, os
 DAG_HOME =  Variable.get('dag_home').strip().rstrip('/')
 sys.path.append(DAG_HOME + "/tasks/")
 sys.path.append("../../tasks/")

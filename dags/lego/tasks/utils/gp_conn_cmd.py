@@ -21,7 +21,7 @@ def get_rds_conn_str():
     rds_host = cp.get(rds_env, 'AIRFLOW_RDS_HOST')
     rds_port = cp.get(rds_env, 'AIRFLOW_RDS_PORT')
     rds_user = cp.get(rds_env, 'AIRFLOW_USER')
-    rds_pwd = get_pwd(cp.get(rds_env,'AIRFLOW_PW_KMS').format_map(env_map))
+    rds_pwd = get_pwd(cp.get(rds_env,'AIRFLOW_PW_KMS'))
     #  postgresql://:@pgm-uf6805zhv5h45yej129250.pg.rds.aliyuncs.com:1433/airflow
     conn_str = "postgresql://{0}:{1}@{2}:{3}/airflow".format(rds_user, rds_pwd, rds_host, rds_port)
     return conn_str
