@@ -27,6 +27,13 @@ entity = 'phy_store'
 src_entity = 'lgc_phy_store'
 DAG_NAME = 'lgc_phy_store_dag'
 
+sheet ={
+"Store_Master_Data":{
+    'start_colum':0,
+    'column_width':20
+}
+}
+
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
 entity_conf = myutil.get_entity_config()

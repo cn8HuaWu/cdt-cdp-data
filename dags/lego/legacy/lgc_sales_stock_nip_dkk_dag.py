@@ -28,7 +28,7 @@ src_entity = 'lgc_sales_stock_nip_dkk'
 DAG_NAME = 'lgc_sales_stock_nip_dkk_dag'
 sheet ={
 "Sheet1":{
-    'start_colum':1,
+    'start_colum':0,
     'column_width':10
 }
 }

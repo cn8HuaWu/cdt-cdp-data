@@ -36,7 +36,7 @@ DAG_NAME = 'lgc_cs_weekly_phasing_dag'
 
 sheet ={
 "Sheet1":{
-    'start_colum':1,
+    'start_colum':0,
     'column_width':13
 }
 }

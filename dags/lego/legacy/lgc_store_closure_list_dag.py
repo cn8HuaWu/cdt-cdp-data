@@ -28,7 +28,7 @@ DAG_NAME = 'lgc_store_closure_list_dag'
 
 sheet ={
 "Sheet1":{
-    'start_colum':1,
+    'start_colum':0,
     'column_width':4
 }
 }
