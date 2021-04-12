@@ -17,12 +17,12 @@ def get_pwd(name):
     return res_json['SecretData']
 
 def get_rds_conn_str():
-    env_map = {'env': ENV}
-    rds_host = cp.get('RDS', 'AIRFLOW_RDS_HOST')
-    rds_port = cp.get('RDS', 'AIRFLOW_RDS_PORT')
-    rds_user = cp.get('RDS', 'AIRFLOW_USER')
-    rds_pwd = get_pwd(cp.get('RDS','AIRFLOW_PW_KMS')).format_map(env_map)
-    #  postgresql://airflow_admin:CDPdev2020@pgm-uf6805zhv5h45yej129250.pg.rds.aliyuncs.com:1433/airflow
+    rds_env = ENV + '-RDS'
+    rds_host = cp.get(rds_env, 'AIRFLOW_RDS_HOST')
+    rds_port = cp.get(rds_env, 'AIRFLOW_RDS_PORT')
+    rds_user = cp.get(rds_env, 'AIRFLOW_USER')
+    rds_pwd = get_pwd(cp.get(rds_env,'AIRFLOW_PW_KMS').format_map(env_map))
+    #  postgresql://:@pgm-uf6805zhv5h45yej129250.pg.rds.aliyuncs.com:1433/airflow
     conn_str = "postgresql://{0}:{1}@{2}:{3}/airflow".format(rds_user, rds_pwd, rds_host, rds_port)
     return conn_str
 
@@ -31,6 +31,6 @@ if __name__ == "__main__":
     cp = ConfigParser()
     cp.read( os.path.join("/cdp/airflow/dags/lego/tasks/config/env.conf") )
     if (type == '2'):
-        print( get_pwd(cp.get('SMTP', 'PASSWORD_KMS')) , end='')
+        print( get_pwd(cp.get( ENV + '-SMTP', 'PASSWORD_KMS')) , end='')
     elif( type == '1' ):
         print(get_rds_conn_str(), end='')

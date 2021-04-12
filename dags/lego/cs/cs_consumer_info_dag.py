@@ -28,6 +28,7 @@ STAGING = 'Staging'
 ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
+ENV = os.getenv('airflow_env')
 
 myutil = Myutil(DAG_HOME)
 gp_host = myutil.get_conf( 'Greenplum', 'GP_HOST')
@@ -76,14 +77,14 @@ def load_ods2edw(**kwargs):
     pkey = entity_conf[src_entity]["key"]
     table_prefix = entity_conf[src_entity]["edw_prefix"]
     update_type = entity_conf[src_entity]["update_type"]
-    ods2edw = Ods2edwHandler(batch_date, 
-        SRC_NAME, 
-        entity, 
-        pkey, 
+    ods2edw = Ods2edwHandler(batch_date,
+        SRC_NAME,
+        entity,
+        pkey,
         table_prefix,
-        myutil, 
-        db, 
-        AES_KEY=aes_key, 
+        myutil,
+        db,
+        AES_KEY=aes_key,
         AES_ENCODING=aes_encoding,
         DL_AES_KEY = dl_aes_key,
         DL_AES_IV = dl_aes_iv,
@@ -103,8 +104,8 @@ args = {
 
 dag = DAG(dag_id = DAG_NAME,
             default_args = args,
-            concurrency = 1, 
-            max_active_runs = 1, 
+            concurrency = 1,
+            max_active_runs = 1,
             # schedule_interval = None,
             schedule_interval = cs_consumer_interval,
             start_date = datetime.strptime(dag_start_date,'%Y-%m-%d %H:%M:%S'),

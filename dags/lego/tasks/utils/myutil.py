@@ -57,11 +57,12 @@ class Myutil:
 
     ## read config file
     def get_conf(self, section, option):
-        env_map = {'env': ENV}
+        if ENV is not None and ENV != '':
+            section = ENV + '-' + section
         if self.cp.has_option(section, option):
-            return self.cp.get(section, option).format_map(env_map)
+            return self.cp.get(section, option)
         elif self.cp.has_option(section, option + "_KMS"):
-            return self.get_secretvalue( self.cp.get(section, option + "_KMS")).format_map(env_map)
+            return self.get_secretvalue( self.cp.get(section, option + "_KMS"))
         else:
             return None
     ## get DL AES KEY

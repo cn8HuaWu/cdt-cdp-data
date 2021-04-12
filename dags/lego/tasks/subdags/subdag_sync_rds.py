@@ -10,8 +10,9 @@ sys.path.append(DAG_HOME + "/tasks/")
 sys.path.append("../../tasks/")
 from utils.db import Mydb
 
+ENV = os.getenv('airflow_env')
 def sync_subdag(parent_dag_name, child_dag_name, myutil, entity_conf, args, ientity, downstream = None):
-    conf_section  = 'RDS' if downstream is None or downstream='' else  'RDS-'+downstream
+    conf_section  = ENV + '-RDS' if downstream is None or downstream='' else  ENV + '-RDS-'+downstream
     rds_host = myutil.get_conf( conf_section, 'RDS_HOST')
     rds_port = myutil.get_conf( conf_section, 'RDS_PORT')
     rds_db = myutil.get_conf( conf_section, 'RDS_DB')
