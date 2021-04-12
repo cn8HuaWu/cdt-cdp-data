@@ -10,18 +10,19 @@ sys.path.append(DAG_HOME + "/tasks/")
 sys.path.append("../../tasks/")
 from utils.db import Mydb
 
-def sync_subdag(parent_dag_name, child_dag_name, myutil, entity_conf, args, ientity):
-    rds_host = myutil.get_conf( 'RDS', 'RDS_HOST')
-    rds_port = myutil.get_conf( 'RDS', 'RDS_PORT')
-    rds_db = myutil.get_conf( 'RDS', 'RDS_DB')
-    rds_usr = myutil.get_conf( 'RDS', 'RDS_USER')
-    rds_pw = myutil.get_conf( 'RDS', 'RDS_PASSWORD')
+def sync_subdag(parent_dag_name, child_dag_name, myutil, entity_conf, args, ientity, downstream = None):
+    conf_section  = 'RDS' if downstream is None or downstream='' else  'RDS-'+downstream
+    rds_host = myutil.get_conf( conf_section, 'RDS_HOST')
+    rds_port = myutil.get_conf( conf_section, 'RDS_PORT')
+    rds_db = myutil.get_conf( conf_section, 'RDS_DB')
+    rds_usr = myutil.get_conf( conf_section, 'RDS_USER')
+    rds_pw = myutil.get_conf( conf_section, 'RDS_PASSWORD')
     rdsdb = Mydb(rds_host, rds_port, rds_db, rds_usr, rds_pw)
 
     def run_update(**kwargs):
         engine = rdsdb.create_engine()
         conn =  rdsdb.create_conn( engine )
-        entity = ientity 
+        entity = ientity
         sync_list = []
         src_entity = args["src_name"].lower()+"_"+entity
         if ('dm_sync' not in  entity_conf[src_entity] or  entity_conf[src_entity]['dm_sync'] ):
@@ -39,7 +40,7 @@ def sync_subdag(parent_dag_name, child_dag_name, myutil, entity_conf, args, ient
             logging.info("Run update query %s", query)
             rdsdb.execute(query,conn)
         rdsdb.close_conn(conn)
-    
+
     dag_subdag = DAG(
         dag_id='%s.%s' % (parent_dag_name, child_dag_name),
         default_args = args,
@@ -55,5 +56,3 @@ def sync_subdag(parent_dag_name, child_dag_name, myutil, entity_conf, args, ient
     )
 
     return dag_subdag
-
-

@@ -26,6 +26,7 @@ from datetime import datetime
 from airflow.models import Variable
 DAG_HOME =  Variable.get('dag_home').strip().rstrip('/')
 mydb = imp.load_source("mydb", DAG_HOME+"/tasks/utils/db.py")
+ENV = os.getenv('airflow_env')
 
 class Myutil:
     def __init__(self, dag_home=None, entity_name = None):
@@ -56,10 +57,11 @@ class Myutil:
 
     ## read config file
     def get_conf(self, section, option):
+        env_map = {'env': ENV}
         if self.cp.has_option(section, option):
-            return self.cp.get(section, option)
+            return self.cp.get(section, option).format_map(env_map)
         elif self.cp.has_option(section, option + "_KMS"):
-            return self.get_secretvalue( self.cp.get(section, option + "_KMS") )
+            return self.get_secretvalue( self.cp.get(section, option + "_KMS")).format_map(env_map)
         else:
             return None
     ## get DL AES KEY
