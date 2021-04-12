@@ -29,10 +29,8 @@ DAG_NAME = 'lgc_store_closure_list_dag'
 # for test
 sheet ={
 "Sheet1":{
-    'start_row': 0 ,
-    'ignore_end_row': 2,
     'start_column': 1,
-    'column_width': 5
+    'column_width': 4
 }
 }
 
