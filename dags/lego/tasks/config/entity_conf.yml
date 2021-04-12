@@ -445,12 +445,14 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    column_positions:  '{"lgc_customer_name_mapping":{"filename":"lgc_customer_name_mapping.*","all_reg":"0,1"}}'
     key: customer,correct_customer
 
   lgc_store_closure_list:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    column_positions:  '{"lgc_store_closure_list":{"filename":"lgc_store_closure_list.*","all_reg":"0,1,2,3"}}'
     key: store,close_date
 
   lgc_store_renovation_record:
@@ -515,12 +517,14 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    column_positions: '{"lgc_lcs_store_bd":{"filename":"lgc_lcs_store_bd.*","all_reg":"0,1,2,3"}}'
     key: store_code,year,opening_month
 
   lgc_modified_product:
     edw_prefix: f
     update_type: f
     stg_suffix: di
+    column_positions: '{"lgc_modified_product":{"filename":"lgc_modified_product.*","all_reg":"0,1,2,3"}}'
     key: channel,temp_product
 
   lgc_product_infor:
