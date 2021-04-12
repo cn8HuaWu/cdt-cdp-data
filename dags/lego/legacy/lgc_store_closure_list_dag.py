@@ -26,6 +26,12 @@ entity = 'store_closure_list'
 src_entity = 'lgc_store_closure_list'
 DAG_NAME = 'lgc_store_closure_list_dag'
 
+sheet ={
+"Sheet1":{
+    'start_column': 1,
+    'column_width': 5
+}
+}
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
@@ -76,7 +82,7 @@ def load_src2stg(**kwargs):
     OK_FILE_PATH = kwargs.get('dag_run').conf.get('ok_file_path')
     # excel_fun_list = [myutil.filter_modified_product, myutil.rearrange_columns]
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH,
-                             has_head=False, sheetname='Sheet1', merge=False)
+                             has_head=False, sheetname='Sheet1', merge=False, **sheet)
     src2stg.start(version='v2')
 
 
