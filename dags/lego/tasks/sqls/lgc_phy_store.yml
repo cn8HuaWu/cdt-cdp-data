@@ -19,40 +19,40 @@ Staging:
     upd_week text,
     extra_col1 text,
     extra_col2 text,
-    extra_col3 text
-
+    extra_col3 text,
+    extra_col4 text
 ODS:
 
 EDW:
   create_edw_table_query:
-    create table if not exists edw.f_lgc_phy_store
-      (sold_to varchar(100),
-     ship_to varchar(100),
-     trad_id varchar(100),
-     lego_store_code varchar(100),
-     store_name varchar(100),
-     review_channel varchar(100),
-     customer varchar(100),
+    create table if not exists edw.d_lgc_phy_store
+      (sold_to varchar(200),
+     ship_to varchar(200),
+     trad_id varchar(200),
+     lego_store_code varchar(200),
+     store_name varchar(200),
+     review_channel varchar(200),
+     customer varchar(200),
      store_address varchar(200),
-     provice varchar(100),
-     city varchar(100),
-     city_cn varchar(100),
-     region varchar(100),
-     channel_lv1 varchar(100),
-     channel_lv2 varchar(100),
-     channel_lv3 varchar(100),
-     open_date varchar(20),
-     update_week varchar(20),
-     ld_batch_date varchar(20),
+     provice varchar(200),
+     city varchar(200),
+     city_cn varchar(200),
+     region varchar(200),
+     channel_lv1 varchar(200),
+     channel_lv2 varchar(200),
+     channel_lv3 varchar(200),
+     open_date varchar(100),
+     update_week varchar(100),
+     ld_batch_date varchar(100),
      ld_load_time timestamp,
-     constraint pk_f_lgc_phy_store primary key(lego_store_code)
+     constraint pk_d_lgc_phy_store primary key(review_channel,lego_store_code)
     )distributed by (review_channel);
 
   delete_edw_table_query:
-    delete from edw.f_lgc_phy_store;
+    delete from edw.d_lgc_phy_store;
 
   insert_edw_table_query:
-    insert into edw.f_lgc_phy_store
+    insert into edw.d_lgc_phy_store
       select
         sold_to                        as sold_to,
         ship_to                        as ship_to,

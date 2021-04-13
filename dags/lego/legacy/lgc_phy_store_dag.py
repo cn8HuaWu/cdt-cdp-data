@@ -30,7 +30,7 @@ DAG_NAME = 'lgc_phy_store_dag'
 sheet ={
 "Store_Master_Data":{
     'start_colum':0,
-    'column_width':20
+    'column_width':21
 }
 }
 
