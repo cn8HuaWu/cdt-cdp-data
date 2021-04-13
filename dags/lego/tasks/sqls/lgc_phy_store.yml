@@ -34,7 +34,7 @@ EDW:
      review_channel varchar(200),
      customer varchar(200),
      store_address varchar(200),
-     provice varchar(200),
+     province varchar(200),
      city varchar(200),
      city_cn varchar(200),
      region varchar(200),
@@ -77,3 +77,32 @@ EDW:
         ods.r_lgc_phy_store
       where  store_code is not null  
         and  store_code in (select store_code from ods.r_lgc_phy_store group by store_code having count(*)<2);
+
+  update_edw_table_query:
+    update edw.d_lgc_phy_store t1 
+    set store_name = case when t2.store_name_chn is null then t1.store_name else  t2.store_name_chn  end,
+        customer = case when t2.Partner is null then t1.customer else  t2.Partner end ,
+        store_address = case when t2.store_address_chn is null then t1.store_address  else  t2.store_address_chn end ,
+        province = case when t2.province is null then t1.province else  t2.province end,
+        city = case when t2.city is null then t1.city else  t2.city end,
+        city_cn = case when t2.city_chn is null then t1.city_cn else  t2.city_chn end, 
+        region = case when t2.region is null then t1.region else  t2.region end
+    
+        from
+            (select distinct 
+                  store_code , 
+                  store_name_chn,
+                  Partner,
+                  store_address_chn,
+                  province,
+                  city,
+                  city_chn as city_cn,
+                  region,
+                  dl_batch_date
+             from 
+                ods.r_lgc_lcs_store_bd 
+            
+            )t2
+        where 
+           t2.store_code = t1.lego_store_code
+           and upper(t1.reviewchannel) = 'LCS';
