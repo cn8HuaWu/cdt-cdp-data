@@ -69,8 +69,8 @@ EDW:
         channel_lv1                    as channel_lv1,
         channel_lv2                    as channel_lv2,
         channel_lv3                    as channel_lv3,
-        to_char(to_date(opendate,'dd/mm/yyyy'),'yyyymmdd') as open_date,
-        replace(upd_week,'WK','13') as update_week,
+        opendate                       as open_date,
+        replace(upd_week,'WK','13')    as update_week,
         dl_batch_date                  as dl_batch_date,
         now()                          as dl_load_time
       from
