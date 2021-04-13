@@ -20,8 +20,8 @@ EDW:
      plan_versn varchar(10),
      prod_them  varchar(100),
      cnsmr_sale_amt_plan numeric(17,2),
-     ld_batch_date varchar(20),
-     ld_load_time  timestamp,
+     dl_batch_date varchar(20),
+     dl_load_time  timestamp,
      constraint pk_f_lgc_plan_lbr_net_dkk_portfolio primary key(chnnl_code,plan_year, plan_month, plan_versn,prod_them)
     )distributed by (plan_year);
 
@@ -39,8 +39,8 @@ EDW:
         cs_plan_version                      as plan_versn,
         top_theme                            as prod_them,
         consumer_sales_plan_value            as cnsmr_sale_amt_plan,
-        ld_batch_date                        as ld_batch_date,
-        now()                                as ld_load_time
+        dl_batch_date                        as dl_batch_date,
+        now()                                as dl_load_time
     from
         ods.r_lgc_plan_lbr_net_dkk_portfolio
     where
