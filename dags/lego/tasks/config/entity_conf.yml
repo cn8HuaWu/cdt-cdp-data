@@ -540,7 +540,9 @@ entities:
     update_type: f
     stg_suffix: di
     column_positions: '{
-      "B2B":{
+      "LCS":{
+      "filename":"StoreList_LCS.*","all_reg":"0,1,10,12,16,6,15,14,8,2,3,4,18,19,20,9,17,7,11,13,5"
+      },"B2B":{
       "filename":"StoreList_B2B2F.*","all_reg":"10,5,3,6,7,4,9,8,12,0,1,2,13,14,15,16,11,17,18,19,20"
       },"Collaboration":{
       "filename":"StoreList_Collaboration.*","all_reg":"3,6,5,7,8,4,10,9,12,0,1,2,13,14,15,16,11,17,18,19,20"
@@ -554,8 +556,6 @@ entities:
       "filename":"StoreList_LDC.*","all_reg":"0,1,6,7,12,2,10,9,8,3,4,5,13,14,15,16,11,17,18,19,20"
       },"TRU":{
       "filename":"StoreList_TRU.*","all_reg":"0,1,7,8,9,5,10,11,6,2,3,4,13,14,15,16,12,17,18,19,20"
-      },"LCS":{
-      "filename":"StoreList_LCS.*","all_reg":"0,1,10,12,16,6,15,14,8,2,3,4,18,19,20,9,17,7,11,13,5"
       },"LBR":{
       "filename":"StoreList_LBR.*","all_reg":"0,1,10,12,15,6,14,13,8,2,3,4,17,18,19,9,16,5,7,11,-"
       }
