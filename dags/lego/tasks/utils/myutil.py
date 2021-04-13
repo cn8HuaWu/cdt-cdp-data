@@ -533,9 +533,10 @@ class Myutil:
 
         # logging.warning("entity name: " + self.entity_name)
         # elf._entity_cfg = None
-        if not hasattr(self, "_entity_cfg") or  self._entity_cfg is None:
+        if not hasattr(self, "_entity_cfg") or  self._entity_cfg is None or self._input_file_path != input_file_path:
             self._entity_cfg = self.get_entity_config()[self.entity_name]
             self._sortlist = None
+            self._input_file_path = input_file_path
             if "column_positions" in self._entity_cfg:
                 filename_col_reg = self._entity_cfg["column_positions"]
             # filename_col_reg = '{"ABC":{"filename":"cal*","sheets": [["blc", "0,1,3,2,-"]]}}'
