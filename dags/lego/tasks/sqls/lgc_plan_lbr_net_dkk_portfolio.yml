@@ -38,7 +38,7 @@ EDW:
         cs_plan_month                        as plan_month,
         cs_plan_version                      as plan_versn,
         top_theme                            as prod_them,
-        consumer_sales_plan_value            as cnsmr_sale_amt_plan,
+        cast(consumer_sales_plan_value as numeric(17,2)) as cnsmr_sale_amt_plan,
         dl_batch_date                        as dl_batch_date,
         now()                                as dl_load_time
     from
