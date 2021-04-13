@@ -43,8 +43,8 @@ EDW:
      channel_lv3 varchar(200),
      open_date varchar(100),
      update_week varchar(100),
-     ld_batch_date varchar(100),
-     ld_load_time timestamp,
+     dl_batch_date varchar(100),
+     dl_load_time timestamp,
      constraint pk_d_lgc_phy_store primary key(review_channel,lego_store_code)
     )distributed by (review_channel);
 
