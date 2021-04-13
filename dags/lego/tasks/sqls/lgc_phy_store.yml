@@ -74,4 +74,6 @@ EDW:
         dl_batch_date                  as dl_batch_date,
         now()                          as dl_load_time
       from
-        ods.r_lgc_phy_store;
+        ods.r_lgc_phy_store
+      where  store_code is not null  
+        and  store_code in (select store_code from ods.r_lgc_phy_store group by store_code having count(*)<2);
