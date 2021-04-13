@@ -583,3 +583,6 @@ entities:
     stg_suffix: df
     key: distributor,lego_store_code
     update_type: F
+
+  md_distributor_operating:
+    dm_dependicies: md_distributor_product_sales,md_phy_store_member_orders,md_phy_store_member_orders
