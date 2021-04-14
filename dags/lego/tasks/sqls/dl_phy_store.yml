@@ -63,7 +63,7 @@ EDW:
       ls.city as city_en,
       coalesce(ls.city_cn,ps.city ) as city_cn,
       county,
-      coalesce(to_date(ls.open_date,'yyyymmdd'), ps.open_date) as open_date,
+      coalesce( case when ls.open_date ~ E'^\\d{4}-\\d{2}-\\d{2}.*' then to_date(ls.open_date,'yyyy-mm-dd')else null end, ps.open_date) as open_date,
       coalesce(ls.store_address , ps.address) as store_address,
       ls.sold_to,
       ls.ship_to,
