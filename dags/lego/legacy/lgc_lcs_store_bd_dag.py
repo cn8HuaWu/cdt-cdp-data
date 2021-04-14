@@ -117,8 +117,8 @@ preprocess_lcs_store_bd_task = PythonOperator(
     dag = dag,
 )
 
-lcs_store_bd_src2stg_task = PythonOperator(
-    task_id='lcs_store_bd_src2stg_task',
+lgc_lcs_store_bd_src2stg_task = PythonOperator(
+    task_id='lgc_lcs_store_bd_src2stg_task',
     provide_context = True,
     python_callable = load_src2stg,
     on_failure_callback = dag_failure_handler,
@@ -126,22 +126,67 @@ lcs_store_bd_src2stg_task = PythonOperator(
 )
 
 
-lcs_store_bd_stg2ods_task = PythonOperator(
-    task_id='lcs_store_bd_stg2ods_task',
+lgc_lcs_store_bd_stg2ods_task = PythonOperator(
+    task_id='lgc_lcs_store_bd_stg2ods_task',
     provide_context = True,
     python_callable = load_stg2ods,
     on_failure_callback = dag_failure_handler,
     dag=dag,
 )
 
-
-postprocess_lcs_store_bd_task = PythonOperator(
-    task_id = 'postprocess_lcs_store_bd_task',
-    provide_context = True,
-    python_callable = post_process_fileload,
-    op_kwargs = {'is_encrypted': False},
-    on_failure_callback = dag_failure_handler,
-    dag = dag,
+# create edw data task:
+edw_lgc_lcs_store_bd_create = PythonOperator(
+    task_id='edw_lgc_lcs_store_bd_create',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_lcs_store_bd",
+               'sql_section': 'create_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
 )
 
-preprocess_lcs_store_bd_task >> lcs_store_bd_src2stg_task >> lcs_store_bd_stg2ods_task >> postprocess_lcs_store_bd_task
+# delete edw data task:
+edw_lgc_lcs_store_bd_delete = PythonOperator(
+    task_id='edw_lgc_lcs_store_bd_delete',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_lcs_store_bd",
+               'sql_section': 'delete_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# insert into edw data task:
+edw_lgc_lcs_store_bd_insert = PythonOperator(
+    task_id='edw_lgc_lcs_store_bd_insert',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_lcs_store_bd",
+               'sql_section': 'insert_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# update into edw data task:
+edw_lgc_lcs_store_bd_update = PythonOperator(
+    task_id='edw_lgc_lcs_store_bd_update',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_lcs_store_bd",
+               'sql_section': 'update_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+
+postprocess_lcs_store_bd_task = PythonOperator(
+    task_id='postprocess_lcs_store_bd_task',
+    provide_context=True,
+    python_callable=post_process_fileload,
+    op_kwargs={'is_encrypted': False},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+preprocess_lcs_store_bd_task >> lgc_lcs_store_bd_src2stg_task >> lgc_lcs_store_bd_stg2ods_task >> edw_lgc_lcs_store_bd_create
+edw_lgc_lcs_store_bd_create >> edw_lgc_lcs_store_bd_insert >> edw_lgc_lcs_store_bd_insert >> edw_lgc_lcs_store_bd_update >> postprocess_lcs_store_bd_task

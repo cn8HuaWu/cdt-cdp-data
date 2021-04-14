@@ -83,10 +83,110 @@ ODS:
 
 EDW:
   create_table_query:
-    
-  
-  insert_edw_from_ods_query:
+    create table if not exists edw.f_lgc_lcs_store_bd
+    ( lego_store_code        varchar(200),
+      store_name_key         varchar(200),
+      store_name_chn         varchar(200),
+      store_name_eng         varchar(200),
+      store_address_cn       varchar(200),
+      store_address_en       varchar(200),
+      store_renvt_postfix    varchar(200),
+      customer               varchar(200),
+      city                   varchar(200),
+      city_chn               varchar(200),
+      city_map               varchar(200),
+      city_level             varchar(200),
+      city_admin_level       varchar(200),
+      city_entry_year        varchar(200),
+      region                 varchar(200),
+      province               varchar(200),
+      province_cn            varchar(200),
+      land_lord              varchar(200),
+      location_type          varchar(200),
+      status                 varchar(200),
+      open_year              varchar(200),
+      open_quarter           varchar(200),
+      open_month             varchar(200),
+      plan_open_date         varchar(200),
+      cnstrct_complt_date    varchar(200),
+      risk                   varchar(200),
+      total_operate_week     numerice(17,0),
+      tony_operate_week      numerice(17,0),
+      bd                     varchar(200),
+      pm                     varchar(200),
+      is_new_mall            varchar(200),
+      store_floor            varchar(200),
+      store_size             numerice(17,2),
+      gross_lease_area       numerice(17,2),
+      sales_area             numerice(17,2),
+      boh_area               numerice(17,2),
+      remote_storage_area    numerice(17,2),
+      wall_bays              varchar(200),
+      mosaic_image_topic     varchar(200),
+      lcp_model_topic        varchar(200),
+      cntrct_start_date      varchar(200),
+      cntrct_end_date        varchar(200),
+      prtnr_props_open_date  varchar(200),
+      dl_batch_date          varchar(20),
+      dl_load_time           timestamp
+      constraint pk_f_lgc_lcs_store_bd primary key(lego_store_code)
+    ); 
 
+  delete_edw_table_query:
+    delete from edw.f_lgc_lcs_store_bd;
+
+  insert_edw_table_query:
+    insert into edw.f_lgc_lcs_store_bd 
+    select 
+         store_code                     as lego_store_code
+        ,store_name_key                 as store_name_key
+        ,store_name_chn                 as store_name_chn
+        ,store_name_eng                 as store_name_eng
+        ,store_address_chn              as store_address_cn
+        ,store_address_eng              as store_address_en
+        ,store_renovation_postfix       as store_renvt_postfix
+        ,partner                        as customer
+        ,city                           as city
+        ,city_chn                       as city_chn
+        ,cityformap                     as city_map
+        ,city_tier                      as city_level
+        ,admin_level                    as city_admin_level
+        ,city_entry_year                as city_entry_year
+        ,region                         as region
+        ,province                       as province
+        ,province_chn                   as province_cn
+        ,landlord                       as land_lord
+        ,location_type                  as location_type
+        ,status                         as status
+        ,year                           as open_year
+        ,quarter                        as open_quarter
+        ,opening_month                  as open_month
+        ,estimated_soft_opening_date    as plan_open_date
+        ,construction_completion_date   as cnstrct_complt_date
+        ,risk                           as risk
+        ,cast(total_operating_weeks as numerice(17,0))as total_operate_week
+        ,cast(tony_operating_weeks as numerice(17,0))           as tony_operate_week
+        ,bd                             as bd
+        ,pm                             as pm
+        ,new_malls                      as is_new_mall
+        ,floor                          as store_floor
+        ,cast(store_size as numerice(17,2))  as store_size
+        ,cast(gross_lease_area as numerice(17,2))     as gross_lease_area
+        ,cast(sales_area as numerice(17,2))           as sales_area
+        ,cast(boh_area as numerice(17,2))             as boh_area
+        ,cast(remote_storage_area  as numerice(17,2)) as remote_storage_area
+        ,wall_bays                      as wall_bays
+        ,topic_of_mosaic_image          as mosaic_image_topic
+        ,lcp_model_topic                as lcp_model_topic
+        ,contract_start_date            as cntrct_start_date
+        ,contract_end_date              as cntrct_end_date
+        ,partner_proposed_open_date     as prtnr_props_open_date
+        ,dl_batch_date                  as dl_batch_date
+        ,now()                          as dl_load_time
+    from
+        ods.r_lgc_lcs_store_bd
+    where store_code  is not null;
+        
   update_edw_table_query:
     update edw.d_lgc_phy_store t1 
     set store_name = case when t2.store_name_chn is null then t1.store_name else  t2.store_name_chn  end,
