@@ -67,6 +67,8 @@ Staging:
     rent_3rd_year text,
     rent_4th_year text,
     rent_5th_year text,
+    extra_col1 text,
+    extra_col2 text,
     reduce_point_1st_year text,
     reduce_point_2nd_year text,
     reduce_point_3rd_year text,
