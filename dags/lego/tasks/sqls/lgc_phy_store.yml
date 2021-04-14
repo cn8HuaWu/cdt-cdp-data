@@ -87,7 +87,6 @@ EDW:
         city = case when t2.city is null then t1.city else  t2.city end,
         city_cn = case when t2.city_chn is null then t1.city_cn else  t2.city_chn end, 
         region = case when t2.region is null then t1.region else  t2.region end
-    
         from
             (select distinct 
                   store_code , 
@@ -96,7 +95,7 @@ EDW:
                   store_address_chn,
                   province,
                   city,
-                  city_chn as city_cn,
+                  city_chn,
                   region,
                   dl_batch_date
              from 
@@ -105,4 +104,4 @@ EDW:
             )t2
         where 
            t2.store_code = t1.lego_store_code
-           and upper(t1.reviewchannel) = 'LCS';
+           and upper(t1.review_channel) = 'LCS';
