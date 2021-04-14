@@ -84,7 +84,7 @@ Staging:
 ODS:
 
 EDW:
-  create_table_query:
+  create_edw_table_query:
     create table if not exists edw.f_lgc_lcs_store_bd
     ( lego_store_code        varchar(200),
       store_name_key         varchar(200),
