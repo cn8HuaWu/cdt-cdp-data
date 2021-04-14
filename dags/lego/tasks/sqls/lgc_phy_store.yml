@@ -48,10 +48,9 @@ EDW:
      constraint pk_d_lgc_phy_store primary key(review_channel,lego_store_code)
     )distributed by (review_channel);
 
-  delete_edw_table_query:
-    truncate edw.d_lgc_phy_store;
 
   insert_edw_table_query:
+    delete from edw.d_lgc_phy_store;
     insert into edw.d_lgc_phy_store
       select
         sold_to                        as sold_to,
@@ -87,7 +86,6 @@ EDW:
         city = case when t2.city is null then t1.city else  t2.city end,
         city_cn = case when t2.city_chn is null then t1.city_cn else  t2.city_chn end, 
         region = case when t2.region is null then t1.region else  t2.region end
-    
         from
             (select distinct 
                   store_code , 
@@ -96,7 +94,7 @@ EDW:
                   store_address_chn,
                   province,
                   city,
-                  city_chn as city_cn,
+                  city_chn,
                   region,
                   dl_batch_date
              from 
@@ -105,4 +103,4 @@ EDW:
             )t2
         where 
            t2.store_code = t1.lego_store_code
-           and upper(t1.reviewchannel) = 'LCS';
+           and upper(t1.review_channel) = 'LCS';
