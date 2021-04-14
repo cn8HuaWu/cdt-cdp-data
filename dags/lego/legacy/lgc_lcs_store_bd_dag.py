@@ -189,6 +189,5 @@ postprocess_lcs_store_bd_task = PythonOperator(
     dag=dag,
 )
 
-
 preprocess_lcs_store_bd_task >> lgc_lcs_store_bd_src2stg_task >> lgc_lcs_store_bd_stg2ods_task >> edw_lgc_lcs_store_bd_create
 edw_lgc_lcs_store_bd_create >> edw_lgc_lcs_store_bd_delete >> edw_lgc_lcs_store_bd_insert >> edw_lgc_lcs_store_bd_update >> postprocess_lcs_store_bd_task
