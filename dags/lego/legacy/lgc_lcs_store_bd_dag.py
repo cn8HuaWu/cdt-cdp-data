@@ -28,7 +28,7 @@ src_entity = 'lgc_lcs_store_bd'
 DAG_NAME = 'lgc_lcs_store_bd_dag'
 
 sheet ={
-"Sheet1":{
+"4.Database":{
     'start_colum':0,
     'column_width':78
 }
