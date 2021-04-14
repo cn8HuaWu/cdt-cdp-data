@@ -270,7 +270,7 @@ EDW:
                 when date_part('day', now() -  least(cn_jd_b2b_launch_date,cn_jd_pop_launch_date) ) <= 270 then 'N6-9'
                 when date_part('day', now() -  least(cn_jd_b2b_launch_date,cn_jd_pop_launch_date) ) > 270 then 'N9-12'
                 else null end
-        where product_status='Novelty';
+        where product_status='N';
 
   update_product_sales_category:
     update edw.d_dl_product_info
@@ -287,11 +287,11 @@ EDW:
   update_product_status:
     update edw.d_dl_product_info
       set product_status = case 
-        when bu_cn_delete_date is null  or extract( year from bu_cn_delete_date) < year_version::int then 'Deleted'
-        when extract( year from bu_cn_launch_date) < year_version::int and extract( year from bu_cn_delete_date) = year_version::int then 'Outgoing'
-        when extract( year from bu_cn_launch_date) < year_version::int and extract( year from bu_cn_delete_date) > year_version::int then 'CarryOver'
-        when extract( year from bu_cn_launch_date) = year_version::int and extract( year from bu_cn_delete_date) = year_version::int then 'Provisional'
-          when extract( year from bu_cn_launch_date) = year_version::int and extract( year from bu_cn_delete_date) > year_version::int then 'Novelty'
+        when bu_cn_delete_date is null  or extract( year from bu_cn_delete_date) < year_version::int then 'D'
+        when extract( year from bu_cn_launch_date) < year_version::int and extract( year from bu_cn_delete_date) = year_version::int then 'O'
+        when extract( year from bu_cn_launch_date) < year_version::int and extract( year from bu_cn_delete_date) > year_version::int then 'C'
+        when extract( year from bu_cn_launch_date) = year_version::int and extract( year from bu_cn_delete_date) = year_version::int then 'P'
+          when extract( year from bu_cn_launch_date) = year_version::int and extract( year from bu_cn_delete_date) > year_version::int then 'N'
           else null end
 
   sync_to_rds_dm:
