@@ -34,9 +34,10 @@ entity = 'cs_weekly_phasing'
 src_entity = 'lgc_cs_weekly_phasing'
 DAG_NAME = 'lgc_cs_weekly_phasing_dag'
 
+
 sheet ={
 "Sheet1":{
-    'start_colum':0,
+    'start_column':0,
     'column_width':13
 }
 }

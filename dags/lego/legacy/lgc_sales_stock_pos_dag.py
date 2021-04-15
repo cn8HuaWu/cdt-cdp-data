@@ -28,7 +28,7 @@ DAG_NAME = 'lgc_sales_stock_pos_dag'
 
 sheet ={
 "Sheet1":{
-    'start_colum':0,
+    'start_column':0,
     'column_width':6
 }
 }

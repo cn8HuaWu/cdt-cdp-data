@@ -28,10 +28,11 @@ src_entity = 'lgc_sales_stock_nip_dkk'
 DAG_NAME = 'lgc_sales_stock_nip_dkk_dag'
 sheet ={
 "Sheet1":{
-    'start_colum':0,
+    'start_column':0,
     'column_width':10
 }
 }
+
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
 entity_conf = myutil.get_entity_config()
