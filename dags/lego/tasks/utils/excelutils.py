@@ -5,8 +5,8 @@
 #   if not , then add a random suffix to the output filename
 # {output_format} target file format, default is CSV file
 # {simple_mode}, default is true, read the 1st or specified sheet and convert the whole sheet to {output_format} file
-# {read_all}, it works only when simple_mode=True, then read all the sheets and ignore {sheet_name} param 
-# {keep_header} default it's True. 
+# {read_all}, it works only when simple_mode=True, then read all the sheets and ignore {sheet_name} param
+# {keep_header} default it's True.
 # {header}, default it's 0, means no header. if header>1, 1st row is header for each sheet.
 # {sheet_name}, it works only {when} simple_mode = True. Then only read the specified sheet
 # {merge}, merge the data in all {she}ets into a file or not, default is True
@@ -44,9 +44,9 @@ class ExcelConverter:
     def __init__(self, keep_empty = False) -> None:
         self.convertion_func_list = []
         self.keep_empty =  keep_empty
-    
+
         if not self.keep_empty:
-           self.convertion_func_list.append(filter_empty_row) 
+           self.convertion_func_list.append(filter_empty_row)
 
 
     def register_fun_list(self, fn_list):
@@ -61,8 +61,8 @@ class ExcelConverter:
     def clear_convertion_fun(self):
         self.convertion_func_list.clear()
         if not self.keep_empty:
-           self.convertion_func_list.append(filter_empty_row) 
-    
+           self.convertion_func_list.append(filter_empty_row)
+
     def convert_xls2csv(self, input_path,
                         output_path = None,
                         output_filename = None,
@@ -77,14 +77,14 @@ class ExcelConverter:
                         merge= True,
                         **sheets_param):
         input_path = os.path.abspath(input_path)
-        input_absoult_dir, input_ext = os.path.splitext(input_path)                     
+        input_absoult_dir, input_ext = os.path.splitext(input_path)
         if not os.path.exists(input_path)\
                 or input_ext not in (".xls", ".xlsx"):
             raise FileNotFoundError("Input excel file does not exists: " + input_path)
-        
+
         if not simple_mode and (sheets_param is None or len(sheets_param) == 0):
             raise ValueError("Invalid parameter: simple_mode = False and sheets_params is none")
-        
+
         file_format_parameters = sheets_param["_format_parameters"] if "_format_parameters" in sheets_param else None
         if file_format_parameters is not None and  type(file_format_parameters) is not dict:
             raise ValueError("format_parameters must be dict")
@@ -94,15 +94,15 @@ class ExcelConverter:
                 if not callable(fn):
                     raise ValueError("convertion_func_list must be callable")
 
-        output_path_dir =  output_path if output_path is not None else os.path.dirname(input_absoult_dir) 
+        output_path_dir =  output_path if output_path is not None else os.path.dirname(input_absoult_dir)
         if not os.path.isdir(output_path_dir):
             os.makedirs(output_path_dir)
-        
-        base_filename = output_filename if output_filename is not None else os.path.basename(input_absoult_dir) 
+
+        base_filename = output_filename if output_filename is not None else os.path.basename(input_absoult_dir)
         output_abs_basename = os.path.join(output_path_dir, base_filename)
 
         wb = openpyxl.load_workbook(input_path, data_only=True, read_only=True)
-        # 整理需要处理的sheets 
+        # 整理需要处理的sheets
         if simple_mode and read_all:
             sheets_name_list = wb.sheetnames
         elif not simple_mode and sheets_param is not None:
@@ -127,7 +127,7 @@ class ExcelConverter:
         if not overwrite and not flag_target_path_ready:
             raise FileExistsError("Output file pathe exists: " + output_abs_filename)
 
-        # 读取excel， 并转换成csv   
+        # 读取excel， 并转换成csv
         if merge or len(sheets_name_list) <= 1:
             output_abs_filename = output_abs_basename + "." + output_format
         else:
@@ -146,26 +146,26 @@ class ExcelConverter:
             read_param = dict()
             start_row = 0
             # if simple_mode and len(sheets_name_list) > 1:
-            if merge: 
+            if merge:
                 if keep_header and sheet_count == 0:
                     #合并多个sheet 且保留header， 只有sheet1, 保留header
                     start_row =  0  if sheet_count > 1  and header >= 0 else header
-                else: 
+                else:
                     #合并多个sheet 且不保留header或第二sheet， 所有sheet不保留header
                     start_row =  header if header >= 0 else 0
             else:
                 if keep_header:
                     #不合并多个sheet且保留header， 全部保留header
-                    start_row =  header if header >= 0 else 0 
-                else: 
+                    start_row =  header if header >= 0 else 0
+                else:
                     #不合并多个sheet且不保留header， 所有sheet不保留header
                     start_row =  header+1 if header >= 0 else 0
 
-                read_param["start_row"] = start_row
-                sheets_param[sheet] = read_param
+            read_param["start_row"] = start_row
+            sheets_param[sheet].update(read_param)
 
             sheet_count += 1
-            
+
             if self.convertion_func_list is None:
                 for row in self.read_sheet(wb[sheet], sheet, **sheets_param):
                     # 如果要支持其他文件格式， 则需要重装对应文件的writer，使其支持 writerow(iteror)
@@ -180,14 +180,14 @@ class ExcelConverter:
                     if newline is None:
                         continue
                     # 如果要支持其他文件格式， 则需要重装对应文件的writer，使其支持 writerow(iteror)
-                    
+
                     fdwriter.writerow( newline )
 
             if not merge:
                 fd.flush()
                 fd.close()
         else:
-            try: 
+            try:
                 fd.flush()
                 fd.close()
             except:
@@ -226,7 +226,7 @@ class ExcelConverter:
                 continue
             if offset + ignore_end_row > row_count:
                 break
-        
+
             yield  row[start_column: end_column]
             offset += 1
 
@@ -243,22 +243,22 @@ class ExcelConverter:
             skipinitialspace = file_format_parameters["skipinitialspace"]  if file_format_parameters is not None and  "skipinitialspace" in file_format_parameters else False
             strict = file_format_parameters["strict"]  if file_format_parameters is not None and  "strict" in file_format_parameters else False
 
-            csv.register_dialect('excel2csv', 
-                delimiter=delimiter , 
+            csv.register_dialect('excel2csv',
+                delimiter=delimiter ,
                 doublequote = doublequote,
                 escapechar = escapechar,
                 lineterminator = lineterminator,
                 quotechar = quotechar,
-                quoting=quoting, 
+                quoting=quoting,
                 skipinitialspace = skipinitialspace,
                 strict = strict
             )
             csvf = open( output_abs_path,'w', encoding=encoding, newline='')
-            spanwriter=csv.writer(csvf, dialect='excel2csv')  
+            spanwriter=csv.writer(csvf, dialect='excel2csv')
             return (csvf, spanwriter)
 
 
-from datetime import datetime 
+from datetime import datetime
 if __name__ == "__main__":
     pass
 ###############################################################
@@ -291,11 +291,11 @@ if __name__ == "__main__":
     # print("start to converting")
     # start_time = datetime.now()
     # print(start_time)
-    # convert_xls2csv(r"C:\workspace\project\LEGO\code\CDP-CR\POC\calendar.xlsx", 
-    #     overwrite = True, 
+    # convert_xls2csv(r"C:\workspace\project\LEGO\code\CDP-CR\POC\calendar.xlsx",
+    #     overwrite = True,
     #     simple_mode=False,
-    #     header=1, 
-    #     read_all= True, 
+    #     header=1,
+    #     read_all= True,
     #     merge=False,
     #     **sheet)
     # print(datetime.now() - start_time )
@@ -303,11 +303,11 @@ if __name__ == "__main__":
     # print("start to converting")
     # start_time = datetime.now()
     # print(start_time)
-    # convert_xls2csv(r"C:\workspace\project\LEGO\code\CDP-CR\POC\calendar.xlsx", 
-    #     overwrite = True, 
+    # convert_xls2csv(r"C:\workspace\project\LEGO\code\CDP-CR\POC\calendar.xlsx",
+    #     overwrite = True,
     #     simple_mode=False,
-    #     header=1, 
-    #     read_all= True, 
+    #     header=1,
+    #     read_all= True,
     #     merge=True,
     #     **sheet)
     # print(datetime.now() - start_time )
@@ -315,11 +315,11 @@ if __name__ == "__main__":
     # print("start to converting")
     # start_time = datetime.now()
     # print(start_time)
-    # convert_xls2csv(r"C:\workspace\project\LEGO\code\CDP-CR\POC\calendar.xlsx", 
-    #     overwrite = True, 
+    # convert_xls2csv(r"C:\workspace\project\LEGO\code\CDP-CR\POC\calendar.xlsx",
+    #     overwrite = True,
     #     simple_mode=False,
-    #     header=1, 
-    #     read_all= True, 
+    #     header=1,
+    #     read_all= True,
     #     merge=True,
     #     **sheet)
     # print(datetime.now() - start_time )
@@ -351,11 +351,11 @@ if __name__ == "__main__":
     # start_time = datetime.now()
     # print(start_time)
     # excle2csv = ExcelConverter()
-    # excle2csv.convert_xls2csv(r"C:\workspace\project\LEGO\code\CDP-CR\POC\calendar.xlsx", 
-    #     overwrite = True, 
+    # excle2csv.convert_xls2csv(r"C:\workspace\project\LEGO\code\CDP-CR\POC\calendar.xlsx",
+    #     overwrite = True,
     #     simple_mode=False,
-    #     header=1, 
-    #     read_all= True, 
+    #     header=1,
+    #     read_all= True,
     #     merge=True,
     #     **sheet)
     # print(datetime.now() - start_time )
