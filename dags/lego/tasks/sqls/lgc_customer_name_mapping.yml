@@ -10,9 +10,9 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_cust_name_map
-    (cust_name_temp varcahr(100),
-     cust_name_new varcahr(100),
-     ld_batch_date varcahr(20),
+    (cust_name_temp varchar(100),
+     cust_name_new varchar(100),
+     ld_batch_date varchar(20),
      ld_load_time timestamp,
      constraint pk_f_lgc_cust_name_map primary key(cust_name_temp, cust_name_new)
     )distributed by (cust_name_temp);
