@@ -125,19 +125,19 @@ preprocess_customer_name_mapping_task = PythonOperator(
     dag = dag,
 )
 
-customer_name_mapping_src2stg_task = PythonOperator(
-    task_id='customer_name_mapping_src2stg_task',
+lgc_customer_name_mapping_src2stg_task = PythonOperator(
+    task_id='lgc_customer_name_mapping_src2stg_task',
     provide_context = True,
     python_callable = load_src2stg,
     on_failure_callback = dag_failure_handler,
     dag=dag,
 )
 
-customer_name_mapping_ods2edw_task = PythonOperator(
-    task_id='customer_name_mapping_ods2edw_task',
-    provide_context=True,
-    python_callable=load_ods2edw,
-    on_failure_callback=dag_failure_handler,
+lgc_customer_name_mapping_stg2ods_task = PythonOperator(
+    task_id='lgc_customer_name_mapping_stg2ods_task',
+    provide_context = True,
+    python_callable = load_stg2ods,
+    on_failure_callback = dag_failure_handler,
     dag=dag,
 )
 
@@ -186,5 +186,5 @@ postprocess_customer_name_mapping_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_customer_name_mapping_task >> customer_name_mapping_src2stg_task >> customer_name_mapping_stg2ods_task >> edw_lgc_customer_name_map_create
+preprocess_customer_name_mapping_task >> lgc_customer_name_mapping_src2stg_task >> lgc_customer_name_mapping_stg2ods_task >> edw_lgc_customer_name_map_create
 edw_lgc_customer_name_map_create >> edw_lgc_customer_name_map_delete >> edw_lgc_customer_name_map_insert >> postprocess_customer_name_mapping_task
