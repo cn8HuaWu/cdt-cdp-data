@@ -12,13 +12,13 @@ EDW:
     create table if not exists edw.f_lgc_cust_name_map
     (cust_name_temp varchar(100),
      cust_name_new varchar(100),
-     ld_batch_date varchar(20),
-     ld_load_time timestamp,
+     dl_batch_date varchar(20),
+     dl_load_time timestamp,
      constraint pk_f_lgc_cust_name_map primary key(cust_name_temp, cust_name_new)
     )distributed by (cust_name_temp);
 
   delete_edw_table_query:
-    delete from edw.ods.r_lgc_customer_name_mapping;
+    delete from edw.f_lgc_cust_name_map;
 
   insert_edw_table_query:
     insert into edw.f_lgc_cust_name_map
