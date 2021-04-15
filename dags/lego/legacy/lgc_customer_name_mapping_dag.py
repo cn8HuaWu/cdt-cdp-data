@@ -139,13 +139,40 @@ customer_name_mapping_ods2edw_task = PythonOperator(
     dag=dag,
 )
 
-customer_name_mapping_stg2ods_task = PythonOperator(
-    task_id='customer_name_mapping_stg2ods_task',
-    provide_context = True,
-    python_callable = load_stg2ods,
-    on_failure_callback = dag_failure_handler,
+
+# create edw data task:
+edw_lgc_customer_name_map_create = PythonOperator(
+    task_id='edw_lgc_customer_name_map_create',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_customer_name_mapping",
+               'sql_section': 'create_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
     dag=dag,
 )
+
+# delete edw data task:
+edw_lgc_customer_name_map_delete = PythonOperator(
+    task_id='edw_lgc_customer_name_map_delete',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_customer_name_mapping",
+               'sql_section': 'delete_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
+# insert into edw data task:
+edw_lgc_customer_name_map_insert = PythonOperator(
+    task_id='edw_lgc_customer_name_map_insert',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_customer_name_mapping",
+               'sql_section': 'insert_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
 
 
 postprocess_customer_name_mapping_task = PythonOperator(
@@ -157,4 +184,5 @@ postprocess_customer_name_mapping_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_customer_name_mapping_task >> customer_name_mapping_src2stg_task >> customer_name_mapping_stg2ods_task >> customer_name_mapping_ods2edw_task >> postprocess_customer_name_mapping_task
+preprocess_customer_name_mapping_task >> customer_name_mapping_src2stg_task >> customer_name_mapping_stg2ods_task >> edw_lgc_customer_name_map_create
+edw_lgc_customer_name_map_create >> edw_lgc_customer_name_map_delete >> edw_lgc_customer_name_map_insert >> postprocess_customer_name_mapping_task
