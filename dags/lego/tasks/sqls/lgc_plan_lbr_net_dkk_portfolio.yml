@@ -38,14 +38,14 @@ EDW:
         cs_plan_month                        as plan_month,
         cs_plan_version                      as plan_versn,
         top_theme                            as prod_them,
-        cast(consumer_sales_plan_value as numeric(17,2)) as cnsmr_sale_amt_plan,
+       cast(consumer_sales_plan_value as numeric(17,2)) as cnsmr_sale_amt_plan,
         dl_batch_date                        as dl_batch_date,
         now()                                as dl_load_time
     from
         ods.r_lgc_plan_lbr_net_dkk_portfolio
     where
-        channel_name is not null
-        and calendar_year is not null 
-        and cs_plan_month is not null
-        and cs_plan_version is not null 
-        and top_theme is not null;
+        (channel_name is not null and channel_name <>'')
+        and (calendar_year is not null and calendar_year <>'')
+        and (cs_plan_month is not null and cs_plan_month <>'')
+        and (cs_plan_version is not null and cs_plan_version <>'')
+        and (top_theme is not null and top_theme <>'');
