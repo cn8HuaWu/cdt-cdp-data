@@ -132,6 +132,16 @@ store_closure_list_src2stg_task = PythonOperator(
     dag=dag,
 )
 
+
+store_closure_list_stg2ods_task = PythonOperator(
+    task_id='store_closure_list_stg2ods_task',
+    provide_context = True,
+    python_callable = load_stg2ods,
+    on_failure_callback = dag_failure_handler,
+    dag=dag,
+)
+
+
 # create edw data task:
 edw_lgc_store_close_list_create = PythonOperator(
     task_id='edw_lgc_store_close_list_create',
