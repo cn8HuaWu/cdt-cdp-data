@@ -80,7 +80,7 @@ sheet ={
 "Floating_DP012":{
     'start_column': 0,
     'column_width': 13
-},
+}
 }
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
