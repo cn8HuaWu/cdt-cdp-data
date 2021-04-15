@@ -26,7 +26,7 @@ TEMP_FOLDER='Temp'
 entity = 'plan_nip_dkk'
 src_entity = 'lgc_plan_nip_dkk'
 DAG_NAME = 'lgc_plan_nip_dkk_dag'
-src_file_sheet_name = ['Fixed_DP02','Floating_DP01','Floating_DP02','Floating_DP03','Floating_DP04','Floating_DP05','Floating_DP06','Floating_DP07','Floating_DP08','Floating_DP09','Floating_DP10','Floating_DP11','Floating_DP12']
+sheets_param = ['Fixed_DP02','Floating_DP01','Floating_DP02','Floating_DP03','Floating_DP04','Floating_DP05','Floating_DP06','Floating_DP07','Floating_DP08','Floating_DP09','Floating_DP10','Floating_DP11','Floating_DP12']
 
 sheet ={
 "Fixed_DP02":{
@@ -127,7 +127,7 @@ def load_src2stg(**kwargs):
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     excel_fun_list = [myutil.rearrange_columns]
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname = src_file_sheet_name, merge = True,**sheet)
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname = src_file_sheet_name, merge = True, **sheets_param, **sheet)
     src2stg.start(version='v2')
 
 def load_stg2ods(**kwargs):
