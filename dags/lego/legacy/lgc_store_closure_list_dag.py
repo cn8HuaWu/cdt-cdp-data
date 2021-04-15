@@ -96,14 +96,6 @@ def load_stg2ods(**kwargs):
     stg2ods.start()
 
 
-def load_ods2edw(**kwargs):
-    batch_date = kwargs.get('dag_run').conf.get('batch_date')
-    pkey = entity_conf[src_entity]["key"]
-    table_prefix = entity_conf[src_entity]["edw_prefix"]
-    update_type = entity_conf[src_entity]["update_type"]
-    ods2edw = Ods2edwHandler(batch_date, SRC_NAME, entity, pkey, table_prefix, myutil, db)
-    ods2edw.start()
-
 
 args = {
     'owner': 'cdp_admin',
@@ -139,21 +131,39 @@ store_closure_list_src2stg_task = PythonOperator(
     dag=dag,
 )
 
-store_closure_list_stg2ods_task = PythonOperator(
-    task_id='store_closure_list_stg2ods_task',
+# create edw data task:
+edw_lgc_store_close_list_create = PythonOperator(
+    task_id='edw_lgc_store_close_list_create',
     provide_context=True,
-    python_callable=load_stg2ods,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_store_closure_list",
+               'sql_section': 'create_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
 
-store_closure_list_ods2edw_task = PythonOperator(
-    task_id='store_closure_list_ods2edw_task',
+# delete edw data task:
+edw_lgc_store_close_list_delete = PythonOperator(
+    task_id='edw_lgc_store_close_list_delete',
     provide_context=True,
-    python_callable=load_ods2edw,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_store_closure_list",
+               'sql_section': 'delete_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
+
+# insert into edw data task:
+edw_lgc_store_close_list_insert = PythonOperator(
+    task_id='edw_lgc_store_close_list_insert',
+    provide_context=True,
+    python_callable=update_downstream,
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_store_closure_list",
+               'sql_section': 'insert_edw_table_query', 'args': args},
+    on_failure_callback=dag_failure_handler,
+    dag=dag,
+)
+
 
 postprocess_store_closure_list_task = PythonOperator(
     task_id='postprocess_store_closure_list_task',
@@ -164,5 +174,5 @@ postprocess_store_closure_list_task = PythonOperator(
     dag=dag,
 )
 
-preprocess_store_closure_list_task >> store_closure_list_src2stg_task >> store_closure_list_stg2ods_task >> store_closure_list_ods2edw_task
-store_closure_list_ods2edw_task >> postprocess_store_closure_list_task
+preprocess_store_closure_list_task >> store_closure_list_src2stg_task >> store_closure_list_stg2ods_task >> edw_lgc_store_close_list_create
+edw_lgc_store_close_list_create >> edw_lgc_store_close_list_delete >> edw_lgc_store_close_list_insert >> postprocess_store_closure_list_task
