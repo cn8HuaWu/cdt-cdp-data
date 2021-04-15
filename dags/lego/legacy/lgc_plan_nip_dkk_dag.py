@@ -224,5 +224,6 @@ postprocess_plan_nip_dkk_task = PythonOperator(
     dag = dag,
 )
 
+
 preprocess_plan_nip_dkk_task >> plan_nip_dkk_src2stg_task >> plan_nip_dkk_stg2ods_task >> edw_lgc_plan_nip_dkk_create
 edw_lgc_plan_nip_dkk_create >> edw_lgc_plan_nip_dkk_delete >> edw_lgc_plan_nip_dkk_insert >> postprocess_plan_nip_dkk_task
