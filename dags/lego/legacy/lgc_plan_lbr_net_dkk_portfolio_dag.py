@@ -29,7 +29,7 @@ DAG_NAME = 'lgc_plan_lbr_net_dkk_portfolio_dag'
 
 sheet ={
 "Sheet1":{
-    'start_colum':0,
+    'start_column':0,
     'column_width':7
 }
 }

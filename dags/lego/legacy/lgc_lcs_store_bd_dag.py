@@ -29,7 +29,7 @@ DAG_NAME = 'lgc_lcs_store_bd_dag'
 
 sheet ={
 "Database":{
-    'start_colum':0,
+    'start_column':0,
     'column_width':80
 }
 }

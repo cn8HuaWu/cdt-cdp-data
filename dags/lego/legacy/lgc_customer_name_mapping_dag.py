@@ -30,7 +30,7 @@ DAG_NAME = 'lgc_customer_name_mapping_dag'
 
 sheet ={
 "Sheet1":{
-    'start_colum':0,
+    'start_column':0,
     'column_width':2
 }
 }
