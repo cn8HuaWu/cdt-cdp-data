@@ -44,4 +44,8 @@ EDW:
     from
         ods.r_lgc_plan_lbr_net_dkk_portfolio
     where
-        channel_name is not null;
+        channel_name is not null
+        and plan_year is not null 
+        and plan_month is not null
+        and plan_versn is not null 
+        and prod_them is not null;
