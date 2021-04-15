@@ -571,6 +571,12 @@ class Myutil:
             # new_row = list(filter(lambda x: x is not None, new_row))
             return new_row
 
+    def remove_linebreak(self, row:list, *args):
+        if row is None:
+            return row
+        return  [ v.replace("\r","").replace("\n","") if v is not None and str(v).strip(" ")!='' else  v for v in row]
+
+
     def send_failure_mail(self):
         pass
 
