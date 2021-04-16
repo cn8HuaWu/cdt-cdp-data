@@ -48,34 +48,59 @@ EDW:
      constraint pk_d_lgc_phy_store primary key(review_channel,lego_store_code)
     )distributed by (review_channel);
 
-
-  insert_edw_table_query:
+  delete_edw_table_query:
     delete from edw.d_lgc_phy_store;
+    
+  insert_edw_table_query:
     insert into edw.d_lgc_phy_store
-      select
-        sold_to                        as sold_to,
-        ship_to                        as ship_to,
-        trad_id                        as trad_id,
-        store_code                     as lego_store_code,
-        store_name                     as store_name,
-        reviewchannel                  as review_channel,
-        customer                       as customer,
-        store_address                  as store_address,
-        province                       as province,
-        city                           as city,
-        citycn                         as city_cn,
-        region                         as region,
-        channel_lv1                    as channel_lv1,
-        channel_lv2                    as channel_lv2,
-        channel_lv3                    as channel_lv3,
-        opendate                       as open_date,
-        replace(upd_week,'WK','13')    as update_week,
-        dl_batch_date                  as dl_batch_date,
-        now()                          as dl_load_time
-      from
-        ods.r_lgc_phy_store
-      where  store_code is not null  
-        and  store_code in (select store_code from ods.r_lgc_phy_store group by store_code having count(*)<2);
+    select
+        sold_to,
+        ship_to,
+        trad_id,
+        lego_store_code,
+        store_name,
+        review_channel,
+        customer,
+        store_address,
+        province,
+        city,
+        city_cn,
+        region,
+        channel_lv1,
+        channel_lv2,
+        channel_lv3,
+        open_date,
+        update_week,
+        dl_batch_date,
+        dl_load_time
+    from 
+       (select
+            sold_to                        as sold_to,
+            ship_to                        as ship_to,
+            trad_id                        as trad_id,
+            store_code                     as lego_store_code,
+            store_name                     as store_name,
+            reviewchannel                  as review_channel,
+            customer                       as customer,
+            store_address                  as store_address,
+            province                       as province,
+            city                           as city,
+            citycn                         as city_cn,
+            region                         as region,
+            channel_lv1                    as channel_lv1,
+            channel_lv2                    as channel_lv2,
+            channel_lv3                    as channel_lv3,
+            opendate                       as open_date,
+            replace(upd_week,'WK','13')    as update_week,
+            dl_batch_date                  as dl_batch_date,
+            now()                          as dl_load_time,
+            row_number()over(partition by store_code order by opendate desc,upd_week desc) as row_num 
+            
+          from
+            ods.r_lgc_phy_store
+          where  store_code is not null  
+         )tt 
+        where row_num =1 ;
 
   update_edw_table_query:
     update edw.d_lgc_phy_store t1 
