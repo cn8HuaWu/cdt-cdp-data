@@ -34,7 +34,6 @@ sheet ={
 }
 }
 
-
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
 entity_conf = myutil.get_entity_config()
