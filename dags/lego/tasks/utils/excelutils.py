@@ -149,21 +149,23 @@ class ExcelConverter:
             if merge:
                 if keep_header and sheet_count == 0:
                     #合并多个sheet 且保留header， 只有sheet1, 保留header
-                    start_row =  0  if sheet_count > 1  and header >= 0 else header
+                    start_row =  header 
                 else:
                     #合并多个sheet 且不保留header或第二sheet， 所有sheet不保留header
-                    start_row =  header if header >= 0 else 0
+                    start_row =  header+1
             else:
                 if keep_header:
                     #不合并多个sheet且保留header， 全部保留header
-                    start_row =  header if header >= 0 else 0
+                    start_row =  header
                 else:
                     #不合并多个sheet且不保留header， 所有sheet不保留header
-                    start_row =  header+1 if header >= 0 else 0
+                    start_row =  header+1
 
             read_param["start_row"] = start_row
-            sheets_param[sheet].update(read_param)
-
+            if sheet in sheets_param:
+                sheets_param[sheet].update(read_param)
+            else:
+                sheets_param[sheet] = read_param
             sheet_count += 1
 
             if self.convertion_func_list is None:
