@@ -28,7 +28,7 @@ src_entity = 'lgc_plan_lbr_net_dkk_portfolio'
 DAG_NAME = 'lgc_plan_lbr_net_dkk_portfolio_dag'
 
 sheet ={
-"Sheet1":{
+"sheet1":{
     'start_column':0,
     'column_width':7
 }
