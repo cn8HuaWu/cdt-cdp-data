@@ -1,6 +1,7 @@
 EDW:
   create_table_query:
     create table edw.d_dl_phy_store(
+      review_channel varchar(100) NULL,
       distributor varchar(255)  NULL,
       lego_store_code varchar(255)  NULL,
       distributor_store_code varchar(255)  NULL,
@@ -16,7 +17,6 @@ EDW:
       sold_to varchar(100) NULL,
       ship_to varchar(100) NULL,
       trad_id varchar(100) NULL,
-      review_channel varchar(100) NULL,
       channel_lv1 varchar(100) NULL,
       channel_lv2 varchar(100) NULL,
       channel_lv3 varchar(100) NULL,
@@ -30,6 +30,7 @@ EDW:
     truncate table edw.d_dl_phy_store;
     insert into edw.d_dl_phy_store(
       distributor,
+      review_channel,
       lego_store_code,
       distributor_store_code,
       store_name,
@@ -44,7 +45,6 @@ EDW:
       sold_to,
       ship_to,
       trad_id,
-      review_channel,
       channel_lv1,
       channel_lv2,
       channel_lv3,
@@ -54,6 +54,7 @@ EDW:
     )
     select
       coalesce(ls.new_customer, ps.distributor) as  distributor,
+      ls.review_channel,
       coalesce(ls.lego_store_code, ps.lego_store_code) as lego_store_code,
       ps.distributor_store_code,
       coalesce(ls.store_name, ps.store_name) as store_name,
@@ -68,7 +69,6 @@ EDW:
       ls.sold_to,
       ls.ship_to,
       ls.trad_id,
-      ls.review_channel,
       ls.channel_lv1,
       ls.channel_lv2,
       ls.channel_lv3,
