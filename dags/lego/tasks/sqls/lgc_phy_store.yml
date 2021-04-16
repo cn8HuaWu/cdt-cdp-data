@@ -98,6 +98,7 @@ EDW:
           from
             ods.r_lgc_phy_store
           where  store_code is not null  
+            and ReviewChannel <>'ReviewChannel'
          )tt 
         where row_num =1 ;
 
