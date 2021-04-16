@@ -130,8 +130,7 @@ EDW:
     cntrct_end_date        varchar(200),
     prtnr_props_open_date  varchar(200),
     dl_batch_date          varchar(20),
-    dl_load_time           timestamp,
-    constraint pk_f_lgc_lcs_store_bd primary key(lego_store_code)
+    dl_load_time           timestamp
     ); 
 
   delete_edw_table_query:
