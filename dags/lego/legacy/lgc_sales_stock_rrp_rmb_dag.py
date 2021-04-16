@@ -30,7 +30,7 @@ DAG_NAME = 'lgc_sales_stock_rrp_rmb_dag'
 sheet ={
 "Sheet1":{
     'start_column':0,
-    'column_width':11
+    'column_width':12
 }
 }
 
