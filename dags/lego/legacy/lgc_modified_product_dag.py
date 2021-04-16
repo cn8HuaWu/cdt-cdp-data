@@ -29,7 +29,7 @@ src_entity = 'lgc_modified_product'
 DAG_NAME = 'lgc_modified_product_dag'
 
 sheet ={
-"Sheet1":{
+"sheet1":{
     'start_column':0,
     'column_width':4
 }
