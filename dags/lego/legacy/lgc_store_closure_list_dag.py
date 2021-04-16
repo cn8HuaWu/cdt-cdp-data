@@ -30,7 +30,7 @@ DAG_NAME = 'lgc_store_closure_list_dag'
 sheet ={
 "Sheet1":{
     'start_column':0,
-    'column_width':5
+    'column_width':4
 }
 }
 
@@ -179,5 +179,5 @@ postprocess_store_closure_list_task = PythonOperator(
 )
 
 
-preprocess_store_closure_list_task >> store_closure_list_src2stg_task >> store_closure_list_stg2ods_task >> edw_lgc_store_revn_list_create
+preprocess_store_closure_list_task >> store_closure_list_src2stg_task >> store_closure_list_stg2ods_task >> edw_store_closure_list_create
 edw_store_closure_list_create >> edw_store_closure_list_delete >> edw_store_closure_list_insert >> postprocess_store_closure_list_task
