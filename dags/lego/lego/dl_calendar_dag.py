@@ -1,4 +1,6 @@
 from airflow.operators.python_operator import PythonOperator
+from airflow.operators.subdag_operator import SubDagOperator
+from airflow.executors.sequential_executor import SequentialExecutor
 from airflow.models import Variable
 from airflow.utils.dates import days_ago
 from airflow import DAG
@@ -124,14 +126,24 @@ calendar_ods2edw_task = PythonOperator(
     dag=dag,
 )
 
-# calendar_sync_2_rds_task = SubDagOperator(
-#     task_id='calendar_sync_2_rds_task',
-#     subdag=sync_subdag(DAG_NAME, 'calendar_sync_2_rds_task', myutil, entity_conf, args, entity),
-#     default_args=args,
-#     executor=SequentialExecutor(),
-#     on_failure_callback = dag_failure_handler,
-#     dag=dag,
-# )
+calendar_sync_2_cdp_rds_task = SubDagOperator(
+    task_id='calendar_sync_2_rds_task',
+    subdag=sync_subdag(DAG_NAME, 'calendar_sync_2_rds_task', myutil, entity_conf, args, entity),
+    default_args=args,
+    executor=SequentialExecutor(),
+    on_failure_callback = dag_failure_handler,
+    dag=dag,
+)
+
+calendar_sync_2_wechat_rds_task = SubDagOperator(
+    task_id='calendar_sync_2_wechat_rds_task',
+    subdag=sync_subdag(DAG_NAME, 'calendar_sync_2_wechat_rds_task', myutil, entity_conf, args, entity, downstream='WECHAT'),
+    default_args=args,
+    executor=SequentialExecutor(),
+    on_failure_callback = dag_failure_handler,
+    trigger_rule = 'one_success',
+    dag=dag,
+)
 
 postprocess_calendar_task = PythonOperator(
     task_id = 'postprocess_calendar_task',
@@ -143,6 +155,4 @@ postprocess_calendar_task = PythonOperator(
 )
 
 preprocess_calendar_task >> calendar_src2stg_task >> calendar_stg2ods_task >> calendar_ods2edw_task 
-calendar_ods2edw_task >> postprocess_calendar_task
-
-# >> calendar_sync_2_rds_task >> postprocess_calendar_task
+calendar_ods2edw_task >> calendar_sync_2_cdp_rds_task >> calendar_sync_2_wechat_rds_task >> postprocess_calendar_task
