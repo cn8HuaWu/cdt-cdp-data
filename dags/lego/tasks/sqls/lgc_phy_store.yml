@@ -48,10 +48,9 @@ EDW:
      constraint pk_d_lgc_phy_store primary key(review_channel,lego_store_code)
     )distributed by (review_channel);
 
-  delete_edw_table_query:
-    delete from edw.d_lgc_phy_store;
-    
+
   insert_edw_table_query:
+    delete from edw.d_lgc_phy_store;
     insert into edw.d_lgc_phy_store
     select
         sold_to,
