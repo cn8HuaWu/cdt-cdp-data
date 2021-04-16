@@ -166,17 +166,17 @@ EDW:
         estimated_soft_opening_date    as plan_open_date,
         construction_completion_date   as cnstrct_complt_date,
         risk                           as risk,
-        cast(total_operating_weeks as numeric(17,0))as total_operate_week,
-        cast(tony_operating_weeks as numeric(17,0)) as tony_operate_week,
+        case when (total_operating_weeks ~ E'^([0-9]+[.]?[0-9]*|[.][0-9]+)$') then cast(total_operating_weeks  as numeric(17,0)) else null end as total_operate_week,
+        case when (tony_operating_weeks ~ E'^([0-9]+[.]?[0-9]*|[.][0-9]+)$') then cast(tony_operating_weeks  as numeric(17,0)) else null end as tony_operate_week,
         bd                             as bd,
         pm                             as pm,
         new_malls                      as is_new_mall,
         floor                          as store_floor,
-        cast(store_size as numeric(17,2))  as store_size,
-        cast(gross_lease_area as numeric(17,2))     as gross_lease_area,
-        cast(sales_area as numeric(17,2))           as sales_area,
-        cast(boh_area as numeric(17,2))             as boh_area,
-        cast(remote_storage_area  as numeric(17,2)) as remote_storage_area,
+        case when (store_size ~ E'^([0-9]+[.]?[0-9]*|[.][0-9]+)$') then cast(store_size  as numeric(17,2)) else null end as store_size,
+        case when (gross_lease_area ~ E'^([0-9]+[.]?[0-9]*|[.][0-9]+)$') then cast(gross_lease_area  as numeric(17,2)) else null end as gross_lease_area,
+        case when (sales_area ~ E'^([0-9]+[.]?[0-9]*|[.][0-9]+)$') then cast(sales_area  as numeric(17,2)) else null end as sales_area,
+        case when (boh_area ~ E'^([0-9]+[.]?[0-9]*|[.][0-9]+)$') then cast(boh_area  as numeric(17,2)) else null end as boh_area,
+        case when (remote_storage_area ~ E'^([0-9]+[.]?[0-9]*|[.][0-9]+)$') then cast(remote_storage_area  as numeric(17,2)) else null end as remote_storage_area,
         wall_bays                      as wall_bays,
         topic_of_mosaic_image          as mosaic_image_topic,
         lcp_model_topic                as lcp_model_topic,
@@ -187,7 +187,7 @@ EDW:
         now()                          as dl_load_time
     from
         ods.r_lgc_lcs_store_bd
-    where store_code  is not null;
+    where store_code is not null;
         
   update_edw_table_query:
     update edw.d_lgc_phy_store t1 
