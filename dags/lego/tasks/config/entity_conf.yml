@@ -483,7 +483,7 @@ entities:
     update_type: f
     stg_suffix: di
     column_positions: '{"plan_nip_dkk":{"filename":"plan_nip_dkk.*","all_reg":"0,-,1,2,3,4,5,6,7,8,9,10,11,12,-"}}'
-    key: year,customer,plan_vision
+    key: customer
 
   lgc_plan_rrp_rmb:
     edw_prefix: f
