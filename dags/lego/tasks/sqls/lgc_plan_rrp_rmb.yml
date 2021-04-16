@@ -31,8 +31,8 @@ EDW:
        plan_value       numeric(17,2),
        ld_batch_date    varchar(20),
        ld_load_time     timestamp,
-       constraint pk_f_lgc_plan_rrp_rmb primary key(distributor_code, year,month,plan_version)
-    )distributed by (year);
+       constraint pk_f_lgc_plan_rrp_rmb primary key(distributor_code,month,plan_version)
+    );
 
   delete_edw_table_query:
     delete from edw.f_lgc_plan_rrp_rmb;
@@ -40,10 +40,10 @@ EDW:
   insert_edw_table_query:
     insert into edw.f_lgc_plan_rrp_rmb
     select
-        year||'14'||'01'           as date_id,
+        (case when year is null then '2021' else year end)||'14'||'01'           as date_id,
         null                       as distributor_code,
         customer                   as distributor_name,
-        year                       as year,
+        (case when year is null then '2021' else year end)                       as year,
         '01'                       as month,
         plan_version               as plan_version,
         cast(jan as numeric(17,2)) as plan_value,
@@ -54,10 +54,10 @@ EDW:
 
     union all
     select
-        year||'14'||'02'           as date_id,
+        (case when year is null then '2021' else year end)||'14'||'02'           as date_id,
         null                       as distributor_code,
         customer                   as distributor_name,
-        year                       as year,
+        (case when year is null then '2021' else year end)                       as year,
         '02'                       as month,
         plan_version               as plan_version,
         cast(feb as numeric(17,2)) as plan_value,
@@ -68,10 +68,10 @@ EDW:
 
     union all
     select
-        year||'14'||'03'           as date_id,
+        (case when year is null then '2021' else year end)||'14'||'03'           as date_id,
         null                       as distributor_code,
         customer                   as distributor_name,
-        year                       as year,
+        (case when year is null then '2021' else year end)                       as year,
         '03'                       as month,
         plan_version               as plan_version,
         cast(mar as numeric(17,2)) as plan_value,
@@ -82,10 +82,10 @@ EDW:
 
     union all
     select
-        year||'14'||'04'           as date_id,
+        (case when year is null then '2021' else year end)||'14'||'04'           as date_id,
         null                       as distributor_code,
         customer                   as distributor_name,
-        year                       as year,
+        (case when year is null then '2021' else year end)                       as year,
         '04'                       as month,
         plan_version               as plan_version,
         cast(apr as numeric(17,2)) as plan_value,
@@ -96,10 +96,10 @@ EDW:
 
     union all
     select
-        year||'14'||'05'           as date_id,
+        (case when year is null then '2021' else year end)||'14'||'05'           as date_id,
         null                       as distributor_code,
         customer                   as distributor_name,
-        year                       as year,
+        (case when year is null then '2021' else year end)                       as year,
         '05'                       as month,
         plan_version               as plan_version,
         cast(may as numeric(17,2)) as plan_value,
@@ -109,10 +109,10 @@ EDW:
         ods.r_lgc_plan_rrp_rmb
     union all
     select
-        year||'14'||'06'          as date_id,
+        (case when year is null then '2021' else year end)||'14'||'06'          as date_id,
         null                      as distributor_code,
         customer                  as distributor_name,
-        year                      as year,
+        (case when year is null then '2021' else year end)                      as year,
         '06'                      as month,
         plan_version              as plan_version,
         cast(jun as numeric(17,2))as plan_value,
@@ -122,10 +122,10 @@ EDW:
         ods.r_lgc_plan_rrp_rmb
     union all
     select
-        year||'14'||'07'          as date_id,
+        (case when year is null then '2021' else year end)||'14'||'07'          as date_id,
         null                      as distributor_code,
         customer                  as distributor_name,
-        year                      as year,
+        (case when year is null then '2021' else year end)                      as year,
         '07'                      as month,
         plan_version              as plan_version,
         cast(jul as numeric(17,2))as plan_value,
@@ -135,10 +135,10 @@ EDW:
         ods.r_lgc_plan_rrp_rmb
     union all
     select
-        year||'14'||'08'         as date_id,
+        (case when year is null then '2021' else year end)||'14'||'08'         as date_id,
         null                     as distributor_code,
         customer                 as distributor_name,
-        year                     as year,
+        (case when year is null then '2021' else year end)                     as year,
         '08'                     as month,
         plan_version             as plan_version,
         cast(aug as numeric(17,2))as plan_value,
@@ -148,10 +148,10 @@ EDW:
         ods.r_lgc_plan_rrp_rmb
     union all
     select
-        year||'14'||'09'        as date_id,
+        (case when year is null then '2021' else year end)||'14'||'09'        as date_id,
         null                    as distributor_code,
         customer                as distributor_name,
-        year                    as year,
+        (case when year is null then '2021' else year end)                    as year,
         '09'                    as month,
         plan_version            as plan_version,
         cast(sep as numeric(17,2))as plan_value,
@@ -161,10 +161,10 @@ EDW:
         ods.r_lgc_plan_rrp_rmb
     union all
     select
-        year||'14'||'10'        as date_id,
+        (case when year is null then '2021' else year end)||'14'||'10'        as date_id,
         null                    as distributor_code,
         customer                as distributor_name,
-        year                    as year,
+        (case when year is null then '2021' else year end)                    as year,
         '10'                    as month,
         plan_version            as plan_version,
         cast(oct as numeric(17,2))as plan_value,
@@ -174,10 +174,10 @@ EDW:
         ods.r_lgc_plan_rrp_rmb
     union all
     select
-        year||'14'||'11'           as date_id,
+        (case when year is null then '2021' else year end)||'14'||'11'           as date_id,
         null                       as distributor_code,
         customer                   as distributor_name,
-        year                       as year,
+        (case when year is null then '2021' else year end)                       as year,
         '11'                       as month,
         plan_version               as plan_version,
         cast(nov as numeric(17,2)) as plan_value,
@@ -187,10 +187,10 @@ EDW:
         ods.r_lgc_plan_rrp_rmb
     union all
     select
-        year||'14'||'12'           as date_id,
+        (case when year is null then '2021' else year end)||'14'||'12'           as date_id,
         null                       as distributor_code,
         customer                   as distributor_name,
-        year                       as year,
+        (case when year is null then '2021' else year end)                       as year,
         '12'                       as month,
         plan_version               as plan_version,
         cast(dec as numeric(17,2)) as plan_value,
