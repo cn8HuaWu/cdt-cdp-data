@@ -6,7 +6,7 @@ import smtplib
 import os
 import imp
 
-env = os.getenv('airflow_env')
+env = os.getenv('airflow_env').lower()
 
 
 if env in ('dev', 'qa'):

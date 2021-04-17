@@ -28,8 +28,6 @@ STAGING = 'Staging'
 ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
-ENV = os.getenv('airflow_env')
-
 myutil = Myutil(DAG_HOME)
 gp_host = myutil.get_conf( 'Greenplum', 'GP_HOST')
 gp_port = myutil.get_conf( 'Greenplum', 'GP_PORT')
