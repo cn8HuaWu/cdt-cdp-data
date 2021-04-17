@@ -183,7 +183,7 @@ entities:
     stg_suffix: di
     key: id
     update_type: F
-    dm_dependicies: dl_dly_sales_rpt,oms_order_dtl,dl_tm_shopper
+    dm_dependicies: dl_dly_sales_rpt,oms_order_dt
 
 
   oms_order_dtl:
