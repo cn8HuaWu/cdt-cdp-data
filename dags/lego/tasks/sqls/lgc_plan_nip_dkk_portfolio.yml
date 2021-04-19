@@ -27,11 +27,11 @@ EDW:
        prod_line     varchar(100),
        year          varchar(10),
        month         varchar(10),
-       plan_version  varchar(20),
+       plan_vision  varchar(20),
        plan_value    numeric(17,2),
        dl_batch_date varchar(10),
        dl_load_time  timestamp,
-       constraint pk_f_lgc_plan_nip_dkk_portfli primary key(channel,prod_line,year,month,plan_version)
+       constraint pk_f_lgc_plan_nip_dkk_portfli primary key(channel,prod_line,year,month,plan_vision)
     )distributed by (year);
 
   delete_edw_table_query:
@@ -42,167 +42,167 @@ EDW:
     select
         year||'14'||'01'            as date_id,
         channel                     as channel,
-        prod_line                   as prod_line,
+        cnline                    as prod_line,
         year                        as year,
         '01'                        as month,
-        plan_version                as plan_version,
+        plan_vision                as plan_vision,
         cast(jan as numeric(17,2))  as plan_value,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where jan is not null
     union all
     select
         year||'14'||'02'            as date_id,
         channel                     as channel,
-        prod_line                   as prod_line,
+        cnline                    as prod_line,
         year                        as year,
         '02'                        as month,
-        plan_version                as plan_version,
+        plan_vision                as plan_vision,
         cast(feb as numeric(17,2))  as plan_value,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where feb is not null
     union all
     select
         year||'14'||'03'            as date_id,
         channel                     as channel,
-        prod_line                   as prod_line,
+        cnline                    as prod_line,
         year                        as year,
         '03'                        as month,
-        plan_version                as plan_version,
+        plan_vision                as plan_vision,
         cast(mar as numeric(17,2))  as plan_value,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where mar is not null
     union all
     select
         year||'14'||'04'           as date_id,
         channel                    as channel,
-        prod_line                  as prod_line,
+        cnline                    as prod_line,
         year                       as year,
         '04'                       as month,
-        plan_version               as plan_version,
+        plan_vision               as plan_vision,
         cast(apr as numeric(17,2)) as plan_value,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where apr is not null
     union all
     select
         year||'14'||'05'           as date_id,
         channel                    as channel,
-        prod_line                  as prod_line,
+        cnline                    as prod_line,
         year                       as year,
         '05'                       as month,
-        plan_version               as plan_version,
+        plan_vision               as plan_vision,
         cast(may as numeric(17,2)) as plan_value,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where may is not null
     union all
     select
         year||'14'||'06'          as date_id,
         channel                   as channel,
-        prod_line                 as prod_line,
+        cnline                    as prod_line,
         year                      as year,
         '06'                      as month,
-        plan_version              as plan_version,
+        plan_vision              as plan_vision,
         cast(jun as numeric(17,2))as plan_value,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where jun is not null
     union all
     select
         year||'14'||'07'         as date_id,
         channel                  as channel,
-        prod_line                as prod_line,
+        cnline                    as prod_line,
         year                     as year,
         '07'                     as month,
-        plan_version             as plan_version,
+        plan_vision             as plan_vision,
         cast(jul as numeric(17,2))as plan_value,
         dl_batch_date            as dl_batch_date,
         now()                    as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where jul is not null
     union all
     select
         year||'14'||'08'         as date_id,
         channel                  as channel,
-        prod_line                as prod_line,
+        cnline                    as prod_line,
         year                     as year,
         '08'                     as month,
-        plan_version             as plan_version,
+        plan_vision             as plan_vision,
         cast(aug as numeric(17,2))as plan_value,
         dl_batch_date            as dl_batch_date,
         now()                    as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where aug is not null
     union all
     select
         year||'14'||'09'         as date_id,
         channel                  as channel,
-        prod_line                as prod_line,
+        cnline                    as prod_line,
         year                     as year,
         '09'                     as month,
-        plan_version             as plan_version,
+        plan_vision             as plan_vision,
         cast(sep as numeric(17,2))as plan_value,
         dl_batch_date            as dl_batch_date,
         now()                    as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where sep is not null
     union all
     select
         year||'14'||'10'          as date_id,
         channel                   as channel,
-        prod_line                 as prod_line,
+        cnline                    as prod_line,
         year                      as year,
         '10'                      as month,
-        plan_version              as plan_version,
+        plan_vision              as plan_vision,
         cast(oct as numeric(17,2))as plan_value,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where oct is not null
     union all
     select
         year||'14'||'11'          as date_id,
         channel                   as channel,
-        prod_line                 as prod_line,
+        cnline                    as prod_line,
         year                      as year,
         '11'                      as month,
-        plan_version              as plan_version,
+        plan_vision              as plan_vision,
         cast(nov as numeric(17,2))as plan_value,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where nov is not null
     union all
     select
         year||'14'||'12'          as date_id,
         channel                   as channel,
-        prod_line                 as prod_line,
+        cnline                    as prod_line,
         year                      as year,
         '12'                      as month,
-        plan_version              as plan_version,
+        plan_vision               as plan_vision,
         cast(dec as numeric(17,2)) as plan_value,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk_portfli
+        ods.r_lgc_plan_nip_dkk_portfolio
     where dec is not null;
