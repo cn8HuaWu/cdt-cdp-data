@@ -52,7 +52,8 @@ EDW:
         now()                       as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
-	union all
+    where jan is not null
+    union all
     select
         year||'14'||'02'            as date_id,
         channel                     as channel,
@@ -65,7 +66,7 @@ EDW:
         now()                       as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
-
+    where feb is not null
     union all
     select
         year||'14'||'03'            as date_id,
@@ -79,6 +80,7 @@ EDW:
         now()                       as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
+    where mar is not null
     union all
     select
         year||'14'||'04'           as date_id,
@@ -92,6 +94,7 @@ EDW:
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
+    where apr is not null
     union all
     select
         year||'14'||'05'           as date_id,
@@ -105,6 +108,7 @@ EDW:
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
+    where may is not null
     union all
     select
         year||'14'||'06'          as date_id,
@@ -118,6 +122,7 @@ EDW:
         now()                     as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
+    where jun is not null
     union all
     select
         year||'14'||'07'         as date_id,
@@ -131,6 +136,7 @@ EDW:
         now()                    as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
+    where jul is not null
     union all
     select
         year||'14'||'08'         as date_id,
@@ -144,6 +150,7 @@ EDW:
         now()                    as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
+    where aug is not null
     union all
     select
         year||'14'||'09'         as date_id,
@@ -157,6 +164,7 @@ EDW:
         now()                    as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
+    where sep is not null
     union all
     select
         year||'14'||'10'          as date_id,
@@ -170,6 +178,7 @@ EDW:
         now()                     as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
+    where oct is not null
     union all
     select
         year||'14'||'11'          as date_id,
@@ -183,6 +192,7 @@ EDW:
         now()                     as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb_portfli
+    where nov is not null
     union all
     select
         year||'14'||'12'          as date_id,
@@ -195,4 +205,5 @@ EDW:
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
     from
-        ods.r_lgc_plan_rrp_rmb_portfli ;
+        ods.r_lgc_plan_rrp_rmb_portfli 
+    where dec is not null ;
