@@ -29,10 +29,13 @@ DAG_NAME = 'lgc_sales_stock_rrp_rmb_dag'
 
 sheet ={
 "Sheet1":{
+    'start_row':1,
+    'ignore_end_row': 1,
     'start_column':0,
-    'column_width':12
+    'column_width':13
 }
 }
+
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
