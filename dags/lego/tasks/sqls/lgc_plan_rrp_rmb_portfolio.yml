@@ -22,14 +22,14 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_plan_rrp_rmb_portfli(
-       date_id       varchar(20),
-       channel       varchar(20),
+       date_id       varchar(100),
+       channel       varchar(100),
        prod_line     varchar(100),
-       year          varchar(10),
-       month         varchar(10),
-       plan_vision   varchar(20),
+       year          varchar(100),
+       month         varchar(100),
+       plan_vision   varchar(100),
        plan_value    numeric(17,2),
-       dl_batch_date varchar(10),
+       dl_batch_date varchar(20),
        dl_load_time  timestamp,
        constraint pk_f_lgc_plan_rrp_rmb_portfli primary key(channel,prod_line,year,month,plan_vision)
     )distributed by (year);
