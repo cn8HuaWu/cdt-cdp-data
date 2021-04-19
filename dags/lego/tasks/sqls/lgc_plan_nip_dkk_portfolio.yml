@@ -40,10 +40,10 @@ EDW:
   insert_edw_table_query:
     insert into edw.f_lgc_plan_nip_dkk_portfli
     select
-        year||'14'||'01'            as date_id,
+         (case when year is null then'2021' else year end)||'14'||'01' as date_id,
         channel                     as channel,
-        cnline                    as prod_line,
-        year                        as year,
+        cnline                      as prod_line,
+         (case when year is null then'2021' else year end) as year,
         '01'                        as month,
         plan_vision                as plan_vision,
         cast(jan as numeric(17,2))  as plan_value,
@@ -54,10 +54,10 @@ EDW:
     where jan is not null
     union all
     select
-        year||'14'||'02'            as date_id,
+         (case when year is null then'2021' else year end)||'14'||'02' as date_id,
         channel                     as channel,
         cnline                    as prod_line,
-        year                        as year,
+         (case when year is null then'2021' else year end) as year,
         '02'                        as month,
         plan_vision                as plan_vision,
         cast(feb as numeric(17,2))  as plan_value,
@@ -68,10 +68,10 @@ EDW:
     where feb is not null
     union all
     select
-        year||'14'||'03'            as date_id,
+         (case when year is null then'2021' else year end)||'14'||'03'  as date_id,
         channel                     as channel,
         cnline                    as prod_line,
-        year                        as year,
+         (case when year is null then'2021' else year end)  as year,
         '03'                        as month,
         plan_vision                as plan_vision,
         cast(mar as numeric(17,2))  as plan_value,
@@ -82,10 +82,10 @@ EDW:
     where mar is not null
     union all
     select
-        year||'14'||'04'           as date_id,
+         (case when year is null then'2021' else year end)||'14'||'04'  as date_id,
         channel                    as channel,
         cnline                    as prod_line,
-        year                       as year,
+         (case when year is null then'2021' else year end)              as year,
         '04'                       as month,
         plan_vision               as plan_vision,
         cast(apr as numeric(17,2)) as plan_value,
@@ -96,10 +96,10 @@ EDW:
     where apr is not null
     union all
     select
-        year||'14'||'05'           as date_id,
+         (case when year is null then'2021' else year end)||'14'||'05'    as date_id,
         channel                    as channel,
         cnline                    as prod_line,
-        year                       as year,
+         (case when year is null then'2021' else year end)                as year,
         '05'                       as month,
         plan_vision               as plan_vision,
         cast(may as numeric(17,2)) as plan_value,
@@ -110,10 +110,10 @@ EDW:
     where may is not null
     union all
     select
-        year||'14'||'06'          as date_id,
+         (case when year is null then'2021' else year end)||'14'||'06'   as date_id,
         channel                   as channel,
         cnline                    as prod_line,
-        year                      as year,
+         (case when year is null then'2021' else year end)               as year,
         '06'                      as month,
         plan_vision              as plan_vision,
         cast(jun as numeric(17,2))as plan_value,
@@ -124,10 +124,10 @@ EDW:
     where jun is not null
     union all
     select
-        year||'14'||'07'         as date_id,
+         (case when year is null then'2021' else year end)||'14'||'07'  as date_id,
         channel                  as channel,
         cnline                    as prod_line,
-        year                     as year,
+         (case when year is null then'2021' else year end)              as year,
         '07'                     as month,
         plan_vision             as plan_vision,
         cast(jul as numeric(17,2))as plan_value,
@@ -138,10 +138,10 @@ EDW:
     where jul is not null
     union all
     select
-        year||'14'||'08'         as date_id,
+         (case when year is null then'2021' else year end)||'14'||'08'  as date_id,
         channel                  as channel,
         cnline                    as prod_line,
-        year                     as year,
+         (case when year is null then'2021' else year end)              as year,
         '08'                     as month,
         plan_vision             as plan_vision,
         cast(aug as numeric(17,2))as plan_value,
@@ -152,10 +152,10 @@ EDW:
     where aug is not null
     union all
     select
-        year||'14'||'09'         as date_id,
+         (case when year is null then'2021' else year end)||'14'||'09'  as date_id,
         channel                  as channel,
         cnline                    as prod_line,
-        year                     as year,
+         (case when year is null then'2021' else year end)              as year,
         '09'                     as month,
         plan_vision             as plan_vision,
         cast(sep as numeric(17,2))as plan_value,
@@ -166,10 +166,10 @@ EDW:
     where sep is not null
     union all
     select
-        year||'14'||'10'          as date_id,
+         (case when year is null then'2021' else year end)||'14'||'10'   as date_id,
         channel                   as channel,
         cnline                    as prod_line,
-        year                      as year,
+         (case when year is null then'2021' else year end)               as year,
         '10'                      as month,
         plan_vision              as plan_vision,
         cast(oct as numeric(17,2))as plan_value,
@@ -180,10 +180,10 @@ EDW:
     where oct is not null
     union all
     select
-        year||'14'||'11'          as date_id,
+         (case when year is null then'2021' else year end)||'14'||'11'    as date_id,
         channel                   as channel,
         cnline                    as prod_line,
-        year                      as year,
+         (case when year is null then'2021' else year end)                as year,
         '11'                      as month,
         plan_vision              as plan_vision,
         cast(nov as numeric(17,2))as plan_value,
@@ -194,10 +194,10 @@ EDW:
     where nov is not null
     union all
     select
-        year||'14'||'12'          as date_id,
+         (case when year is null then'2021' else year end)||'14'||'12'   as date_id,
         channel                   as channel,
         cnline                    as prod_line,
-        year                      as year,
+         (case when year is null then'2021' else year end)               as year,
         '12'                      as month,
         plan_vision               as plan_vision,
         cast(dec as numeric(17,2)) as plan_value,
@@ -206,3 +206,4 @@ EDW:
     from
         ods.r_lgc_plan_nip_dkk_portfolio
     where dec is not null;
+ZZZZ
