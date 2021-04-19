@@ -206,3 +206,4 @@ EDW:
     from
         ods.r_lgc_plan_rrp_rmb
     where dec is not null ;
+
