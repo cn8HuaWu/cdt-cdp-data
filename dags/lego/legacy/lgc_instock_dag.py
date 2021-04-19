@@ -30,7 +30,6 @@ DAG_NAME = 'lgc_instock_dag'
 sheet ={
 "Sheet1":{
     'start_row':1,
-    'ignore_end_row': 1
     'start_column':0,
     'column_width':15
 }
