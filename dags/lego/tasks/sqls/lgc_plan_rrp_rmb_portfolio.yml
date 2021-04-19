@@ -30,7 +30,7 @@ EDW:
        plan_version  varchar(20),
        plan_value    numeric(17,2),
        dl_batch_date varchar(10),
-       dl_load_time  timestamp
+       dl_load_time  timestamp,
        constraint pk_f_lgc_plan_rrp_rmb_portfli primary key(channel,prod_line,year,month,plan_version)
     )distributed by (year);
 
