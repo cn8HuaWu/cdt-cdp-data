@@ -4,6 +4,7 @@ Staging:
     cust_link text,
     cust_name text,
     cust_id text,
+    sale_district text,
     cust_loca text,
     store_id text,
     prod_id text,
@@ -22,6 +23,7 @@ EDW:
        lego_year_week          varchar(20),
        distributor_code        varchar(20),
        distributor_name        varchar(100),
+       sale_district           varchar(100),
        lego_store_code         varchar(200),
        lego_sku_id             varchar(200),
        dist_cnsmr_sale_qty     bigint,
@@ -44,6 +46,7 @@ EDW:
        ,split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week
        ,cust_id                 as distributor_code
        ,cust_name               as distributor_name
+       ,sale_district                as sale_district
        ,store_id                as lego_store_code
        ,prod_id                 as lego_sku_id
        ,cast(cst_cnsmr_sale_qty as int)              as dist_cnsmr_sale_qty
