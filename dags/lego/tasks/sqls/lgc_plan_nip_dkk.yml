@@ -50,7 +50,9 @@ EDW:
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
-
+    where 
+        lower(jan) <>'jan'
+        and jan is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'02'           as date_id,
@@ -64,7 +66,9 @@ EDW:
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
-
+    where 
+        lower(feb) <>'feb'
+        and feb is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'03'           as date_id,
@@ -78,7 +82,9 @@ EDW:
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
-
+    where 
+        lower(mar) <>'mar'
+        and mar is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'04'         as date_id,
@@ -92,7 +98,9 @@ EDW:
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
-
+    where 
+        lower(apr) <>'apr'
+        and apr is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'05'           as date_id,
@@ -106,6 +114,9 @@ EDW:
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
+    where 
+        lower(may) <>'may'
+        and may is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'06'          as date_id,
@@ -119,6 +130,9 @@ EDW:
         now()                     as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
+    where 
+        lower(jun) <>'jun'
+        and jun is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'07'          as date_id,
@@ -132,6 +146,9 @@ EDW:
         now()                     as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
+    where 
+        lower(jul) <>'jul'
+        and jul is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'08'         as date_id,
@@ -145,6 +162,9 @@ EDW:
         now()                    as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
+    where 
+        lower(aug) <>'aug'
+        and aug is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'09'        as date_id,
@@ -158,6 +178,9 @@ EDW:
         now()                   as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
+    where 
+        lower(sep) <>'sep'
+        and sep is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'10'        as date_id,
@@ -171,6 +194,9 @@ EDW:
         now()                   as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
+    where 
+        lower(oct) <>'oct'
+        and oct is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'11'           as date_id,
@@ -184,6 +210,9 @@ EDW:
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk
+    where 
+        lower(nov) <>'nov'
+        and nov is not null
     union all
     select
         (case when year is null then'2021' else year end)||'14'||'12' as date_id,
@@ -196,5 +225,9 @@ EDW:
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
     from
-        ods.r_lgc_plan_nip_dkk ;
+        ods.r_lgc_plan_nip_dkk 
+    where 
+        lower(dec) <>'dec'
+        and dec is not null
+        ;
 
