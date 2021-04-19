@@ -19,9 +19,9 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_sales_stock_rrp_rmb
-       (date_id                varchar(20),
-       lego_year_week          varchar(20),
-       distributor_code        varchar(20),
+       (date_id                varchar(100),
+       lego_year_week          varchar(100),
+       distributor_code        varchar(100),
        distributor_name        varchar(100),
        sale_district           varchar(100),
        lego_store_code         varchar(200),
@@ -30,8 +30,8 @@ EDW:
        dist_cnsmr_sale_rrb     numeric(17,2),
        dist_retail_stock_qty   bigint,
        dist_retail_stock_rrp   numeric(17,2),
-       qty_unit                varchar(20),
-       dl_batch_date           varchar(20),
+       qty_unit                varchar(100),
+       dl_batch_date           varchar(100),
        dl_load_time            timestamp,
        constraint pk_f_lgc_sales_stock_rrp_rmb primary key(lego_year_week, lego_store_code,lego_sku_id)
     )distributed by (lego_year_week);
