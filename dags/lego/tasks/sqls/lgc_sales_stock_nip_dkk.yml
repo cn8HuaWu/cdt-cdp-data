@@ -31,7 +31,7 @@ EDW:
        dist_retail_stock_qty   bigint,
        dist_retail_stock_nip   numeric(17,2),
        qty_unit                varchar(20),
-       dl_batch_date           varchar(10),
+       dl_batch_date           varchar(20),
        dl_load_time            timestamp,
        constraint pk_f_lgc_sales_stock_nip_dkk primary key(lego_year_week, lego_store_code,lego_sku_id)
     )distributed by (lego_year_week);
