@@ -23,63 +23,63 @@ STAGING = 'Staging'
 ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
-entity = 'plan_rrp_rmb_portfolio'
-src_entity = 'lgc_plan_rrp_rmb_portfolio'
-DAG_NAME = 'lgc_plan_rrp_rmb_portfolio_dag'
+entity = 'plan_rrp_rmb'
+src_entity = 'lgc_plan_rrp_rmb'
+DAG_NAME = 'lgc_plan_rrp_rmb_dag'
 src_file_sheet_name = ['Fixed_DP02','Floating_DP01','Floating_DP02','Floating_DP03','Floating_DP04','Floating_DP05','Floating_DP06','Floating_DP07','Floating_DP08','Floating_DP09','Floating_DP10','Floating_DP11','Floating_DP12']
 
 sheet ={
 "Fixed_DP02":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP01":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP02":{
     'start_column': 10,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP03":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP04":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP05":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP06":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP07":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP08":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP09":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP010":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP011":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 },
 "Floating_DP012":{
     'start_column': 0,
-    'column_width': 14
+    'column_width': 13
 }
 }
 
@@ -172,8 +172,8 @@ dag = DAG(dag_id = DAG_NAME,
             max_active_runs = 1, 
             schedule_interval = None)
 
-preprocess_plan_rrp_rmb_portfolio_task = PythonOperator(
-    task_id = 'preprocess_plan_rrp_rmb_portfolio_task',
+preprocess_plan_rrp_rmb_task = PythonOperator(
+    task_id = 'preprocess_plan_rrp_rmb_task',
     provide_context = True,
     python_callable = process_fileload,
     op_kwargs = {'is_encrypted': False},
@@ -181,8 +181,8 @@ preprocess_plan_rrp_rmb_portfolio_task = PythonOperator(
     dag = dag,
 )
 
-plan_rrp_rmb_portfolio_src2stg_task = PythonOperator(
-    task_id='plan_rrp_rmb_portfolio_src2stg_task',
+plan_rrp_rmb_src2stg_task = PythonOperator(
+    task_id='plan_rrp_rmb_src2stg_task',
     provide_context = True,
     python_callable = load_src2stg,
     on_failure_callback = dag_failure_handler,
@@ -190,8 +190,8 @@ plan_rrp_rmb_portfolio_src2stg_task = PythonOperator(
 )
 
 
-plan_rrp_rmb_portfolio_stg2ods_task = PythonOperator(
-    task_id='plan_rrp_rmb_portfolio_stg2ods_task',
+plan_rrp_rmb_stg2ods_task = PythonOperator(
+    task_id='plan_rrp_rmb_stg2ods_task',
     provide_context = True,
     python_callable = load_stg2ods,
     on_failure_callback = dag_failure_handler,
@@ -199,39 +199,39 @@ plan_rrp_rmb_portfolio_stg2ods_task = PythonOperator(
 )
 
 # create edw data task:
-edw_plan_rrp_rmb_portfolio_create = PythonOperator(
-    task_id='edw_plan_rrp_rmb_portfolio_create',
+edw_plan_rrp_rmb_create = PythonOperator(
+    task_id='edw_plan_rrp_rmb_create',
     provide_context=True,
     python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb_portfolio",
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb",
                'sql_section': 'create_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
 
 # delete edw data task:
-edw_plan_rrp_rmb_portfolio_delete = PythonOperator(
-    task_id='edw_plan_rrp_rmb_portfolio_delete',
+edw_plan_rrp_rmb_delete = PythonOperator(
+    task_id='edw_plan_rrp_rmb_delete',
     provide_context=True,
     python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb_portfolio",
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb",
                'sql_section': 'delete_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
 
 # insert into edw data task:
-edw_plan_rrp_rmb_portfolio_insert = PythonOperator(
-    task_id='edw_plan_rrp_rmb_portfolio_insert',
+edw_plan_rrp_rmb_insert = PythonOperator(
+    task_id='edw_plan_rrp_rmb_insert',
     provide_context=True,
     python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb_portfolio",
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb",
                'sql_section': 'insert_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
-postprocess_plan_rrp_rmb_portfolio_task = PythonOperator(
-    task_id = 'postprocess_plan_rrp_rmb_portfolio_task',
+postprocess_plan_rrp_rmb_task = PythonOperator(
+    task_id = 'postprocess_plan_rrp_rmb_task',
     provide_context = True,
     python_callable = post_process_fileload,
     op_kwargs = {'is_encrypted': False},
@@ -239,5 +239,5 @@ postprocess_plan_rrp_rmb_portfolio_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_plan_rrp_rmb_portfolio_task >> plan_rrp_rmb_portfolio_src2stg_task >> plan_rrp_rmb_portfolio_stg2ods_task >> edw_plan_rrp_rmb_portfolio_create
-edw_plan_rrp_rmb_portfolio_create >> edw_plan_rrp_rmb_portfolio_delete >> edw_plan_rrp_rmb_portfolio_insert >> postprocess_plan_rrp_rmb_portfolio_task
+preprocess_plan_rrp_rmb_task >> plan_rrp_rmb_src2stg_task >> plan_rrp_rmb_stg2ods_task >> edw_plan_rrp_rmb_create
+edw_plan_rrp_rmb_create >> edw_plan_rrp_rmb_delete >> edw_plan_rrp_rmb_insert >> postprocess_plan_rrp_rmb_task
