@@ -21,7 +21,7 @@ ODS:
 
 EDW:
   create_edw_table_query:
-    create table if not exists edw.f_lgc_plan_nip_dkk_portfli(
+    create table if not exists edw.f_lgc_plan_nip_dkk_portflio(
        date_id       varchar(20),
        channel       varchar(20),
        prod_line     varchar(100),
@@ -31,14 +31,14 @@ EDW:
        plan_value    numeric(17,2),
        dl_batch_date varchar(10),
        dl_load_time  timestamp,
-       constraint pk_f_lgc_plan_nip_dkk_portfli primary key(channel,prod_line,year,month,plan_vision)
+       constraint pk_f_lgc_plan_nip_dkk_portflio primary key(channel,prod_line,year,month,plan_vision)
     )distributed by (year);
 
   delete_edw_table_query:
-     delete from edw.f_lgc_plan_nip_dkk_portfli;
+     delete from edw.f_lgc_plan_nip_dkk_portflio;
 
   insert_edw_table_query:
-    insert into edw.f_lgc_plan_nip_dkk_portfli
+    insert into edw.f_lgc_plan_nip_dkk_portflio
     select
          (case when year is null then'2021' else year end)||'14'||'01' as date_id,
         channel                     as channel,
