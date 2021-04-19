@@ -14,7 +14,6 @@ Staging:
     oct text,
     nov text,
     dec text,
-    year text,
     plan_vision text
 
 ODS:
