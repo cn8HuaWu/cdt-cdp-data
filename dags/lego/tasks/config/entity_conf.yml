@@ -45,7 +45,6 @@ entities:
     dm_sync: False
     dm_dependicies: jd_pop_order_dtl,jd_pop_order,dl_jd_order,dl_jd_order_dtl,dl_dly_sales_rpt,dl_jd_shopper
 
-
   bu_jd_b2b_sku_map:
     edw_prefix: d
     stg_suffix: di
