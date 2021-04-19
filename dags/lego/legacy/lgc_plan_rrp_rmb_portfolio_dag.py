@@ -105,7 +105,8 @@ def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
         raise IOError("Source file not found") 
 
     myutil.modify_ok_file_prefix( old_prefix=None, prefix="running", ok_file_path=OK_FILE_PATH)
-    
+
+
 def post_process_fileload( **kwargs):
     #rename: change prefix to "done-"
     if ("skip_load"  in kwargs.get('dag_run').conf 
@@ -122,9 +123,15 @@ def dag_failure_handler(context):
 def add_new_column_with_value(row:list, input_file_path, sheetname, *args):
     if row is None:
         return row
+    # append 1 new column based the sheetname
     row.append(sheetname)
+
+    # insert 1 new column for the year version according the sheet name
+    file_name = os.path.splitext(os.path.basename(input_file_path))[0]
+    year = file_name.split("_")[-1]
+    row.insert(1,year)
     return row
-    
+
 def load_src2stg(**kwargs):
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
     src_filename = kwargs.get('dag_run').conf.get('src_filename')
@@ -132,7 +139,7 @@ def load_src2stg(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    excel_fun_list = [add_new_column_with_value, myutil.rearrange_columns]
+    excel_fun_list = [add_new_column_with_value]
     #src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname=src_file_sheet_name, merge =False, **sheet)
     # 如果1个excel里面，要读多个sheet， 切添加**sheet 参数， 必须准确除去header。 否则合并后会有多个header， 或者不加**sheet参数
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, read_all=True, merge = True)
