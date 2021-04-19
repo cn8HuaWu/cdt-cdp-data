@@ -125,7 +125,12 @@ def add_new_column_with_value(row:list, input_file_path, sheetname, *args):
         return row
     row.append(sheetname)
     return row
-
+    
+    # insert 1 new column for the year version according the sheet name
+    file_name = os.path.splitext(os.path.basename(input_file_path))[0]
+    year = file_name.split("_")[-1]
+    row.insert(2,year)
+    return row
     
 def load_src2stg(**kwargs):
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
@@ -134,9 +139,9 @@ def load_src2stg(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    excel_fun_list = [add_new_column_with_value, myutil.rearrange_columns]
+    excel_fun_list = [add_new_column_with_value]
     # 如果1个excel里面，要读多个sheet， 切添加**sheet 参数， 必须准确除去header。 否则合并后会有多个header， 或者不加**sheet参数
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, read_all=True, merge = True)
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, read_all=True, merge = False)
     src2stg.start(version='v2')
     
 

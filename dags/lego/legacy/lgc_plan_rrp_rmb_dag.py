@@ -23,67 +23,65 @@ STAGING = 'Staging'
 ODS = 'ODS'
 TEMP_FOLDER='Temp'
 
-entity = 'plan_rrp_rmb'
-src_entity = 'lgc_plan_rrp_rmb'
-DAG_NAME = 'lgc_plan_rrp_rmb_dag'
-#sheets_param = ['Fixed_DP02','Floating_DP01','Floating_DP02','Floating_DP03','Floating_DP04','Floating_DP05','Floating_DP06','Floating_DP07','Floating_DP08','Floating_DP09','Floating_DP10','Floating_DP11','Floating_DP12']
-
+entity = 'plan_rrp_rmb_portfolio'
+src_entity = 'lgc_plan_rrp_rmb_portfolio'
+DAG_NAME = 'lgc_plan_rrp_rmb_portfolio_dag'
+src_file_sheet_name = ['Fixed_DP02','Floating_DP01','Floating_DP02','Floating_DP03','Floating_DP04','Floating_DP05','Floating_DP06','Floating_DP07','Floating_DP08','Floating_DP09','Floating_DP10','Floating_DP11','Floating_DP12']
 
 sheet ={
 "Fixed_DP02":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP01":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP02":{
-    'start_column': 0,
-    'column_width': 13
+    'start_column': 10,
+    'column_width': 14
 },
 "Floating_DP03":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP04":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP05":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP06":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP07":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP08":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP09":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP010":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP011":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 },
 "Floating_DP012":{
     'start_column': 0,
-    'column_width': 13
+    'column_width': 14
 }
 }
-
 
 myutil = Myutil(dag_home=DAG_HOME, entity_name=src_entity)
 db = myutil.get_db()
@@ -107,7 +105,8 @@ def process_fileload(is_encrypted = False, is_compressed = False, **kwargs):
         raise IOError("Source file not found") 
 
     myutil.modify_ok_file_prefix( old_prefix=None, prefix="running", ok_file_path=OK_FILE_PATH)
-    
+
+
 def post_process_fileload( **kwargs):
     #rename: change prefix to "done-"
     if ("skip_load"  in kwargs.get('dag_run').conf 
@@ -120,12 +119,17 @@ def dag_failure_handler(context):
     #rename: change prefix to "failed-"
     OK_FILE_PATH  = context.get('dag_run').conf.get('ok_file_path')
     myutil.modify_ok_file_prefix("running", "failed",OK_FILE_PATH)
-    
 
 def add_new_column_with_value(row:list, input_file_path, sheetname, *args):
     if row is None:
         return row
+    # append 1 new column based the sheetname
     row.append(sheetname)
+
+    # insert 1 new column for the year version according the sheet name
+    file_name = os.path.splitext(os.path.basename(input_file_path))[0]
+    year = file_name.split("_")[-1]
+    row.insert(2,year)
     return row
 
 def load_src2stg(**kwargs):
@@ -135,9 +139,10 @@ def load_src2stg(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    excel_fun_list = [add_new_column_with_value, myutil.rearrange_columns]
+    excel_fun_list = [add_new_column_with_value]
+    #src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname=src_file_sheet_name, merge =False, **sheet)
     # 如果1个excel里面，要读多个sheet， 切添加**sheet 参数， 必须准确除去header。 否则合并后会有多个header， 或者不加**sheet参数
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False,read_all=True, merge = True)
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, read_all=True, merge = False)
     src2stg.start(version='v2')
 
 def load_stg2ods(**kwargs):
@@ -148,6 +153,7 @@ def load_stg2ods(**kwargs):
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
     stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
     stg2ods.start()
+
 
 args = {
     'owner': 'cdp_admin',
@@ -166,8 +172,8 @@ dag = DAG(dag_id = DAG_NAME,
             max_active_runs = 1, 
             schedule_interval = None)
 
-preprocess_plan_rrp_rmb_task = PythonOperator(
-    task_id = 'preprocess_plan_rrp_rmb_task',
+preprocess_plan_rrp_rmb_portfolio_task = PythonOperator(
+    task_id = 'preprocess_plan_rrp_rmb_portfolio_task',
     provide_context = True,
     python_callable = process_fileload,
     op_kwargs = {'is_encrypted': False},
@@ -175,8 +181,8 @@ preprocess_plan_rrp_rmb_task = PythonOperator(
     dag = dag,
 )
 
-plan_rrp_rmb_src2stg_task = PythonOperator(
-    task_id='plan_rrp_rmb_src2stg_task',
+plan_rrp_rmb_portfolio_src2stg_task = PythonOperator(
+    task_id='plan_rrp_rmb_portfolio_src2stg_task',
     provide_context = True,
     python_callable = load_src2stg,
     on_failure_callback = dag_failure_handler,
@@ -184,8 +190,8 @@ plan_rrp_rmb_src2stg_task = PythonOperator(
 )
 
 
-plan_rrp_rmb_stg2ods_task = PythonOperator(
-    task_id='plan_rrp_rmb_stg2ods_task',
+plan_rrp_rmb_portfolio_stg2ods_task = PythonOperator(
+    task_id='plan_rrp_rmb_portfolio_stg2ods_task',
     provide_context = True,
     python_callable = load_stg2ods,
     on_failure_callback = dag_failure_handler,
@@ -193,40 +199,39 @@ plan_rrp_rmb_stg2ods_task = PythonOperator(
 )
 
 # create edw data task:
-edw_lgc_plan_rrp_rmb_create = PythonOperator(
-    task_id='edw_lgc_plan_rrp_rmb_create',
+edw_plan_rrp_rmb_portfolio_create = PythonOperator(
+    task_id='edw_plan_rrp_rmb_portfolio_create',
     provide_context=True,
     python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb",
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb_portfolio",
                'sql_section': 'create_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
 
 # delete edw data task:
-edw_lgc_plan_rrp_rmb_delete = PythonOperator(
-    task_id='edw_lgc_plan_rrp_rmb_delete',
+edw_plan_rrp_rmb_portfolio_delete = PythonOperator(
+    task_id='edw_plan_rrp_rmb_portfolio_delete',
     provide_context=True,
     python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb",
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb_portfolio",
                'sql_section': 'delete_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
 
 # insert into edw data task:
-edw_lgc_plan_rrp_rmb_insert = PythonOperator(
-    task_id='edw_lgc_plan_rrp_rmb_insert',
+edw_plan_rrp_rmb_portfolio_insert = PythonOperator(
+    task_id='edw_plan_rrp_rmb_portfolio_insert',
     provide_context=True,
     python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb",
+    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb_portfolio",
                'sql_section': 'insert_edw_table_query', 'args': args},
     on_failure_callback=dag_failure_handler,
     dag=dag,
 )
-
-postprocess_plan_rrp_rmb_task = PythonOperator(
-    task_id = 'postprocess_plan_rrp_rmb_task',
+postprocess_plan_rrp_rmb_portfolio_task = PythonOperator(
+    task_id = 'postprocess_plan_rrp_rmb_portfolio_task',
     provide_context = True,
     python_callable = post_process_fileload,
     op_kwargs = {'is_encrypted': False},
@@ -234,5 +239,5 @@ postprocess_plan_rrp_rmb_task = PythonOperator(
     dag = dag,
 )
 
-preprocess_plan_rrp_rmb_task >> plan_rrp_rmb_src2stg_task >> plan_rrp_rmb_stg2ods_task >> edw_lgc_plan_rrp_rmb_create
-edw_lgc_plan_rrp_rmb_create >> edw_lgc_plan_rrp_rmb_delete >> edw_lgc_plan_rrp_rmb_insert >> postprocess_plan_rrp_rmb_task
+preprocess_plan_rrp_rmb_portfolio_task >> plan_rrp_rmb_portfolio_src2stg_task >> plan_rrp_rmb_portfolio_stg2ods_task >> edw_plan_rrp_rmb_portfolio_create
+edw_plan_rrp_rmb_portfolio_create >> edw_plan_rrp_rmb_portfolio_delete >> edw_plan_rrp_rmb_portfolio_insert >> postprocess_plan_rrp_rmb_portfolio_task
