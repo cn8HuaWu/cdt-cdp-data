@@ -132,7 +132,7 @@ def load_src2stg(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
-    excel_fun_list = [add_new_column_with_value, myutil.filter_modified_product, myutil.rearrange_columns]
+    excel_fun_list = [add_new_column_with_value, myutil.rearrange_columns]
     #src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname=src_file_sheet_name, merge =False, **sheet)
     # 如果1个excel里面，要读多个sheet， 切添加**sheet 参数， 必须准确除去header。 否则合并后会有多个header， 或者不加**sheet参数
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, merge = True)
