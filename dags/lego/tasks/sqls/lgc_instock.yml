@@ -9,8 +9,9 @@ Staging:
     prod_name text,
     cntr_instock_recdr text,
     cntr_recdr text,
-    retail_stock_qty text,
-    in_stock_percnt text
+    instock_percent text,
+    matrl_no_cnt text, 
+    store_no_cnt text
 
 ODS:
 
@@ -27,12 +28,14 @@ EDW:
       lego_sku_name              varchar(100),
       cntr_instock_recdr         bigint,
       cntr_recdr                 bigint,
-      retail_stock_qty           bigint,
-      in_stock_percnt            numeric(17,4),
+      instock_prcnt              numeric(17,4),
+      matrl_no_cnt               bigint,
+      store_no_cnt               bigint,
       dl_batch_date              varchar(20),
       dl_load_time               timestamp,
       constraint pk_f_lgc_instock primary key(lego_year_week,distributor_code, lego_store_code,lego_sku_id)
     )distributed by (distributor_code);
+
 
   delete_edw_table_query:
     delete from edw.f_lgc_instock;
@@ -50,9 +53,15 @@ EDW:
           prod_name                        as lego_sku_name,
           cast(cntr_instock_recdr as int)  as cntr_instock_recdr,
           cast(cntr_recdr as int)          as cntr_recdr,
-          cast(retail_stock_qty as int)    as retail_stock_qty,
-          cast(in_stock_percnt as numeric(17,4)) as in_stock_percnt,
-          dl_batch_date      as dl_batch_date,
-          now()              as dl_load_time
+          cast(instock_prcnt as numeric(17,4)) as instock_prcnt,
+          cast(matrl_no_cnt as int)            as matrl_no_cnt,
+          cast(store_no_cnt as int)            as store_no_cnt,
+          dl_batch_date                        as dl_batch_date,
+          now()                                as dl_load_time
     from
-        ods.r_lgc_instock;
+        ods.r_lgc_instock
+    where 
+        lego_year_week is not null
+        and distributor_code is not null
+        and lego_store_code is not null
+        and lego_sku_id is not null;
