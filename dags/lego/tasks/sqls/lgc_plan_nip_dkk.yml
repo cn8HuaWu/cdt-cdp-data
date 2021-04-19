@@ -14,7 +14,7 @@ Staging:
     oct text,
     nov text,
     dec text,
-    plan_version text
+    plan_vision text
 
 ODS:
 
@@ -26,11 +26,11 @@ EDW:
        distributor_name varchar(200),
        year             varchar(10),
        month            varchar(4),
-       plan_version     varchar(20),
+       plan_vision     varchar(20),
        plan_value       numeric(17,2),
        dl_batch_date    varchar(20),
        dl_load_time     timestamp,
-       constraint pk_f_lgc_plan_nip_dkk primary key(distributor_name, year,month,plan_version)
+       constraint pk_f_lgc_plan_nip_dkk primary key(distributor_name, year,month,plan_vision)
       )distributed by (year);
 
   delete_edw_table_query:
@@ -44,7 +44,7 @@ EDW:
         customer                   as distributor_name,
         (case when year is null then'2021' else year end)                     as year,
         '01'                       as month,
-        plan_version               as plan_version,
+        plan_vision                as plan_vision,
         cast(jan as numeric(17,2)) as plan_value,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -60,7 +60,7 @@ EDW:
         customer                   as distributor_name,
         (case when year is null then'2021' else year end)                     as year,
         '02'                       as month,
-        plan_version               as plan_version,
+        plan_vision               as plan_vision,
         cast(feb as numeric(17,2)) as plan_value,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -76,7 +76,7 @@ EDW:
         customer                   as distributor_name,
         (case when year is null then'2021' else year end)                       as year,
         '03'                       as month,
-        plan_version               as plan_version,
+        plan_vision               as plan_vision,
         cast(mar as numeric(17,2)) as plan_value,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -92,7 +92,7 @@ EDW:
         customer                   as distributor_name,
         (case when year is null then'2021' else year end)                     as year,
         '04'                       as month,
-        plan_version               as plan_version,
+        plan_vision               as plan_vision,
         cast(apr as numeric(17,2)) as plan_value,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -108,7 +108,7 @@ EDW:
         customer                   as distributor_name,
         (case when year is null then'2021' else year end)                       as year,
         '05'                       as month,
-        plan_version               as plan_version,
+        plan_vision               as plan_vision,
         cast(may as numeric(17,2)) as plan_value,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -124,7 +124,7 @@ EDW:
         customer                  as distributor_name,
         (case when year is null then'2021' else year end)                      as year,
         '06'                      as month,
-        plan_version              as plan_version,
+        plan_vision              as plan_vision,
         cast(jun as numeric(17,2))as plan_value,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
@@ -140,7 +140,7 @@ EDW:
         customer                  as distributor_name,
         (case when year is null then'2021' else year end)                      as year,
         '07'                      as month,
-        plan_version              as plan_version,
+        plan_vision              as plan_vision,
         cast(jul as numeric(17,2))as plan_value,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
@@ -156,7 +156,7 @@ EDW:
         customer                 as distributor_name,
         (case when year is null then'2021' else year end)                     as year,
         '08'                     as month,
-        plan_version             as plan_version,
+        plan_vision             as plan_vision,
         cast(aug as numeric(17,2))as plan_value,
         dl_batch_date            as dl_batch_date,
         now()                    as dl_load_time
@@ -172,7 +172,7 @@ EDW:
         customer                as distributor_name,
         (case when year is null then'2021' else year end)                    as year,
         '09'                    as month,
-        plan_version            as plan_version,
+        plan_vision            as plan_vision,
         cast(sep as numeric(17,2))as plan_value,
         dl_batch_date           as dl_batch_date,
         now()                   as dl_load_time
@@ -188,7 +188,7 @@ EDW:
         customer                as distributor_name,
         (case when year is null then'2021' else year end)                    as year,
         '10'                    as month,
-        plan_version            as plan_version,
+        plan_vision            as plan_vision,
         cast(oct as numeric(17,2))as plan_value,
         dl_batch_date           as dl_batch_date,
         now()                   as dl_load_time
@@ -204,7 +204,7 @@ EDW:
         customer                   as distributor_name,
         (case when year is null then'2021' else year end)                       as year,
         '11'                       as month,
-        plan_version               as plan_version,
+        plan_vision               as plan_vision,
         cast(nov as numeric(17,2)) as plan_value,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -220,7 +220,7 @@ EDW:
         customer                   as distributor_name,
         (case when year is null then'2021' else year end) as year,
         '12'                       as month,
-        plan_version               as plan_version,
+        plan_vision               as plan_vision,
         cast(dec as numeric(17,2)) as plan_value,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
