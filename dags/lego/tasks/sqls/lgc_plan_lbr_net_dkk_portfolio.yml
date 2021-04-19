@@ -17,12 +17,12 @@ EDW:
      chnnl_name varchar(100),
      plan_year  varchar(20),
      plan_month varchar(20),
-     plan_versn varchar(10),
+     plan_version varchar(10),
      prod_them  varchar(100),
      cnsmr_sale_amt_plan numeric(17,2),
      dl_batch_date varchar(20),
      dl_load_time  timestamp,
-     constraint pk_f_lgc_plan_lbr_net_dkk_portfolio primary key(chnnl_code,plan_year, plan_month, plan_versn,prod_them)
+     constraint pk_f_lgc_plan_lbr_net_dkk_portfolio primary key(chnnl_code,plan_year, plan_month, plan_version,prod_them)
     )distributed by (plan_year);
 
   delete_edw_table_query:
@@ -36,7 +36,7 @@ EDW:
         channel_name                         as chnnl_name,
         calendar_year                        as plan_year,
         cs_plan_month                        as plan_month,
-        cs_plan_version                      as plan_versn,
+        cs_plan_version                      as plan_version,
         top_theme                            as prod_them,
        cast(consumer_sales_plan_value as numeric(17,2)) as cnsmr_sale_amt_plan,
         dl_batch_date                        as dl_batch_date,

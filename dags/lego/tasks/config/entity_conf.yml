@@ -481,26 +481,26 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
-    key: year,customer,plan_vision
+    key: year,customer,plan_version
 
   lgc_plan_rrp_rmb:
     edw_prefix: f
     update_type: f
     stg_suffix: di
-    key: year,customer,plan_vision
+    key: year,customer,plan_version
 
   lgc_plan_nip_dkk_portfolio:
     edw_prefix: f
     update_type: f
     stg_suffix: di
-    key: year,channel,cnline,plan_vision
+    key: year,channel,cnline,plan_version
 
 
   lgc_plan_rrp_rmb_portfolio:
     edw_prefix: f
     update_type: f
     stg_suffix: di
-    key: year,channel,cnline,plan_vision
+    key: year,channel,cnline,plan_version
 
 
   lgc_cs_weekly_phasing:
