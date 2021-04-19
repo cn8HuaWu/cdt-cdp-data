@@ -227,6 +227,5 @@ postprocess_plan_rrp_rmb_task = PythonOperator(
     dag = dag,
 )
 
-
 preprocess_plan_rrp_rmb_task >> plan_rrp_rmb_src2stg_task >> plan_rrp_rmb_stg2ods_task >> edw_lgc_plan_rrp_rmb_create
 edw_lgc_plan_rrp_rmb_create >> edw_lgc_plan_rrp_rmb_delete >> edw_lgc_plan_rrp_rmb_insert >> postprocess_plan_rrp_rmb_task
