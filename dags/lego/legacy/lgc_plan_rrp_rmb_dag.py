@@ -129,7 +129,7 @@ def add_new_column_with_value(row:list, input_file_path, sheetname, *args):
     # insert 1 new column for the year version according the sheet name
     file_name = os.path.splitext(os.path.basename(input_file_path))[0]
     year = file_name.split("_")[-1]
-    row.insert(2,year)
+    row.insert(1,year)
     return row
 
 def load_src2stg(**kwargs):
