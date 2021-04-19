@@ -81,7 +81,7 @@ EDW:
             store_name                     as store_name,
             reviewchannel                  as review_channel,
             customer                       as customer,
-            store_address                  as store_address,
+            case when store_address ='0' then null else store_address end as store_address,
             province                       as province,
             city                           as city,
             citycn                         as city_cn,
