@@ -53,7 +53,7 @@ EDW:
       dl_load_time
     )
     select
-      coalesce(ls.new_customer, ps.distributor) as  distributor,
+      coalesce(upper(ls.new_customer), ps.distributor) as  distributor,
       ls.review_channel,
       coalesce(ls.lego_store_code, ps.lego_store_code) as lego_store_code,
       ps.distributor_store_code,
@@ -79,4 +79,4 @@ EDW:
       select *, case when customer='LW' then 'LEWIN' else customer end as new_customer  from edw.d_lgc_phy_store
 
     )ls
-      full outer join edw.f_phy_store ps on ls.lego_store_code  = ps.lego_store_code  and ls.new_customer  = ps.distributor ;
+      full outer join edw.f_phy_store ps on ls.lego_store_code  = ps.lego_store_code  and upper(ls.new_customer)  = ps.distributor ;
