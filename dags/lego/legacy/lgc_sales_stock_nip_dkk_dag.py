@@ -29,7 +29,7 @@ DAG_NAME = 'lgc_sales_stock_nip_dkk_dag'
 sheet ={
 "Sheet1":{
     'start_column':0,
-    'column_width':12
+    'column_width':13
 }
 }
 
