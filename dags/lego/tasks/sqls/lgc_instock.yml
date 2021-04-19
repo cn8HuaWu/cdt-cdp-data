@@ -53,7 +53,7 @@ EDW:
           prod_name                        as lego_sku_name,
           cast(cntr_instock_recdr as int)  as cntr_instock_recdr,
           cast(cntr_recdr as int)          as cntr_recdr,
-          cast(instock_prcnt as numeric(17,4)) as instock_prcnt,
+          cast(instock_percent as numeric(17,4)) as instock_prcnt,
           cast(matrl_no_cnt as int)            as matrl_no_cnt,
           cast(store_no_cnt as int)            as store_no_cnt,
           dl_batch_date                        as dl_batch_date,
@@ -61,7 +61,7 @@ EDW:
     from
         ods.r_lgc_instock
     where 
-        lego_year_week is not null
-        and distributor_code is not null
-        and lego_store_code is not null
-        and lego_sku_id is not null;
+        year_week is not null
+        and cust_id is not null
+        and store_id is not null
+        and prod_id is not null;
