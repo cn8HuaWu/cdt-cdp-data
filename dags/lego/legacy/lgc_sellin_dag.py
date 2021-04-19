@@ -29,6 +29,7 @@ DAG_NAME = 'lgc_sellin_dag'
 
 sheet ={
 "Sheet1":{
+    'start_row':1,
     'start_column':0,
     'column_width':14
 }
