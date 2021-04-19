@@ -29,7 +29,6 @@ DAG_NAME = 'lgc_sellin_dag'
 
 sheet ={
 "Sheet1":{
-    'start_row':3,
     'start_column':0,
     'column_width':14
 }
@@ -79,7 +78,7 @@ def load_src2stg(**kwargs):
     #
     OK_FILE_PATH  = kwargs.get('dag_run').conf.get('ok_file_path')
     excel_fun_list = [myutil.filter_modified_product, myutil.rearrange_columns]
-    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=False, sheetname='Sheet1', merge =False, **sheet)
+    src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH, excel_fun_list=excel_fun_list, has_head=1, sheetname='Sheet1', merge =False, **sheet)
     src2stg.start(version='v2')
 
 def load_stg2ods(**kwargs):
@@ -88,7 +87,7 @@ def load_stg2ods(**kwargs):
     stg_suffix = entity_conf[src_entity]["stg_suffix"]
     #
     batch_date = kwargs.get('dag_run').conf.get('batch_date')
-    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = False )
+    stg2ods = Stg2odsHandler(TEMP_FOLDER, STAGING, ODS, batch_date, SRC_NAME, entity, stg_suffix, pkey, myutil, db, has_head = 1 )
     stg2ods.start()
 
 
