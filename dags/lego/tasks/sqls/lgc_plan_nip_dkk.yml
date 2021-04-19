@@ -31,7 +31,7 @@ EDW:
        dl_batch_date    varchar(20),
        dl_load_time     timestamp,
        constraint pk_f_lgc_plan_nip_dkk primary key(distributor_name, year,month,plan_version)
-      )distributed by (year)
+      )distributed by (year);
 
   delete_edw_table_query:
     delete from edw.f_lgc_plan_nip_dkk;
