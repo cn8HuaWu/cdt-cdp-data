@@ -256,7 +256,7 @@ entities:
     edw_prefix: f
     update_type: SCD3
     stg_suffix: mi
-    key: year,month,week,start_time,end_time,brand,lego_sku_id,sku_cn_name,platform,shop
+    key: year,month,xth_week,start_time,end_time,brand,lego_sku_id,sku_cn_name,platform,shop
     dm_sync: False
 
   qbt_store_sales:
