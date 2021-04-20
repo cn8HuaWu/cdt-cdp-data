@@ -162,14 +162,14 @@ oms_order_update_dly_sales_rpt = PythonOperator(
 #     dag=dag,
 # )
 
-oms_order_update_dl_shopper = PythonOperator(
-    task_id='oms_order_update_dl_shopper',
-    provide_context = True,
-    python_callable = update_downstream,
-    op_kwargs = {'myutil':myutil, 'gpdb': db, 'sql_file_name':"dl_tm_shopper" , 'sql_section': 'update_by_oms_order_dtl', 'args': args},
-    on_failure_callback = dag_failure_handler,
-    dag=dag,
-)
+# oms_order_update_dl_shopper = PythonOperator(
+#     task_id='oms_order_update_dl_shopper',
+#     provide_context = True,
+#     python_callable = update_downstream,
+#     op_kwargs = {'myutil':myutil, 'gpdb': db, 'sql_file_name':"dl_tm_shopper" , 'sql_section': 'update_by_oms_order_dtl', 'args': args},
+#     on_failure_callback = dag_failure_handler,
+#     dag=dag,
+# )
 
 oms_order_sync_2_rds_task = SubDagOperator(
     task_id='oms_order_sync_2_rds_task',
@@ -195,4 +195,5 @@ oms_order_stg2ods_task >>  oms_order_ods2edw_task
 oms_order_ods2edw_task >> oms_order_updated_by_oms_order_dtl >> oms_order_update_oms_order_dtl 
 oms_order_update_oms_order_dtl >> oms_order_update_dly_sales_rpt >> oms_order_sync_2_rds_task >> postprocess_oms_order_task
 # oms_order_update_oms_order_dtl >> oms_order_update_mly_sales_rpt >> oms_order_sync_2_rds_task >> postprocess_oms_order_task
-oms_order_update_oms_order_dtl >> oms_order_update_dl_shopper >> oms_order_sync_2_rds_task >> postprocess_oms_order_task
+# oms_order_update_oms_order_dtl >> oms_order_update_dl_shopper >> oms_order_sync_2_rds_task >> postprocess_oms_order_task
+oms_order_update_oms_order_dtl >> oms_order_sync_2_rds_task >> postprocess_oms_order_task

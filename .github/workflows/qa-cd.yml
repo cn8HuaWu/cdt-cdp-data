@@ -1,0 +1,39 @@
+# create dev branch CD 
+name: qa CD
+env:
+  SERVER: lego_cdp_data_github_runner
+on: 
+  push:
+    branches:
+      - qa
+  pull_request:
+    branches:
+      - qa
+
+jobs:
+  qa-deploy:
+    runs-on: [self-hosted, linux, qa]
+    steps:
+    - uses: actions/checkout@v1
+    - name: copy source code to target
+      run: |
+        [[ ! -d "/cdp/airflow/dags/lego/analysis" ]]&& mkdir "/cdp/airflow/dags/lego/analysis"
+        cp -rf ./dags/lego/analysis/*   /cdp/airflow/dags/lego/analysis/
+        cp -rf ./dags/lego/cs/*   /cdp/airflow/dags/lego/cs/
+        cp -rf ./dags/lego/historical/*   /cdp/airflow/dags/lego/historical/
+        cp -rf ./dags/lego/jd/*   /cdp/airflow/dags/lego/jd/
+        cp -rf ./dags/lego/lego/*   /cdp/airflow/dags/lego/lego/
+        cp -rf ./dags/lego/oms/*   /cdp/airflow/dags/lego/oms/
+        cp -rf ./dags/lego/operate/*   /cdp/airflow/dags/lego/operate/
+        cp -rf ./dags/lego/phy_store/*   /cdp/airflow/dags/lego/phy_store/
+        cp -rf ./dags/lego/qbt/*   /cdp/airflow/dags/lego/qbt/
+        cp -rf ./dags/lego/wechat/*   /cdp/airflow/dags/lego/wechat/
+        cp -rf ./dags/lego/tasks/utils/* /cdp/airflow/dags/lego/tasks/utils/
+        cp -rf ./dags/lego/tasks/config/entity_conf.yml /cdp/airflow/dags/lego/tasks/config/
+        cp -rf ./dags/lego/tasks/sqls/*  /cdp/airflow/dags/lego/tasks/sqls/
+        cp -rf ./dags/lego/tasks/subdags/*  /cdp/airflow/dags/lego/tasks/subdags/
+        cp -rf ./dags/lego/tasks/src2stg.py  /cdp/airflow/dags/lego/tasks/
+        cp -rf ./dags/lego/tasks/stg2ods.py  /cdp/airflow/dags/lego/tasks/
+        cp -rf ./dags/lego/tasks/ods2edw.py  /cdp/airflow/dags/lego/tasks/
+        cp -rf ./dags/lego/monitor_file_dag.py  /cdp/airflow/dags/lego/
+        cp -rf ./plugins/* /cdp/airflow/plugins/

@@ -262,14 +262,14 @@ EDW:
     create temp table t2 as 
     SELECT 1 priority,year_version::float8 as year,lego_sku_id,sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_b2b_launch_date FROM t1
         union all
-    SELECT 10 priority,year_version::float8 - 1,lego_sku_id,sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_b2b_launch_date FROM t1
+    SELECT 10 priority,year_version::float8 - 1,lego_sku_id,lego_sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_b2b_launch_date FROM t1
         union all
-    SELECT y.year - t1.year_version::FLOAT8 + 100 priority,y.year,lego_sku_id,sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_b2b_launch_date FROM t1
+    SELECT y.year - t1.year_version::FLOAT8 + 100 priority,y.year,lego_sku_id,lego_sku_name_en,RSP,cn_line,top_theme,product_status,bu_cn_launch_date,cn_jd_b2b_launch_date FROM t1
             join (select distinct year_version::float8 as year from edw.d_dl_product_info) y on t1.year_version::float8 < y.year
     ;
   
     update edw.f_jd_b2b_order_dtl a
-    set lego_sku_name_en = b.sku_name_en,
+    set lego_sku_name_en = b.lego_sku_name_en,
         lego_sku_rrp_price = b.RSP,
         order_rrp_amount = b.RSP * piece_cnt,
         lego_sku_line = coalesce(case when trim( b.top_theme )='' then null else b.top_theme end , b.cn_line),
