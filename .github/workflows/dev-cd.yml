@@ -1,0 +1,22 @@
+# create dev branch CD
+name: dev CD
+env:
+  SERVER: lego_cdp_dev_github_runner
+on:
+  push:
+    branches:
+      - dev
+jobs:
+  dev-deploy:
+    runs-on: [self-hosted, linux, dev]
+    steps:
+    - uses: actions/checkout@v1
+    - name: copy source code to target
+      run: |
+        cp -rf ./dags/lego/tasks/utils/ /cdp/airflow/dags/lego/tasks/
+        cp -rf ./dags/lego/tasks/src2stg.py  /cdp/airflow/dags/lego/tasks/
+        cp -rf ./dags/lego/tasks/sqls/dl_tm_shopper.yml  /cdp/airflow/dags/lego/tasks/sqls/
+        cp -rf ./dags/lego/tasks/sqls/oms_order_dtl.yml  /cdp/airflow/dags/lego/tasks/sqls/
+        cp -rf ./dags/lego/tasks/sqls/database_maintenance.sh  /cdp/airflow/dags/lego/tasks/sqls/
+        cp -rf ./dags/lego/tasks/config/env.conf /cdp/airflow/dags/lego/tasks/config/
+        cp -rf ./dags/lego/tasks/subdags/subdag_sync_rds.py /cdp/airflow/dags/lego/tasks/subdags/

@@ -268,7 +268,7 @@ EDW:
       odh.jd_price,
       odh.piece_cnt,
       skm.lego_sku_id,    
-      p.sku_name_en lego_sku_name_en,
+      p.lego_sku_name_en lego_sku_name_en,
       p.rsp lego_sku_rrp_price,
       null lego_sku_gmv_price,
       null order_gmv_amount,

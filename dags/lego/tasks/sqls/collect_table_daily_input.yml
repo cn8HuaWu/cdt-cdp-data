@@ -25,14 +25,25 @@ collect_stg_count:
         select 'callcenter_consumer_info' as name, count(1) as record_count from stg.r_cs_consumer_info_di rccid where to_date(change_date,'yyyyMMddhh24miss')=current_date-1
         UNION
         select topic_name, record_count from (
+            select topic_name , update_dt , record_count -lead(record_count)over(partition by topic_name order by update_dt desc) as record_count, row_number() over(partition by topic_name order by update_dt desc) as rk
+            from (
+                select topic_name, date(update_ts) as update_dt, max(record_count) as record_count
+                from edw.a_dl_datahub_checkpoint where state='done'
+                and topic_name like 'phy_store%'
+                group by topic_name, date(update_ts)
+            
+            )a 
+        )b where rk=1 and update_dt = current_date
+        UNION 
+        select topic_name, record_count from (
             select topic_name , update_dt , record_count, row_number() over(partition by topic_name order by update_dt desc) as rk
             from (
                 select topic_name, date(update_ts) as update_dt, max(record_count) as record_count
                 from edw.a_dl_datahub_checkpoint where state='done'
+                and  topic_name like 'oms%'
                 group by topic_name, date(update_ts)
-            
             )a 
-            )b where rk=1 and update_dt = current_date
+        )b where rk=1 and update_dt = current_date
     )c order by 1
 
 

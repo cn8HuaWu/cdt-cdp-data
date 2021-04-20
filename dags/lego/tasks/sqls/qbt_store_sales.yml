@@ -19,6 +19,7 @@ EDW:
       shopkeeper_name varchar(255),
       gmv_amt decimal(17,2),
       piece_cnt decimal(15),
+      store_type varchar(255),
       dl_batch_date varchar(8),
       dl_load_time timestamp,
       constraint pk_store_sales_id primary key(platform, year, month, shop, shopkeeper_name )
@@ -36,18 +37,33 @@ EDW:
       shopkeeper_name, 
       gmv_amt, 
       piece_cnt, 
+      store_type,
       dl_batch_date, 
       dl_load_time
     )
     select
-      lower(platform) as platform,
+      lower(a.platform) as platform,
       year::decimal(4,0) as year,
       month::decimal(4,0) as month,
-      shop,
+      a.shop,
       shopkeeper_name,
       case when gmv_amt ~ E'\\d+' then replace(trim(gmv_amt),',','')::decimal(17,2) else null end as gmv_amt,
       case when piece_cnt ~ E'\\d+' then replace(trim(piece_cnt),',','')::decimal(15) else null end as piece_cnt,
+      case when lower(a.platform) ='tb' then '淘宝' 
+           when lower(a.platform) ='tmall' and b.platform is not null then b.store_type
+           when lower(a.platform) ='tmall' and b.platform is null then '天猫B店' 
+           else null 
+        end as store_type,
       dl_batch_date,
       now()
-    from ods.r_qbt_store_sales
+    from ods.r_qbt_store_sales a 
+      left join edw.d_qbt_competitor_store_mapping b on lower(a.platform) = lower(b.platform) and lower(a.shop) = lower(b.shop);
+
+    # update edw.f_qbt_store_sales a
+    # set store_type = case when b.store_type is not null then b.store_type else '天猫B店' end 
+    # from edw.d_qbt_competitor_store_mapping b
+    # where lower(a.platform) = lower(b.platform)
+    #   and  lower(a.shop) = lower(b.shop)
+    #   and lower(a.platform)='tmall';
+
     
