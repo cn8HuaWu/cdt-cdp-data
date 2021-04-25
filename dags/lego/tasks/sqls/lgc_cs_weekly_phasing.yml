@@ -16,83 +16,83 @@ Staging:
 
 ODS:
 
+
 EDW:
   create_edw_table_query:
-    create table if not exists edw.f_lgc_cs_week_phase(
-       date_id           varchar(20),
-       distributor_code  varchar(50),
-       distributor_name  varchar(100),
-       month             varchar(20),
-       week_num          bigint,
-       value             numeric(17,2),
-       dl_batch_date     varchar(20),
+    create table if not exists edw.f_lgc_cs_weekly_phasing(
+       customer_code     varchar(100),
+       customer_name     varchar(100),
+       year_month        varchar(100),
+       week_number       bigint,
+       plan_value        numeric(17,2),
+       dl_batch_date     varchar(100),
        dl_load_time      timestamp,
-       constraint pk_f_lgc_cs_week_phase primary key(distributor_name, month,week_num )
-    )distributed by (month);
+       constraint pk_f_lgc_cs_weekly_phasing primary key(customer_name, year_year_month,week_number )
+    )distributed by (year_month);
 
 
 
   delete_edw_table_query:
-    delete from edw.f_lgc_cs_week_phase;
+    delete from edw.f_lgc_cs_weekly_phasing;
 
   insert_edw_table_query:
-    insert into edw.f_lgc_cs_week_phase
+    insert into edw.f_lgc_cs_weekly_phasing
     select
-       month             as date_id,
-       null              as distributor_code,
-       customer          as distributor_name,
-       month             as month,
-       1                 as week_num,
-       cast(first_week as numeric(17,2))as value,
+       null              as customer_code,
+       customer          as customer_name,
+       month             as year_month,
+       1                 as week_number,
+       cast(first_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
+  where first_week is not null
     union all
     select
-       month             as date_id,
-       null              as distributor_code,
-       customer          as distributor_name,
-       month             as month,
-       2                 as week_num,
-       cast(second_week as numeric(17,2))as value,
+       null              as customer_code,
+       customer          as customer_name,
+       month             as year_month,
+       2                 as week_number,
+       cast(second_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
+  where second_week is not null
     union all
     select
-       month             as date_id,
-       null              as distributor_code,
-       customer          as distributor_name,
-       month             as month,
-       3                 as week_num,
-       cast(third_week as numeric(17,2))as value,
+       null              as customer_code,
+       customer          as customer_name,
+       month             as year_month,
+       3                 as week_number,
+       cast(third_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
+  where third_week is not null
     union all
     select
-       month             as date_id,
-       null              as distributor_code,
-       customer          as distributor_name,
-       month             as month,
-       4                 as week_num,
-       cast(fourth_week as numeric(17,2))as value,
+       null              as customer_code,
+       customer          as customer_name,
+       month             as year_month,
+       4                 as week_number,
+       cast(fourth_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
+  where fourth_week is not null
     union all
     select
-       month             as date_id,
-       null              as distributor_code,
-       customer          as distributor_name,
-       month             as month,
-       5                 as week_num,
-       cast(fifth_week as numeric(17,2))as value,
+       null              as customer_code,
+       customer          as customer_name,
+       month             as year_month,
+       5                 as week_number,
+       cast(fifth_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
     from
-        ods.r_lgc_cs_weekly_phasing ;
+        ods.r_lgc_cs_weekly_phasing
+  where fifth_week is not null    ;
