@@ -21,17 +21,17 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_plan_rrp_rmb(
-       date_id          varchar(20),
-       distributor_code varchar(50),
-       distributor_name varchar(200),
-       year             varchar(10),
-       month            varchar(4),
-       plan_version      varchar(20),
-       plan_value       numeric(17,2),
-       ld_batch_date    varchar(20),
-       ld_load_time     timestamp,
-       constraint pk_f_lgc_plan_rrp_rmb primary key(distributor_name,year,month,plan_version)
-      )distributed by (year);
+       customer_code    varchar(50),
+       customer_name    varchar(200),
+       plan_year        varchar(10),
+       plan_month       varchar(4),
+       plan_version     varchar(20),
+       plan_amount      numeric(17,2),
+	   data_version     varchar(100),
+       dl_batch_date    varchar(20),
+       dl_load_time     timestamp,
+       constraint pk_f_lgc_plan_rrp_rmb primary key(customer_name,plan_year,plan_month,plan_version)
+      )distributed by (plan_year);
 
   delete_edw_table_query:
     delete from edw.f_lgc_plan_rrp_rmb;
@@ -39,170 +39,194 @@ EDW:
   insert_edw_table_query:
     insert into edw.f_lgc_plan_rrp_rmb
     select
-        (case when year is null then '2021' else year end)||'14'||'01'           as date_id,
-        null                       as distributor_code,
-        customer                   as distributor_name,
-        (case when year is null then '2021' else year end)                       as year,
-        '01'                       as month,
-        plan_version                as plan_version,
-        cast(jan as numeric(17,2)) as plan_value,
-        dl_batch_date              as dl_batch_date,
-        now()                      as dl_load_time
-    from
-        ods.r_lgc_plan_rrp_rmb
-    where jan is not null
-    union all
-    select
-        (case when year is null then '2021' else year end)||'14'||'02'           as date_id,
-        null                       as distributor_code,
-        customer                   as distributor_name,
-        (case when year is null then '2021' else year end)                       as year,
-        '02'                       as month,
+        null                       as customer_code,
+        customer                   as customer_name,
+        year                       as plan_year,
+        '01'                       as plan_month,
         plan_version               as plan_version,
-        cast(feb as numeric(17,2)) as plan_value,
+        cast(jan as numeric(17,2)) as plan_amount,
+		'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb
-    where feb is not null
+    where
+        lower(jan) <>'jan'
+        and jan is not null
     union all
     select
-        (case when year is null then '2021' else year end)||'14'||'03'           as date_id,
-        null                       as distributor_code,
-        customer                   as distributor_name,
-        (case when year is null then '2021' else year end)                       as year,
-        '03'                       as month,
+        null                       as customer_code,
+        customer                   as customer_name,
+        year                       as plan_year,
+        '02'                       as plan_month,
         plan_version               as plan_version,
-        cast(mar as numeric(17,2)) as plan_value,
+        cast(feb as numeric(17,2)) as plan_amount,
+		'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb
-    where mar is not null
+    where
+        lower(feb) <>'feb'
+        and feb is not null
     union all
     select
-        (case when year is null then '2021' else year end)||'14'||'04'           as date_id,
-        null                       as distributor_code,
-        customer                   as distributor_name,
-        (case when year is null then '2021' else year end)                       as year,
-        '04'                       as month,
+        null                       as customer_code,
+        customer                   as customer_name,
+        year                       as plan_year,
+        '03'                       as plan_month,
         plan_version               as plan_version,
-        cast(apr as numeric(17,2)) as plan_value,
+        cast(mar as numeric(17,2)) as plan_amount,
+		'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb
-    where apr is not null
+    where
+        lower(mar) <>'mar'
+        and mar is not null
     union all
     select
-        (case when year is null then '2021' else year end)||'14'||'05'           as date_id,
-        null                       as distributor_code,
-        customer                   as distributor_name,
-        (case when year is null then '2021' else year end)                       as year,
-        '05'                       as month,
+        null                       as customer_code,
+        customer                   as customer_name,
+        year                       as plan_year,
+        '04'                       as plan_month,
         plan_version               as plan_version,
-        cast(may as numeric(17,2)) as plan_value,
+        cast(apr as numeric(17,2)) as plan_amount,
+		'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb
-    where may is not null
+    where
+        lower(apr) <>'apr'
+        and apr is not null
     union all
     select
-        (case when year is null then '2021' else year end)||'14'||'06'          as date_id,
-        null                      as distributor_code,
-        customer                  as distributor_name,
-        (case when year is null then '2021' else year end)                      as year,
-        '06'                      as month,
+        null                       as customer_code,
+        customer                   as customer_name,
+        year                       as plan_year,
+        '05'                       as plan_month,
+        plan_version               as plan_version,
+        cast(may as numeric(17,2)) as plan_amount,
+		'RRP RMB'                  as data_version,
+        dl_batch_date              as dl_batch_date,
+        now()                      as dl_load_time
+    from
+        ods.r_lgc_plan_rrp_rmb
+    where
+        lower(may) <>'may'
+        and may is not null
+    union all
+    select
+        null                       as customer_code,
+        customer                   as customer_name,
+        year                       as plan_year,
+        '06'                       as plan_month,
+        plan_version               as plan_version,
+        cast(jun as numeric(17,2)) as plan_amount,
+		'RRP RMB'                  as data_version,
+        dl_batch_date              as dl_batch_date,
+        now()                      as dl_load_time
+    from
+        ods.r_lgc_plan_rrp_rmb
+    where
+        lower(jun) <>'jun'
+        and jun is not null
+    union all
+    select
+        null                       as customer_code,
+        customer                   as customer_name,
+        year                       as plan_year,
+        '07'                       as plan_month,
+        plan_version               as plan_version,
+        cast(jul as numeric(17,2)) as plan_amount,
+		'RRP RMB'                  as data_version,
+        dl_batch_date              as dl_batch_date,
+        now()                      as dl_load_time
+    from
+        ods.r_lgc_plan_rrp_rmb
+    where
+        lower(jul) <>'jul'
+        and jul is not null
+    union all
+    select,
+        null                       as customer_code,
+        customer                   as customer_name,
+        year                       as plan_year,
+        '08'                       as plan_month,
+        plan_version               as plan_version,
+        cast(aug as numeric(17,2)) as plan_amount,
+		'RRP RMB'                  as data_version,
+        dl_batch_date              as dl_batch_date,
+        now()                      as dl_load_time
+    from
+        ods.r_lgc_plan_rrp_rmb
+    where
+        lower(aug) <>'aug'
+        and aug is not null
+    union all
+    select
+        null                       as customer_code,
+        customer                   as customer_name,
+        year                       as plan_year,
+        '09'                       as plan_month,
+        plan_version               as plan_version,
+        cast(sep as numeric(17,2)) as plan_amount,
+		'RRP RMB'                 as data_version,
+        dl_batch_date              as dl_batch_date,
+        now()                      as dl_load_time
+    from
+        ods.r_lgc_plan_rrp_rmb
+    where
+        lower(sep) <>'sep'
+        and sep is not null
+    union all
+    select
+        null                      as customer_code,
+        customer                  as customer_name,
+        year                      as plan_year,
+        '10'                      as plan_month,
         plan_version              as plan_version,
-        cast(jun as numeric(17,2))as plan_value,
+        cast(oct as numeric(17,2))as plan_amount,
+		'RRP RMB'                 as data_version,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb
-    where jun is not null
+    where
+        lower(oct) <>'oct'
+        and oct is not null
     union all
     select
-        (case when year is null then '2021' else year end)||'14'||'07'          as date_id,
-        null                      as distributor_code,
-        customer                  as distributor_name,
-        (case when year is null then '2021' else year end)                      as year,
-        '07'                      as month,
+        null                      as customer_code,
+        customer                  as customer_name,
+        year                      as plan_year,
+        '11'                      as plan_month,
         plan_version              as plan_version,
-        cast(jul as numeric(17,2))as plan_value,
+        cast(nov as numeric(17,2))as plan_amount,
+		'RRP RMB'                 as data_version,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb
-    where jul is not null
+    where
+        lower(nov) <>'nov'
+        and nov is not null
     union all
     select
-        (case when year is null then '2021' else year end)||'14'||'08'         as date_id,
-        null                     as distributor_code,
-        customer                 as distributor_name,
-        (case when year is null then '2021' else year end)                     as year,
-        '08'                     as month,
-        plan_version             as plan_version,
-        cast(aug as numeric(17,2))as plan_value,
-        dl_batch_date            as dl_batch_date,
-        now()                    as dl_load_time
+        null                      as customer_code,
+        customer                  as customer_name,
+        year                      as plan_year,
+        '12'                      as plan_month,
+        plan_version              as plan_version,
+        cast(dec as numeric(17,2))as plan_amount,
+		'RRP RMB'                 as data_version,
+        dl_batch_date             as dl_batch_date,
+        now()                     as dl_load_time
     from
         ods.r_lgc_plan_rrp_rmb
-    where aug is not null
-    union all
-    select
-        (case when year is null then '2021' else year end)||'14'||'09'        as date_id,
-        null                    as distributor_code,
-        customer                as distributor_name,
-        (case when year is null then '2021' else year end)                    as year,
-        '09'                    as month,
-        plan_version            as plan_version,
-        cast(sep as numeric(17,2))as plan_value,
-        dl_batch_date           as dl_batch_date,
-        now()                   as dl_load_time
-    from
-        ods.r_lgc_plan_rrp_rmb
-    where sep is not null
-    union all
-    select
-        (case when year is null then '2021' else year end)||'14'||'10'        as date_id,
-        null                    as distributor_code,
-        customer                as distributor_name,
-        (case when year is null then '2021' else year end)                    as year,
-        '10'                    as month,
-        plan_version            as plan_version,
-        cast(oct as numeric(17,2))as plan_value,
-        dl_batch_date           as dl_batch_date,
-        now()                   as dl_load_time
-    from
-        ods.r_lgc_plan_rrp_rmb
-    where oct is not null
-    union all
-    select
-        (case when year is null then '2021' else year end)||'14'||'11'           as date_id,
-        null                       as distributor_code,
-        customer                   as distributor_name,
-        (case when year is null then '2021' else year end)                       as year,
-        '11'                       as month,
-        plan_version               as plan_version,
-        cast(nov as numeric(17,2)) as plan_value,
-        dl_batch_date              as dl_batch_date,
-        now()                      as dl_load_time
-    from
-        ods.r_lgc_plan_rrp_rmb
-    where nov is not null
-    union all
-    select
-        (case when year is null then '2021' else year end)||'14'||'12'           as date_id,
-        null                       as distributor_code,
-        customer                   as distributor_name,
-        (case when year is null then '2021' else year end)                       as year,
-        '12'                       as month,
-        plan_version               as plan_version,
-        cast(dec as numeric(17,2)) as plan_value,
-        dl_batch_date              as dl_batch_date,
-        now()                      as dl_load_time
-    from
-        ods.r_lgc_plan_rrp_rmb
-    where dec is not null ;
-
+    where
+        lower(dec) <>'dec'
+        and dec is not null
+    ;
