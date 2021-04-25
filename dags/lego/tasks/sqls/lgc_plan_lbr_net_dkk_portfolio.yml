@@ -12,17 +12,17 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_plan_lbr_net_dkk_portfolio
-    (date_id    varchar(20),
-     chnnl_code varchar(100),
-     chnnl_name varchar(100),
-     plan_year  varchar(20),
-     plan_month varchar(20),
-     plan_version varchar(10),
-     prod_them  varchar(100),
-     cnsmr_sale_amt_plan numeric(17,2),
-     dl_batch_date varchar(20),
-     dl_load_time  timestamp,
-     constraint pk_f_lgc_plan_lbr_net_dkk_portfolio primary key(chnnl_code,plan_year, plan_month, plan_version,prod_them)
+    (channel_code         varchar(100),
+     channel_name         varchar(100),
+     plan_year            varchar(20),
+     plan_month           varchar(20),
+     plan_version         varchar(10),
+     product_theme        varchar(100),
+     plan_amount          numeric(17,2),
+	 data_version         varchar(100）,
+     dl_batch_date        varchar(20),
+     dl_load_time         timestamp,
+     constraint pk_f_lgc_plan_lbr_net_dkk_portfolio primary key(channel_code,plan_year, plan_month, plan_version,product_theme)
     )distributed by (plan_year);
 
   delete_edw_table_query:
@@ -31,14 +31,14 @@ EDW:
   insert_edw_table_query:
     insert into edw.f_lgc_plan_lbr_net_dkk_portfolio
     select
-        calendar_year||'14'||lpad(cs_plan_month,2,'0')   as date_id,
-        channel_code                         as chnnl_code,
-        channel_name                         as chnnl_name,
+        channel_code                         as channel_code,
+        channel_name                         as channel_name,
         calendar_year                        as plan_year,
         cs_plan_month                        as plan_month,
         cs_plan_version                      as plan_version,
-        top_theme                            as prod_them,
-       cast(consumer_sales_plan_value as numeric(17,2)) as cnsmr_sale_amt_plan,
+        top_theme                            as product_theme,
+        cast(consumer_sales_plan_value as numeric(17,2)) as plan_amount,
+		'NEP/NIP DKK'                        as data_version,
         dl_batch_date                        as dl_batch_date,
         now()                                as dl_load_time
     from
