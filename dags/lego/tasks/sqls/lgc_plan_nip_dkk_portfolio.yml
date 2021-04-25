@@ -22,17 +22,17 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_plan_nip_dkk_portflio(
-       date_id       varchar(20),
-       channel       varchar(20),
-       prod_line     varchar(100),
-       year          varchar(10),
-       month         varchar(10),
-       plan_version  varchar(20),
-       plan_value    numeric(17,2),
-       dl_batch_date varchar(10),
-       dl_load_time  timestamp,
-       constraint pk_f_lgc_plan_nip_dkk_portflio primary key(channel,prod_line,year,month,plan_version)
-    )distributed by (year);
+       channel_name   varchar(20),
+       product_line   varchar(100),
+       plan_year      varchar(10),
+       plan_month     varchar(10),
+       plan_version   varchar(20),
+       plan_amount    numeric(17,2),
+	   data_version   varchar(100),
+       dl_batch_date  varchar(10),
+       dl_load_time   timestamp,
+       constraint pk_f_lgc_plan_nip_dkk_portflio primary key(channel_name,product_line,plan_year,plan_month,plan_version)
+    )distributed by (plan_year);
 
   delete_edw_table_query:
      delete from edw.f_lgc_plan_nip_dkk_portflio;
@@ -40,13 +40,13 @@ EDW:
   insert_edw_table_query:
     insert into edw.f_lgc_plan_nip_dkk_portflio
     select
-         (case when year is null then'2021' else year end)||'14'||'01' as date_id,
-        channel                     as channel,
-        cnline                      as prod_line,
-         (case when year is null then'2021' else year end) as year,
-        '01'                        as month,
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '01'                        as plan_month,
         plan_version                as plan_version,
-        cast(jan as numeric(17,2))  as plan_value,
+        cast(jan as numeric(17,2))  as plan_amount,
+		'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -54,13 +54,13 @@ EDW:
     where jan is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'02' as date_id,
-        channel                     as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end) as year,
-        '02'                        as month,
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '02'                        as plan_month,
         plan_version                as plan_version,
-        cast(feb as numeric(17,2))  as plan_value,
+        cast(feb as numeric(17,2))  as plan_amount,
+		'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -68,13 +68,13 @@ EDW:
     where feb is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'03'  as date_id,
-        channel                     as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end)  as year,
-        '03'                        as month,
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '03'                        as plan_month,
         plan_version                as plan_version,
-        cast(mar as numeric(17,2))  as plan_value,
+        cast(mar as numeric(17,2))  as plan_amount,
+		'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -82,127 +82,127 @@ EDW:
     where mar is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'04'  as date_id,
-        channel                    as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end)              as year,
-        '04'                       as month,
-        plan_version               as plan_version,
-        cast(apr as numeric(17,2)) as plan_value,
-        dl_batch_date              as dl_batch_date,
-        now()                      as dl_load_time
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '04'                        as plan_month,
+        plan_version                as plan_version,
+        cast(apr as numeric(17,2))  as plan_amount,
+		'NEP/NIP DKK'               as data_version,
+        dl_batch_date               as dl_batch_date,
+        now()                       as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk_portfolio
     where apr is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'05'    as date_id,
-        channel                    as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end)                as year,
-        '05'                       as month,
-        plan_version               as plan_version,
-        cast(may as numeric(17,2)) as plan_value,
-        dl_batch_date              as dl_batch_date,
-        now()                      as dl_load_time
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '05'                        as plan_month,
+        plan_version                as plan_version,
+        cast(may as numeric(17,2))  as plan_amount,
+		'NEP/NIP DKK'               as data_version,
+        dl_batch_date               as dl_batch_date,
+        now()                       as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk_portfolio
     where may is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'06'   as date_id,
-        channel                   as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end)               as year,
-        '06'                      as month,
-        plan_version              as plan_version,
-        cast(jun as numeric(17,2))as plan_value,
-        dl_batch_date             as dl_batch_date,
-        now()                     as dl_load_time
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '06'                        as plan_month,
+        plan_version                as plan_version,
+        cast(jun as numeric(17,2))  as plan_amount,
+		'NEP/NIP DKK'               as data_version,
+        dl_batch_date               as dl_batch_date,
+        now()                       as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk_portfolio
     where jun is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'07'  as date_id,
-        channel                  as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end)              as year,
-        '07'                     as month,
-        plan_version             as plan_version,
-        cast(jul as numeric(17,2))as plan_value,
-        dl_batch_date            as dl_batch_date,
-        now()                    as dl_load_time
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '07'                        as plan_month,
+        plan_version                as plan_version,
+        cast(jul as numeric(17,2))  as plan_amount,
+		'NEP/NIP DKK'               as data_version,
+        dl_batch_date               as dl_batch_date,
+        now()                       as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk_portfolio
     where jul is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'08'  as date_id,
-        channel                  as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end)              as year,
-        '08'                     as month,
-        plan_version             as plan_version,
-        cast(aug as numeric(17,2))as plan_value,
-        dl_batch_date            as dl_batch_date,
-        now()                    as dl_load_time
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '08'                        as plan_month,
+        plan_version                as plan_version,
+        cast(aug as numeric(17,2))  as plan_amount,
+		'NEP/NIP DKK'               as data_version,
+        dl_batch_date               as dl_batch_date,
+        now()                       as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk_portfolio
     where aug is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'09'  as date_id,
-        channel                  as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end)              as year,
-        '09'                     as month,
-        plan_version             as plan_version,
-        cast(sep as numeric(17,2))as plan_value,
-        dl_batch_date            as dl_batch_date,
-        now()                    as dl_load_time
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '09'                        as plan_month,
+        plan_version                as plan_version,
+        cast(sep as numeric(17,2))  as plan_amount,
+		'NEP/NIP DKK'               as data_version,
+        dl_batch_date               as dl_batch_date,
+        now()                       as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk_portfolio
     where sep is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'10'   as date_id,
-        channel                   as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end)               as year,
-        '10'                      as month,
-        plan_version              as plan_version,
-        cast(oct as numeric(17,2))as plan_value,
-        dl_batch_date             as dl_batch_date,
-        now()                     as dl_load_time
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '10'                        as plan_month,
+        plan_version                as plan_version,
+        cast(oct as numeric(17,2))  as plan_amount,
+		'NEP/NIP DKK'               as data_version,
+        dl_batch_date               as dl_batch_date,
+        now()                       as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk_portfolio
     where oct is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'11'    as date_id,
-        channel                   as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end)                as year,
-        '11'                      as month,
-        plan_version              as plan_version,
-        cast(nov as numeric(17,2))as plan_value,
-        dl_batch_date             as dl_batch_date,
-        now()                     as dl_load_time
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '11'                        as plan_month,
+        plan_version                as plan_version,
+        cast(nov as numeric(17,2))  as plan_amount,
+  		'NEP/NIP DKK'               as data_version,
+        dl_batch_date               as dl_batch_date,
+        now()                       as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk_portfolio
     where nov is not null
     union all
     select
-         (case when year is null then'2021' else year end)||'14'||'12'   as date_id,
-        channel                   as channel,
-        cnline                    as prod_line,
-         (case when year is null then'2021' else year end)               as year,
-        '12'                      as month,
-        plan_version               as plan_version,
-        cast(dec as numeric(17,2)) as plan_value,
-        dl_batch_date             as dl_batch_date,
-        now()                     as dl_load_time
+        channel                     as channel_name,
+        cnline                      as product_line,
+        year                        as plan_year,
+        '12'                        as plan_month,
+        plan_version                as plan_version,
+        cast(dec as numeric(17,2))  as plan_amount,
+  		'NEP/NIP DKK'               as data_version,
+        dl_batch_date               as dl_batch_date,
+        now()                       as dl_load_time
     from
         ods.r_lgc_plan_nip_dkk_portfolio
     where dec is not null;
