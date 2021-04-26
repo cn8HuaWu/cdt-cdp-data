@@ -13,14 +13,15 @@ Staging:
     cst_cnsmr_sale_qty text,
     cst_retail_stock_qty text,
     cst_retail_stock_rrp text
-    
+
 ODS:
 
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_sales_stock_rrp_rmb
-       (date_id                varchar(100),
-       lego_year_week          varchar(100),
+      (lego_year_week          varchar(100),
+	   c6_link_code            varchar(200),
+	   c6_link_name            varchar(200),
        distributor_code        varchar(100),
        distributor_name        varchar(100),
        sale_district           varchar(100),
@@ -42,13 +43,14 @@ EDW:
   insert_edw_table_query:
     insert into edw.f_lgc_sales_stock_rrp_rmb
     select
-        split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as date_id
        ,split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week
-       ,cust_id                 as distributor_code
-       ,cust_name               as distributor_name
+	   ,cust_link                    as c6_link_code
+	   ,cust_name                    as c6_link_name
+       ,cust_id                      as distributor_code
+       ,replace(cust_name,'6 CN ','')as distributor_name
        ,sale_district                as sale_district
-       ,store_id                as lego_store_code
-       ,prod_id                 as lego_sku_id
+       ,store_id                     as lego_store_code
+       ,prod_id                      as lego_sku_id
        ,cast(cst_cnsmr_sale_qty as int)              as dist_cnsmr_sale_qty
        ,cast(cst_cnsmr_sale_rrp as numeric(17,2))    as dist_cnsmr_sale_rrb
        ,cast(cst_retail_stock_qty as int)            as dist_retail_stock_qty
