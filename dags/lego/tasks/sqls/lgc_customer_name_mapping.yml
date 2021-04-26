@@ -14,7 +14,7 @@ EDW:
      customer_name_new varchar(100),
      dl_batch_date varchar(20),
      dl_load_time timestamp,
-     constraint pk_f_lgc_customer_name_mapping primary key(cust_name_temp, cust_name_new)
+     constraint pk_f_lgc_customer_name_mapping primary key(customer_name_temp, customer_name_new)
     )distributed by (cust_name_temp);
 
   delete_edw_table_query:
