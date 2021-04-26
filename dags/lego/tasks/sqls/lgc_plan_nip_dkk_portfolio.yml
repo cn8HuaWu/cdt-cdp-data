@@ -28,7 +28,7 @@ EDW:
        plan_month     varchar(10),
        plan_version   varchar(20),
        plan_amount    numeric(17,2),
-	   data_version   varchar(100),
+       data_version   varchar(100),
        dl_batch_date  varchar(10),
        dl_load_time   timestamp,
        constraint pk_f_lgc_plan_nip_dkk_portflio primary key(channel_name,product_line,plan_year,plan_month,plan_version)
@@ -46,7 +46,7 @@ EDW:
         '01'                        as plan_month,
         plan_version                as plan_version,
         cast(jan as numeric(17,2))  as plan_amount,
-		'NEP/NIP DKK'               as data_version,
+        'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -60,7 +60,7 @@ EDW:
         '02'                        as plan_month,
         plan_version                as plan_version,
         cast(feb as numeric(17,2))  as plan_amount,
-		'NEP/NIP DKK'               as data_version,
+        'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -74,7 +74,7 @@ EDW:
         '03'                        as plan_month,
         plan_version                as plan_version,
         cast(mar as numeric(17,2))  as plan_amount,
-		'NEP/NIP DKK'               as data_version,
+        'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -88,7 +88,7 @@ EDW:
         '04'                        as plan_month,
         plan_version                as plan_version,
         cast(apr as numeric(17,2))  as plan_amount,
-		'NEP/NIP DKK'               as data_version,
+        'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -102,7 +102,7 @@ EDW:
         '05'                        as plan_month,
         plan_version                as plan_version,
         cast(may as numeric(17,2))  as plan_amount,
-		'NEP/NIP DKK'               as data_version,
+        'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -116,7 +116,7 @@ EDW:
         '06'                        as plan_month,
         plan_version                as plan_version,
         cast(jun as numeric(17,2))  as plan_amount,
-		'NEP/NIP DKK'               as data_version,
+        'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -130,7 +130,7 @@ EDW:
         '07'                        as plan_month,
         plan_version                as plan_version,
         cast(jul as numeric(17,2))  as plan_amount,
-		'NEP/NIP DKK'               as data_version,
+        'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -144,7 +144,7 @@ EDW:
         '08'                        as plan_month,
         plan_version                as plan_version,
         cast(aug as numeric(17,2))  as plan_amount,
-		'NEP/NIP DKK'               as data_version,
+        'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -158,7 +158,7 @@ EDW:
         '09'                        as plan_month,
         plan_version                as plan_version,
         cast(sep as numeric(17,2))  as plan_amount,
-		'NEP/NIP DKK'               as data_version,
+        'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -172,7 +172,7 @@ EDW:
         '10'                        as plan_month,
         plan_version                as plan_version,
         cast(oct as numeric(17,2))  as plan_amount,
-		'NEP/NIP DKK'               as data_version,
+        'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -186,7 +186,7 @@ EDW:
         '11'                        as plan_month,
         plan_version                as plan_version,
         cast(nov as numeric(17,2))  as plan_amount,
-  		'NEP/NIP DKK'               as data_version,
+          'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from
@@ -200,7 +200,7 @@ EDW:
         '12'                        as plan_month,
         plan_version                as plan_version,
         cast(dec as numeric(17,2))  as plan_amount,
-  		'NEP/NIP DKK'               as data_version,
+          'NEP/NIP DKK'               as data_version,
         dl_batch_date               as dl_batch_date,
         now()                       as dl_load_time
     from

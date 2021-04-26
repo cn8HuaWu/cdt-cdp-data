@@ -19,7 +19,7 @@ EDW:
      plan_version         varchar(10),
      product_theme        varchar(100),
      plan_amount          numeric(17,2),
-	 data_version         varchar(100）,
+     data_version         varchar(100）,
      dl_batch_date        varchar(20),
      dl_load_time         timestamp,
      constraint pk_f_lgc_plan_lbr_net_dkk_portfolio primary key(channel_code,plan_year, plan_month, plan_version,product_theme)
@@ -38,7 +38,7 @@ EDW:
         cs_plan_version                      as plan_version,
         top_theme                            as product_theme,
         cast(consumer_sales_plan_value as numeric(17,2)) as plan_amount,
-		'NEP/NIP DKK'                        as data_version,
+        'NEP/NIP DKK'                        as data_version,
         dl_batch_date                        as dl_batch_date,
         now()                                as dl_load_time
     from
