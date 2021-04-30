@@ -20,7 +20,7 @@ EDW:
        plan_value               numeric(17,2),
        dl_batch_date            varchar(200),
        dl_load_time             timestamp,
-       constraint pk_f_lgc_cs_weekly_phasing primary key(c6_linking_distributor_name,plan_lego_year_month)
+       constraint pk_f_lgc_cs_weekly_phasing primary key(c6_linking_distributor_name,plan_lego_year_month,xth_week)
     )distributed by (plan_lego_year_month);
 
   insert_edw_table_query:
