@@ -37,7 +37,7 @@ EDW:
       lastest_demand_plan_amt                       numeric(17,2),
       ttl_conf_order_vs_latest_plan_percent         numeric(17,2),
       bill_calculated_qty                           bigint,
-      data_version	                                varchar(200),
+      data_version                                  varchar(200),
       dl_batch_date                                 varchar(20),
       dl_load_time                                  timestamp,
       constraint pk_f_lgc_sellin primary key(sales_date, distributor_code,lego_sku_id)
