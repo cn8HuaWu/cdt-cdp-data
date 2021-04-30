@@ -23,7 +23,7 @@ EDW:
      dl_batch_date        varchar(200),
      dl_load_time         timestamp,
      constraint pk_f_lgc_plan_lbr_net_dkk_portfolio primary key(channel_code,plan_lego_year, plan_lego_month, plan_version,top_theme)
-    )distributed by (plan_year);
+    )distributed by (plan_lego_year);
 
   insert_edw_table_query:
     delete from edw.f_lgc_plan_lbr_net_dkk_portfolio;
