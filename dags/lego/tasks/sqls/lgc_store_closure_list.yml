@@ -16,9 +16,8 @@ EDW:
     reason           varchar(200),
     dl_batch_date    varchar(200),
     dl_load_time     timestamp,
-    constraint pk_f_lgc_store_temp_close_list primary key(lego_store_code, close_date)
-    )distributed by (lego_store_code);
-
+    constraint pk_f_lgc_store_temporary_close_list primary key(lego_store_code, close_date)
+    );
 
 
   insert_edw_table_query:
@@ -33,8 +32,8 @@ EDW:
     )
     select
        store                                                   as lego_store_code,
-       ro_char(to_date(close_date,'mm/dd/yyyy'),'yyyy-mm-dd')  as close_date,
-       ro_char(to_date(reopen_date,'mm/dd/yyyy'),'yyyy-mm-dd') as reopen_date,
+       to_char(to_date(close_date,'mm/dd/yyyy'),'yyyy-mm-dd')  as close_date,
+       to_char(to_date(reopen_date,'mm/dd/yyyy'),'yyyy-mm-dd') as reopen_date,
        reason,
        dl_batch_date,
        now() as dl_load_time
