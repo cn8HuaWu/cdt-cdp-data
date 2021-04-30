@@ -15,7 +15,7 @@ EDW:
     close_date       varchar(200),
     reopen_date      varchar(200),
     his_store_floor  bigint,
-    his_sales_space  numerice(17,2),
+    his_sales_space  numeric(17,2),
     dl_batch_date    varchar(200),
     dl_load_time     timestamp,
 
