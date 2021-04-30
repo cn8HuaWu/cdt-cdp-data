@@ -19,6 +19,8 @@ EDW:
     constraint pk_f_lgc_store_temp_close_list primary key(lego_store_code, close_date)
     )distributed by (lego_store_code);
 
+
+
   insert_edw_table_query:
     delete from edw.f_lgc_store_temporary_close_list;
     insert into edw.f_lgc_store_temporary_close_list(

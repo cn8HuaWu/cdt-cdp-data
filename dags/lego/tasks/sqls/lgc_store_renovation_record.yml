@@ -11,16 +11,17 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_store_renovation_list(
-    lego_store_code  varchar(200)
-    close_date       varchar(200)
-    reopen_date      varchar(200)
-    his_store_floor  bigint
-    his_sales_space  numerice(17,2)
-    dl_batch_date    varchar(200)
-    dl_load_time     timestamp
+    lego_store_code  varchar(200),
+    close_date       varchar(200),
+    reopen_date      varchar(200),
+    his_store_floor  bigint,
+    his_sales_space  numerice(17,2),
+    dl_batch_date    varchar(200),
+    dl_load_time     timestamp,
 
     constraint pk_f_lgc_store_renovation_list primary key(lego_store_code, close_date)
     )distributed by (lego_store_code);
+
 
   insert_edw_table_query:
     delete from edw.f_lgc_store_renovation_list;

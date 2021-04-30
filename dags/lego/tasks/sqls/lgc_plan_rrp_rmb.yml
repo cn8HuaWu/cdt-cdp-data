@@ -148,7 +148,7 @@ EDW:
         lower(jul) <>'jul'
         and jul is not null
     union all
-    select
+    select,
         null                       as distributor_code,
         customer                   as distributor_name,
         year                       as plan_lego_year,
