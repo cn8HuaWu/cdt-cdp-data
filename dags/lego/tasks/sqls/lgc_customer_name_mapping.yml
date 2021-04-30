@@ -15,7 +15,7 @@ EDW:
      dl_batch_date           varchar(200),
      dl_load_time            timestamp,
      constraint pk_f_lgc_distributor_name_mapping primary key(temp_distributor_name, distributor_name)
-    )distributed by (cust_name_temp);
+    );
 
   insert_edw_table_query:
     delete from edw.f_lgc_distributor_name_mapping;
