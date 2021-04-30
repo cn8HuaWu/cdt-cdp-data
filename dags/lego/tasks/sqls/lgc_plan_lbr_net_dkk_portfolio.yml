@@ -19,7 +19,7 @@ EDW:
      plan_version         varchar(200),
      top_theme            varchar(200),
      plan_amt             numeric(17,2),
-     data_version         varchar(200）,
+     data_version         varchar(200),
      dl_batch_date        varchar(200),
      dl_load_time         timestamp,
      constraint pk_f_lgc_plan_lbr_net_dkk_portfolio primary key(channel_code,plan_lego_year, plan_lego_month, plan_version,top_theme)
