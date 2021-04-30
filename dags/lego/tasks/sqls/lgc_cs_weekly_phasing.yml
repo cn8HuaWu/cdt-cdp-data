@@ -36,7 +36,7 @@ EDW:
        customer           as c6_linking_distributor_name,
        replace(customer,'6 CN ','')          as distributor_name,
        month             as plan_lego_year_month,
-       1                 as week_number,
+       1                 as xth_week,
        cast(first_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
@@ -48,7 +48,7 @@ EDW:
        customer           as c6_linking_distributor_name,
        replace(customer,'6 CN ','')          as distributor_name,
        month             as plan_lego_year_month,
-       2                 as week_number,
+       2                 as xth_week,
        cast(second_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
@@ -60,7 +60,7 @@ EDW:
        customer              as c6_linking_distributor_name,
        replace(customer,'6 CN ','')          as distributor_name,
        month             as plan_lego_year_month,
-       3                 as week_number,
+       3                 as xth_week,
        cast(third_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
@@ -72,7 +72,7 @@ EDW:
        customer              as c6_linking_distributor_name,
        replace(customer,'6 CN ','')          as distributor_name,
        month             as plan_lego_year_month,
-       4                 as week_number,
+       4                 as xth_week,
        cast(fourth_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
@@ -84,7 +84,7 @@ EDW:
        customer              as c6_linking_distributor_name,
        replace(customer,'6 CN ','')          as distributor_name,
        month             as plan_lego_year_month,
-       5                 as week_number,
+       5                 as xth_week,
        cast(fifth_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
