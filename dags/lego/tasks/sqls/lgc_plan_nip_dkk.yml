@@ -21,17 +21,17 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_plan_nip_dkk(
-    distributor_code	varchar(200),
-    distributor_name	varchar(200),
-    plan_lego_year	varchar(10),
-    plan_lego_month	varchar(4),
-    plan_version	varchar(20),
-    plan_amt	numeric(17,2),
-    data_version	varchar(200),
-    dl_batch_date	varchar(200),
-    dl_load_time	timestamp,
-       constraint pk_f_lgc_plan_nip_dkk primary key(distributor_name, plan_lego_year,plan_lego_month,plan_version)
-      )distributed by (plan_year);
+    distributor_code    varchar(200),
+    distributor_name    varchar(200),
+    plan_lego_year    varchar(10),
+    plan_lego_month    varchar(4),
+    plan_version    varchar(20),
+    plan_amt        numeric(17,2),
+    data_version    varchar(200),
+    dl_batch_date    varchar(200),
+    dl_load_time    timestamp,
+    constraint pk_f_lgc_plan_nip_dkk primary key(distributor_name, plan_lego_year,plan_lego_month,plan_version)
+    )distributed by (plan_year);
 
   insert_edw_table_query:
     delete from edw.f_lgc_plan_nip_dkk;
