@@ -16,83 +16,78 @@ Staging:
 
 ODS:
 
-
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_cs_weekly_phasing(
-       customer_code     varchar(100),
-       customer_name     varchar(100),
-       year_month        varchar(100),
-       week_number       bigint,
-       plan_value        numeric(17,2),
-       dl_batch_date     varchar(100),
-       dl_load_time      timestamp,
-       constraint pk_f_lgc_cs_weekly_phasing primary key(customer_name, year_year_month,week_number )
-    )distributed by (year_month);
-
-
-
-  delete_edw_table_query:
-    delete from edw.f_lgc_cs_weekly_phasing;
+       c6_linking_distributor_name     varchar(200),
+       distributor_name         varchar(200),
+       plan_lego_year_month     varchar(10),
+       xth_week                 bigint,
+       plan_value               numeric(17,2),
+       dl_batch_date            varchar(200),
+       dl_load_time             timestamp,
+       constraint pk_f_lgc_cs_weekly_phasing primary key(c6_linking_distributor_name,plan_lego_year_month)
+    )distributed by (plan_lego_year_month);
 
   insert_edw_table_query:
+    delete from edw.f_lgc_cs_weekly_phasing;
     insert into edw.f_lgc_cs_weekly_phasing
     select
-       null              as customer_code,
-       customer          as customer_name,
-       month             as year_month,
+       customer           as c6_linking_distributor_name,
+       replace(customer,'6 CN ','')          as distributor_name,
+       month             as plan_lego_year_month,
        1                 as week_number,
        cast(first_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
-  where first_week is not null
+    where first_week is not null
     union all
     select
-       null              as customer_code,
-       customer          as customer_name,
-       month             as year_month,
+       customer           as c6_linking_distributor_name,
+       replace(customer,'6 CN ','')          as distributor_name,
+       month             as plan_lego_year_month,
        2                 as week_number,
        cast(second_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
-  where second_week is not null
+    where second_week is not null
     union all
     select
-       null              as customer_code,
-       customer          as customer_name,
-       month             as year_month,
+       customer              as c6_linking_distributor_name,
+       replace(customer,'6 CN ','')          as distributor_name,
+       month             as plan_lego_year_month,
        3                 as week_number,
        cast(third_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
-  where third_week is not null
+    where third_week is not null
     union all
     select
-       null              as customer_code,
-       customer          as customer_name,
-       month             as year_month,
+       customer              as c6_linking_distributor_name,
+       replace(customer,'6 CN ','')          as distributor_name,
+       month             as plan_lego_year_month,
        4                 as week_number,
        cast(fourth_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
-  where fourth_week is not null
+    where fourth_week is not null
     union all
     select
-       null              as customer_code,
-       customer          as customer_name,
-       month             as year_month,
+       customer              as c6_linking_distributor_name,
+       replace(customer,'6 CN ','')          as distributor_name,
+       month             as plan_lego_year_month,
        5                 as week_number,
        cast(fifth_week as numeric(17,2))as plan_value,
        dl_batch_date     as dl_batch_date,
        now()             as dl_load_time
     from
         ods.r_lgc_cs_weekly_phasing
-  where fifth_week is not null    ;
+    where fifth_week is not null    ;

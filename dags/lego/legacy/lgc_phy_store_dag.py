@@ -161,6 +161,7 @@ edw_lgc_phy_store_create = PythonOperator(
 #    dag=dag,
 #)
 
+# delete edw data task:
 # insert into edw data task:
 edw_lgc_phy_store_insert = PythonOperator(
     task_id='edw_lgc_phy_store_insert',

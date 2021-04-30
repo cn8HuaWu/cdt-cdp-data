@@ -1,6 +1,6 @@
 Staging:
   src_columns:
-    year_month text,
+    sales_lego_year_month text,
     year_week text,
     date text,
     cust_link text,
@@ -21,45 +21,50 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_sellin
-      (date_id                   varchar(20),
-      year_month                 varchar(20),
-      lego_year_week             varchar(20),
-      sale_date                  varchar(20),
-      distributor_code           varchar(20),
-      distributor_name           varchar(100),
-      lego_sku_id                varchar(100),
-      net_sale_invc_amt          numeric(17,2),
-      dlvr_prcs_amt              numeric(17,2),
-      cnfir_open_sale_ordr_amt   numeric(17,2),
-      tot_open_sale_ordr_prtfl_amt numeric(17,2),
-      last_dmnd_plan_amt         numeric(17,2),
-      order_prtfl_percnt         numeric(17,4),
-      bill_calt_qty              numeric(17,4),
-      dl_batch_date              varchar(20),
-      dl_load_time               timestamp,
-      constraint pk_f_lgc_sellin primary key(sale_date, distributor_code,lego_sku_id)
+      (sales_lego_year_month                        varchar(20),
+      sales_lego_year_week                          varchar(20),
+      sales_date                                    varchar(20),
+      c6_linking_distributor_code                   varchar(200),
+      c6_linking_distributor_name                   varchar(200),
+      distributor_code                              varchar(200),
+      distributor_name                              varchar(100),
+      lego_sku_id                                   varchar(100),
+      lego_sku_name_en                              varchar(200),
+      net_sales_invoiced_amt                        numeric(17,2),
+      delivery_in_progress_amt                      numeric(17,2),
+      confirmed_open_sales_orders_amt               numeric(17,2),
+      ttl_open_sales_order_portfolio_amt            numeric(17,2),
+      lastest_demand_plan_amt                       numeric(17,2),
+      ttl_conf_order_vs_latest_plan_percent         numeric(17,2),
+      bill_calculated_qty                           bigint,
+      data_version	                                varchar(200),
+      dl_batch_date                                 varchar(20),
+      dl_load_time                                  timestamp,
+      constraint pk_f_lgc_sellin primary key(sales_date, distributor_code,lego_sku_id)
     )distributed by (distributor_code);
 
-  delete_edw_table_query:
-    delete from edw.f_lgc_sellin;
 
   insert_edw_table_query:
+    delete from edw.f_lgc_sellin;
     insert into edw.f_lgc_sellin
     select
-        split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1)         as date_id,
-        split_part(year_week ,'.',2)||'14'||split_part(year_week ,'.',1)                 as year_month,
-        split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1)                 as lego_year_week,
-        split_part(date ,'.',3)||split_part(date ,'.',2)||split_part(date,'.',1)         as sale_date,
+        split_part(year_week ,'.',2)||'14'||split_part(year_week ,'.',1)                 as sales_lego_year_month,
+        split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1)                 as sales_lego_year_week,
+        split_part(date ,'.',3)||'-'||split_part(date ,'.',2)||'-'||split_part(date,'.',1)         as sales_date,
+        cust_link                                                                        as c6_linking_distributor_code,
+        cust_name                                                                        as c6_linking_distributor_name,
         split_part(cust_link ,'/',length(cust_link)-length(replace(cust_link,'/',''))+1) as distributor_code,
-        cust_name                                           as distributor_name,
+        replace(cust_name,'6 CN','')                                           as distributor_name,
         prod_id                                             as lego_sku_id,
-        cast(net_sale_invc_amt as numeric(17,2))            as net_sale_invc_amt,
-        cast(dlvr_prcs_amt as numeric(17,2))                as dlvr_prcs_amt,
-        cast(cnfir_open_sale_ordr_amt as numeric(17,2))     as cnfir_open_sale_ordr_amt,
-        cast(tot_open_sale_ordr_prtfl_amt as numeric(17,2)) as tot_open_sale_ordr_prtfl_amt,
-        cast(last_dmnd_plan_amt as numeric(17,2))           as last_dmnd_plan_amt,
-        cast(order_prtfl_percnt as numeric(17,4))           as order_prtfl_percnt,
-        cast(bill_calt_qty as  numeric(17,2))               as bill_calt_qty,
+        prod_name                                           as lego_sku_name_en,
+        cast(net_sale_invc_amt as numeric(17,2))            as net_sales_invoiced_amt,
+        cast(dlvr_prcs_amt as numeric(17,2))                as delivery_in_progress_amt,
+        cast(cnfir_open_sale_ordr_amt as numeric(17,2))     as confirmed_open_sales_orders_amt,
+        cast(tot_open_sale_ordr_prtfl_amt as numeric(17,2)) as ttl_open_sales_order_portfolio_amt,
+        cast(last_dmnd_plan_amt as numeric(17,2))           as lastest_demand_plan_amt,
+        cast(order_prtfl_percnt as numeric(17,2))           as ttl_conf_order_vs_latest_plan_percent,
+        cast(bill_calt_qty as  numeric(17,2))               as bill_calculated_qty,
+        'NIP/NET DKK'                                       as data_version,
         dl_batch_date                                       as dl_batch_date,
         now()                                               as dl_load_time
     from

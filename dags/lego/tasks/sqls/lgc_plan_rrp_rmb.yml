@@ -21,30 +21,28 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_plan_rrp_rmb(
-       customer_code    varchar(50),
-       customer_name    varchar(200),
-       plan_year        varchar(10),
-       plan_month       varchar(4),
-       plan_version     varchar(20),
-       plan_amount      numeric(17,2),
-       data_version     varchar(100),
-       dl_batch_date    varchar(20),
-       dl_load_time     timestamp,
-       constraint pk_f_lgc_plan_rrp_rmb primary key(customer_name,plan_year,plan_month,plan_version)
-      )distributed by (plan_year);
-
-  delete_edw_table_query:
-    delete from edw.f_lgc_plan_rrp_rmb;
+    distributor_code    varchar(200),
+    distributor_name    varchar(200),
+    plan_lego_year      varchar(200),
+    plan_lego_month     varchar(200),
+    plan_version        varchar(200),
+    plan_amt            numeric(17,2),
+    data_version        varchar(200),
+    dl_batch_date       varchar(200),
+    dl_load_time        timestamp,
+    constraint pk_f_lgc_plan_rrp_rmb primary key(distributor_name,plan_lego_year,plan_lego_month,plan_version)
+     )distributed by (plan_lego_year);
 
   insert_edw_table_query:
+    delete from edw.f_lgc_plan_rrp_rmb;
     insert into edw.f_lgc_plan_rrp_rmb
-    select
-        null                       as customer_code,
-        customer                   as customer_name,
-        year                       as plan_year,
-        '01'                       as plan_month,
+    selecT
+        null                       as distributor_code,
+        customer                   as distributor_name,
+        year                       as plan_lego_year,
+        '01'                       as plan_lego_month,
         plan_version               as plan_version,
-        cast(jan as numeric(17,2)) as plan_amount,
+        cast(jan as numeric(17,2)) as plan_amt,
         'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -55,12 +53,12 @@ EDW:
         and jan is not null
     union all
     select
-        null                       as customer_code,
-        customer                   as customer_name,
-        year                       as plan_year,
-        '02'                       as plan_month,
+        null                       as distributor_code,
+        customer                   as distributor_name,
+        year                       as plan_lego_year,
+        '02'                       as plan_lego_month,
         plan_version               as plan_version,
-        cast(feb as numeric(17,2)) as plan_amount,
+        cast(feb as numeric(17,2)) as plan_amt,
         'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -71,12 +69,12 @@ EDW:
         and feb is not null
     union all
     select
-        null                       as customer_code,
-        customer                   as customer_name,
-        year                       as plan_year,
-        '03'                       as plan_month,
+        null                       as distributor_code,
+        customer                   as distributor_name,
+        year                       as plan_lego_year,
+        '03'                       as plan_lego_month,
         plan_version               as plan_version,
-        cast(mar as numeric(17,2)) as plan_amount,
+        cast(mar as numeric(17,2)) as plan_amt,
         'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -87,12 +85,12 @@ EDW:
         and mar is not null
     union all
     select
-        null                       as customer_code,
-        customer                   as customer_name,
-        year                       as plan_year,
-        '04'                       as plan_month,
+        null                       as distributor_code,
+        customer                   as distributor_name,
+        year                       as plan_lego_year,
+        '04'                       as plan_lego_month,
         plan_version               as plan_version,
-        cast(apr as numeric(17,2)) as plan_amount,
+        cast(apr as numeric(17,2)) as plan_amt,
         'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -103,12 +101,12 @@ EDW:
         and apr is not null
     union all
     select
-        null                       as customer_code,
-        customer                   as customer_name,
-        year                       as plan_year,
-        '05'                       as plan_month,
+        null                       as distributor_code,
+        customer                   as distributor_name,
+        year                       as plan_lego_year,
+        '05'                       as plan_lego_month,
         plan_version               as plan_version,
-        cast(may as numeric(17,2)) as plan_amount,
+        cast(may as numeric(17,2)) as plan_amt,
         'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -119,12 +117,12 @@ EDW:
         and may is not null
     union all
     select
-        null                       as customer_code,
-        customer                   as customer_name,
-        year                       as plan_year,
-        '06'                       as plan_month,
+        null                       as distributor_code,
+        customer                   as distributor_name,
+        year                       as plan_lego_year,
+        '06'                       as plan_lego_month,
         plan_version               as plan_version,
-        cast(jun as numeric(17,2)) as plan_amount,
+        cast(jun as numeric(17,2)) as plan_amt,
         'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -135,12 +133,12 @@ EDW:
         and jun is not null
     union all
     select
-        null                       as customer_code,
-        customer                   as customer_name,
-        year                       as plan_year,
-        '07'                       as plan_month,
+        null                       as distributor_code,
+        customer                   as distributor_name,
+        year                       as plan_lego_year,
+        '07'                       as plan_lego_month,
         plan_version               as plan_version,
-        cast(jul as numeric(17,2)) as plan_amount,
+        cast(jul as numeric(17,2)) as plan_amt,
         'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -151,12 +149,12 @@ EDW:
         and jul is not null
     union all
     select,
-        null                       as customer_code,
-        customer                   as customer_name,
-        year                       as plan_year,
-        '08'                       as plan_month,
+        null                       as distributor_code,
+        customer                   as distributor_name,
+        year                       as plan_lego_year,
+        '08'                       as plan_lego_month,
         plan_version               as plan_version,
-        cast(aug as numeric(17,2)) as plan_amount,
+        cast(aug as numeric(17,2)) as plan_amt,
         'RRP RMB'                  as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -167,12 +165,12 @@ EDW:
         and aug is not null
     union all
     select
-        null                       as customer_code,
-        customer                   as customer_name,
-        year                       as plan_year,
-        '09'                       as plan_month,
+        null                       as distributor_code,
+        customer                   as distributor_name,
+        year                       as plan_lego_year,
+        '09'                       as plan_lego_month,
         plan_version               as plan_version,
-        cast(sep as numeric(17,2)) as plan_amount,
+        cast(sep as numeric(17,2)) as plan_amt,
         'RRP RMB'                 as data_version,
         dl_batch_date              as dl_batch_date,
         now()                      as dl_load_time
@@ -183,12 +181,12 @@ EDW:
         and sep is not null
     union all
     select
-        null                      as customer_code,
-        customer                  as customer_name,
-        year                      as plan_year,
-        '10'                      as plan_month,
+        null                      as distributor_code,
+        customer                  as distributor_name,
+        year                      as plan_lego_year,
+        '10'                      as plan_lego_month,
         plan_version              as plan_version,
-        cast(oct as numeric(17,2))as plan_amount,
+        cast(oct as numeric(17,2))as plan_amt,
         'RRP RMB'                 as data_version,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
@@ -199,12 +197,12 @@ EDW:
         and oct is not null
     union all
     select
-        null                      as customer_code,
-        customer                  as customer_name,
-        year                      as plan_year,
-        '11'                      as plan_month,
+        null                      as distributor_code,
+        customer                  as distributor_name,
+        year                      as plan_lego_year,
+        '11'                      as plan_lego_month,
         plan_version              as plan_version,
-        cast(nov as numeric(17,2))as plan_amount,
+        cast(nov as numeric(17,2))as plan_amt,
         'RRP RMB'                 as data_version,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time
@@ -215,12 +213,12 @@ EDW:
         and nov is not null
     union all
     select
-        null                      as customer_code,
-        customer                  as customer_name,
-        year                      as plan_year,
-        '12'                      as plan_month,
+        null                      as distributor_code,
+        customer                  as distributor_name,
+        year                      as plan_lego_year,
+        '12'                      as plan_lego_month,
         plan_version              as plan_version,
-        cast(dec as numeric(17,2))as plan_amount,
+        cast(dec as numeric(17,2))as plan_amt,
         'RRP RMB'                 as data_version,
         dl_batch_date             as dl_batch_date,
         now()                     as dl_load_time

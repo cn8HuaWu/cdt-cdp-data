@@ -210,16 +210,6 @@ edw_plan_rrp_rmb_create = PythonOperator(
 )
 
 # delete edw data task:
-edw_plan_rrp_rmb_delete = PythonOperator(
-    task_id='edw_plan_rrp_rmb_delete',
-    provide_context=True,
-    python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_rrp_rmb",
-               'sql_section': 'delete_edw_table_query', 'args': args},
-    on_failure_callback=dag_failure_handler,
-    dag=dag,
-)
-
 # insert into edw data task:
 edw_plan_rrp_rmb_insert = PythonOperator(
     task_id='edw_plan_rrp_rmb_insert',
@@ -241,4 +231,4 @@ postprocess_plan_rrp_rmb_task = PythonOperator(
 
 
 preprocess_plan_rrp_rmb_task >> plan_rrp_rmb_src2stg_task >> plan_rrp_rmb_stg2ods_task >> edw_plan_rrp_rmb_create
-edw_plan_rrp_rmb_create >> edw_plan_rrp_rmb_delete >> edw_plan_rrp_rmb_insert >> postprocess_plan_rrp_rmb_task
+edw_plan_rrp_rmb_create >> edw_plan_rrp_rmb_insert >> postprocess_plan_rrp_rmb_task

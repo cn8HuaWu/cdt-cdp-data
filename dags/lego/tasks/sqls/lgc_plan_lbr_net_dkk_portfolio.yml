@@ -12,32 +12,30 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_plan_lbr_net_dkk_portfolio
-    (channel_code         varchar(100),
-     channel_name         varchar(100),
-     plan_year            varchar(20),
-     plan_month           varchar(20),
-     plan_version         varchar(10),
-     product_theme        varchar(100),
-     plan_amount          numeric(17,2),
-     data_version         varchar(100）,
-     dl_batch_date        varchar(20),
+    (channel_code         varchar(200),
+     channel_name         varchar(200),
+     plan_lego_year       varchar(10),
+     plan_lego_month      varchar(4),
+     plan_version         varchar(200),
+     top_theme            varchar(200),
+     plan_amt             numeric(17,2),
+     data_version         varchar(200）,
+     dl_batch_date        varchar(200),
      dl_load_time         timestamp,
-     constraint pk_f_lgc_plan_lbr_net_dkk_portfolio primary key(channel_code,plan_year, plan_month, plan_version,product_theme)
+     constraint pk_f_lgc_plan_lbr_net_dkk_portfolio primary key(channel_code,plan_lego_year, plan_lego_month, plan_version,top_theme)
     )distributed by (plan_year);
 
-  delete_edw_table_query:
-    delete from edw.f_lgc_plan_lbr_net_dkk_portfolio;
-
   insert_edw_table_query:
+    delete from edw.f_lgc_plan_lbr_net_dkk_portfolio;
     insert into edw.f_lgc_plan_lbr_net_dkk_portfolio
     select
         channel_code                         as channel_code,
         channel_name                         as channel_name,
-        calendar_year                        as plan_year,
-        cs_plan_month                        as plan_month,
+        calendar_year                        as plan_lego_year,
+        cs_plan_month                        as plan_lego_month,
         cs_plan_version                      as plan_version,
-        top_theme                            as product_theme,
-        cast(consumer_sales_plan_value as numeric(17,2)) as plan_amount,
+        top_theme                            as top_theme,
+        cast(consumer_sales_plan_value as numeric(17,2)) as plan_amt,
         'NEP/NIP DKK'                        as data_version,
         dl_batch_date                        as dl_batch_date,
         now()                                as dl_load_time

@@ -4,7 +4,7 @@ Staging:
     cust_link text,
     cust_name text,
     cust_id text,
-    sale_district text,
+    sales_district text,
     cust_loca text,
     store_id text,
     prod_id text,
@@ -19,42 +19,45 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_sales_stock_rrp_rmb
-      (lego_year_week          varchar(100),
-	   c6_link_code            varchar(200),
-	   c6_link_name            varchar(200),
-       distributor_code        varchar(100),
-       distributor_name        varchar(100),
-       sale_district           varchar(100),
-       lego_store_code         varchar(200),
-       lego_sku_id             varchar(200),
-       dist_cnsmr_sale_qty     bigint,
-       dist_cnsmr_sale_rrb     numeric(17,2),
-       dist_retail_stock_qty   bigint,
-       dist_retail_stock_rrp   numeric(17,2),
-       qty_unit                varchar(100),
-       dl_batch_date           varchar(100),
-       dl_load_time            timestamp,
-       constraint pk_f_lgc_sales_stock_rrp_rmb primary key(lego_year_week, lego_store_code,lego_sku_id)
-    )distributed by (lego_year_week);
-
-  delete_edw_table_query:
-    delete from edw.f_lgc_sales_stock_rrp_rmb;
+      (sales_lego_year_week                   varchar(20),
+       c6_linking_distributor_code            varchar(200),
+       c6_linking_distributor_name            varchar(200),
+       distributor_code         varchar(200),
+       distributor_name         varchar(200),
+       sales_district           varchar(200),
+       lego_store_code          varchar(200),
+       sales_location           varchar(200),
+       lego_sku_id              varchar(50),
+       lego_sku_name_en         varchar(200),
+       consumer_sales_amt       numeric(17,2),
+       consumer_sales_qty       bigint,
+       retail_stock_amt         bigint,
+       retail_stock_qty         numeric(17,2),
+       qty_unit                 varchar(10),
+       dl_batch_date            varchar(200),
+       dl_load_time             timestamp,
+       constraint pk_f_lgc_sales_stock_rrp_rmb primary key(sales_lego_year_week, distributor_code,lego_store_code,lego_sku_id)
+    )distributed by (sales_lego_year_week);
 
   insert_edw_table_query:
+    delete from edw.f_lgc_sales_stock_rrp_rmb;
     insert into edw.f_lgc_sales_stock_rrp_rmb
     select
-       ,split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week
-	   ,cust_link                    as c6_link_code
-	   ,cust_name                    as c6_link_name
+       ,split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as sales_lego_year_week
+       ,cust_link                    as c6_linking_distributor_code
+       ,cust_name                    as c6_linking_distributor_name
        ,cust_id                      as distributor_code
        ,replace(cust_name,'6 CN ','')as distributor_name
-       ,sale_district                as sale_district
+       ,sale_district                as sales_district
+       ,cust_loca                    as sales_location
        ,store_id                     as lego_store_code
        ,prod_id                      as lego_sku_id
-       ,cast(cst_cnsmr_sale_qty as int)              as dist_cnsmr_sale_qty
-       ,cast(cst_cnsmr_sale_rrp as numeric(17,2))    as dist_cnsmr_sale_rrb
-       ,cast(cst_retail_stock_qty as int)            as dist_retail_stock_qty
-       ,cast(cst_retail_stock_rrp as numeric(17,2))  as dist_retail_stock_rrp
+       ,prod_name                    as lego_sku_name_en
+       ,cast(cst_cnsmr_sale_rrp as numeric(17,2))    as consumer_sales_amt
+       ,cast(cst_cnsmr_sale_qty as int)              as consumer_sales_qty
+       ,cast(cst_retail_stock_rrp as numeric(17,2))  as retail_stock_amt
+       ,cast(cst_retail_stock_qty as int)            as retail_stock_qty
+       
        ,'PC'                    as qty_unit
        ,dl_batch_date           as dl_batch_date
        ,now()                   as dl_load_time

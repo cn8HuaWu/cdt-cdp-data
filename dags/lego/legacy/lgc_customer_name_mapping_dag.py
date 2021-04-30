@@ -150,8 +150,8 @@ lgc_customer_name_mapping_stg2ods_task = PythonOperator(
 )
 
 # create edw data task:
-edw_lgc_customer_name_map_create = PythonOperator(
-    task_id='edw_lgc_customer_name_map_create',
+edw_lgc_distributor_name_mapping_create = PythonOperator(
+    task_id='edw_lgc_distributor_name_mapping_create',
     provide_context=True,
     python_callable=update_downstream,
     op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_customer_name_mapping",
@@ -161,19 +161,9 @@ edw_lgc_customer_name_map_create = PythonOperator(
 )
 
 # delete edw data task:
-edw_lgc_customer_name_map_delete = PythonOperator(
-    task_id='edw_lgc_customer_name_map_delete',
-    provide_context=True,
-    python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_customer_name_mapping",
-               'sql_section': 'delete_edw_table_query', 'args': args},
-    on_failure_callback=dag_failure_handler,
-    dag=dag,
-)
-
 # insert into edw data task:
-edw_lgc_customer_name_map_insert = PythonOperator(
-    task_id='edw_lgc_customer_name_map_insert',
+edw_lgc_distributor_name_mapping_insert = PythonOperator(
+    task_id='edw_lgc_distributor_name_mapping_insert',
     provide_context=True,
     python_callable=update_downstream,
     op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_customer_name_mapping",
@@ -191,5 +181,5 @@ postprocess_customer_name_mapping_task = PythonOperator(
     dag=dag,
 )
 
-preprocess_customer_name_mapping_task >> lgc_customer_name_mapping_src2stg_task >> lgc_customer_name_mapping_stg2ods_task >> edw_lgc_customer_name_map_create
-edw_lgc_customer_name_map_create >> edw_lgc_customer_name_map_delete >> edw_lgc_customer_name_map_insert >> postprocess_customer_name_mapping_task
+preprocess_customer_name_mapping_task >> lgc_customer_name_mapping_src2stg_task >> lgc_customer_name_mapping_stg2ods_task >> edw_lgc_distributor_name_mapping_create
+edw_lgc_distributor_name_mapping_create >> edw_lgc_distributor_name_mapping_insert >> postprocess_customer_name_mapping_task

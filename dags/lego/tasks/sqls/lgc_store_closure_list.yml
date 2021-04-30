@@ -9,22 +9,20 @@ ODS:
 
 EDW:
   create_edw_table_query:
-    create table if not exists edw.f_lgc_store_temp_close_list(
-    lego_store_code varchar(50),
-    close_date varchar(20),
-    reopen_date varchar(20),
-    reason varchar(200),
-    dl_batch_date varchar(20),
-    dl_load_time timestamp,
-    constraint pk_f_lgc_store_temp_close_list primary key(store_code, close_date)
-    )distributed by (store_code);
-
-  delete_edw_table_query:
-    delete from edw.f_lgc_store_temp_close_list;
+    create table if not exists edw.f_lgc_store_temporary_close_list(
+    lego_store_code  varchar(200),
+    close_date       varchar(200),
+    reopen_date      varchar(200),
+    reason           varchar(200),
+    dl_batch_date    varchar(200),
+    dl_load_time     timestamp,
+    constraint pk_f_lgc_store_temp_close_list primary key(lego_store_code, close_date)
+    )distributed by (lego_store_code);
 
   insert_edw_table_query:
-    insert into edw.f_lgc_store_temp_close_list(
-    store_code,
+    delete from edw.f_lgc_store_temporary_close_list;
+    insert into edw.f_lgc_store_temporary_close_list(
+    lego_store_code,
     close_date,
     reopen_date,
     reason,

@@ -150,16 +150,6 @@ edw_lgc_sales_stock_nip_dkk_create = PythonOperator(
 
 
 # delete edw data task:
-edw_lgc_sales_stock_nip_dkk_delete = PythonOperator(
-    task_id='edw_lgc_sales_stock_nip_dkk_delete',
-    provide_context=True,
-    python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_sales_stock_nip_dkk",
-               'sql_section': 'delete_edw_table_query', 'args': args},
-    on_failure_callback=dag_failure_handler,
-    dag=dag,
-)
-
 # insert into edw data task:
 edw_lgc_sales_stock_nip_dkk_insert = PythonOperator(
     task_id='edw_lgc_sales_stock_nip_dkk_insert',
@@ -182,4 +172,4 @@ postprocess_sales_stock_nip_dkk_task = PythonOperator(
 )
 
 preprocess_sales_stock_nip_dkk_task >> sales_stock_nip_dkk_src2stg_task >> sales_stock_nip_dkk_stg2ods_task >> edw_lgc_sales_stock_nip_dkk_create
-edw_lgc_sales_stock_nip_dkk_create >> edw_lgc_sales_stock_nip_dkk_delete >> edw_lgc_sales_stock_nip_dkk_insert >> postprocess_sales_stock_nip_dkk_task
+edw_lgc_sales_stock_nip_dkk_create >> edw_lgc_sales_stock_nip_dkk_insert >> postprocess_sales_stock_nip_dkk_task

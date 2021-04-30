@@ -151,16 +151,6 @@ edw_lgc_plan_lbr_net_dkk_portfolio_create = PythonOperator(
 )
 
 # delete edw data task:
-edw_lgc_plan_lbr_net_dkk_portfolio_delete = PythonOperator(
-    task_id='edw_lgc_plan_lbr_net_dkk_portfolio_delete',
-    provide_context=True,
-    python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_plan_lbr_net_dkk_portfolio",
-               'sql_section': 'delete_edw_table_query', 'args': args},
-    on_failure_callback=dag_failure_handler,
-    dag=dag,
-)
-
 # insert into edw data task:
 edw_lgc_plan_lbr_net_dkk_portfolio_insert = PythonOperator(
     task_id='edw_lgc_plan_lbr_net_dkk_portfolio_insert',
@@ -182,4 +172,4 @@ postprocess_plan_lbr_net_dkk_portfolio_task = PythonOperator(
 )
 
 preprocess_plan_lbr_net_dkk_portfolio_task >> plan_lbr_net_dkk_portfolio_src2stg_task >> plan_lbr_net_dkk_portfolio_stg2ods_task >> edw_lgc_plan_lbr_net_dkk_portfolio_create
-edw_lgc_plan_lbr_net_dkk_portfolio_create >> edw_lgc_plan_lbr_net_dkk_portfolio_delete >> edw_lgc_plan_lbr_net_dkk_portfolio_insert >> postprocess_plan_lbr_net_dkk_portfolio_task
+edw_lgc_plan_lbr_net_dkk_portfolio_create >> edw_lgc_plan_lbr_net_dkk_portfolio_insert >> postprocess_plan_lbr_net_dkk_portfolio_task

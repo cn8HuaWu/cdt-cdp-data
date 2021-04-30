@@ -147,16 +147,6 @@ edw_lgc_lcs_store_bd_create = PythonOperator(
 )
 
 # delete edw data task:
-edw_lgc_lcs_store_bd_delete = PythonOperator(
-    task_id='edw_lgc_lcs_store_bd_delete',
-    provide_context=True,
-    python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_lcs_store_bd",
-               'sql_section': 'delete_edw_table_query', 'args': args},
-    on_failure_callback=dag_failure_handler,
-    dag=dag,
-)
-
 # insert into edw data task:
 edw_lgc_lcs_store_bd_insert = PythonOperator(
     task_id='edw_lgc_lcs_store_bd_insert',
@@ -190,4 +180,4 @@ postprocess_lcs_store_bd_task = PythonOperator(
 )
 
 preprocess_lcs_store_bd_task >> lgc_lcs_store_bd_src2stg_task >> lgc_lcs_store_bd_stg2ods_task >> edw_lgc_lcs_store_bd_create
-edw_lgc_lcs_store_bd_create >> edw_lgc_lcs_store_bd_delete >> edw_lgc_lcs_store_bd_insert >> edw_lgc_lcs_store_bd_update >> postprocess_lcs_store_bd_task
+edw_lgc_lcs_store_bd_create >> edw_lgc_lcs_store_bd_insert >> edw_lgc_lcs_store_bd_update >> postprocess_lcs_store_bd_task

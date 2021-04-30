@@ -18,44 +18,42 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.f_lgc_instock
-     (date_id                    varchar(20),
-      lego_year_week             varchar(20),
-      distributor_code           varchar(100),
-      distributor_name           varchar(100),
-      lego_store_code            varchar(100),
-      lego_store_name            varchar(100),
-      lego_sku_id                varchar(100),
-      lego_sku_name              varchar(100),
-      cntr_instock_recdr         bigint,
-      cntr_recdr                 bigint,
-      instock_prcnt              numeric(17,4),
-      matrl_no_cnt               bigint,
-      store_no_cnt               bigint,
-      dl_batch_date              varchar(20),
-      dl_load_time               timestamp,
-      constraint pk_f_lgc_instock primary key(lego_year_week,distributor_code, lego_store_code,lego_sku_id)
+     (sales_lego_year_week       varchar(200),
+    c6_linking_distributor_code  varchar(200),
+    c6_linking_distributor_name  varchar(200),
+    distributor_code    varchar(200),
+    distributor_name    varchar(200),
+    lego_store_code     varchar(200),
+    lego_sku_id         varchar(200),
+    lego_sku_name       varchar(200),
+    counter_instock_records  bigint,
+    counter_records    bigint,
+    instock_percent    bigint,
+    number_of_material bigint,
+    number_of_store    bigint,
+    dl_batch_date      varchar(200),
+    dl_load_time       timestamp,
+      constraint pk_f_lgc_instock primary key(sales_lego_year_week,distributor_code, lego_store_code,lego_sku_id)
     )distributed by (distributor_code);
 
 
-  delete_edw_table_query:
-    delete from edw.f_lgc_instock;
-
   insert_edw_table_query:
+    delete from edw.f_lgc_instock;
     insert into edw.f_lgc_instock
     select
-          split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as date_id,
-          split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as lego_year_week,
+          split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as sales_lego_year_week,
+          cust_link                        as c6_linking_distributor_code,
+          replace(cust_name,'6 CN','')     as c6_linking_distributor_name,
           cust_id                          as distributor_code,
           cust_name                        as distributor_name,
           store_id                         as lego_store_code,
-          null                             as lego_store_name,
           prod_id                          as lego_sku_id,
           prod_name                        as lego_sku_name,
-          cast(cntr_instock_recdr as int)  as cntr_instock_recdr,
-          cast(cntr_recdr as int)          as cntr_recdr,
-          cast(instock_percent as numeric(17,4)) as instock_prcnt,
-          cast(matrl_no_cnt as int)            as matrl_no_cnt,
-          cast(store_no_cnt as int)            as store_no_cnt,
+          cast(cntr_instock_recdr as int)  as counter_instock_records,
+          cast(cntr_recdr as int)          as counter_records,
+          instock_percent                  as instock_percent,
+          cast(matrl_no_cnt as int)            as number_of_material,
+          cast(store_no_cnt as int)            as number_of_store,
           dl_batch_date                        as dl_batch_date,
           now()                                as dl_load_time
     from

@@ -9,29 +9,27 @@ ODS:
 
 EDW:
   create_edw_table_query:
-    create table if not exists edw.f_lgc_customer_name_mapping
-    (customer_name_temp varchar(100),
-     customer_name_new varchar(100),
-     dl_batch_date varchar(20),
-     dl_load_time timestamp,
-     constraint pk_f_lgc_customer_name_mapping primary key(customer_name_temp, customer_name_new)
+    create table if not exists edw.f_lgc_distributor_name_mapping
+    (temp_distributor_name   varchar(200),
+     distributor_name        varchar(200),
+     dl_batch_date           varchar(200),
+     dl_load_time            timestamp,
+     constraint pk_f_lgc_distributor_name_mapping primary key(temp_distributor_name, distributor_name)
     )distributed by (cust_name_temp);
 
-  delete_edw_table_query:
-    delete from edw.f_lgc_customer_name_mapping;
-
   insert_edw_table_query:
-    insert into edw.f_lgc_customer_name_mapping
+    delete from edw.f_lgc_distributor_name_mapping;
+    insert into edw.f_lgc_distributor_name_mapping
       (
-       customer_name_temp,
-       customer_name_new,
+       temp_distributor_name,
+       distributor_name,
        dl_batch_date,
        dl_load_time
       )
     select
-        customer         as customer_name_temp,
-        correct_customer as customer_name_new,
+        customer         as temp_distributor_name,
+        correct_customer as distributor_name,
         dl_batch_date,
         now()            as dl_load_time
     from
-       ods.r_lgc_customer_name_mapping;
+       ods.r_lgc_distributor_name_mapping;
