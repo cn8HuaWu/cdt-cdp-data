@@ -33,7 +33,8 @@ EDW:
        consumer_sales_qty       bigint,
        retail_stock_amt         bigint,
        retail_stock_qty         numeric(17,2),
-       qty_unit                 varchar(10),
+       qty_unit                 varchar(20),
+       data_version             varchar(200),
        dl_batch_date            varchar(200),
        dl_load_time             timestamp,
        constraint pk_f_lgc_sales_stock_rrp_rmb primary key(sales_lego_year_week, distributor_code,lego_store_code,lego_sku_id)
@@ -58,6 +59,7 @@ EDW:
        cast(cst_retail_stock_rrp as numeric(17,2))  as retail_stock_amt,
        cast(cst_retail_stock_qty as int)            as retail_stock_qty,
        'PC'                    as qty_unit,
+       'RRP RMB'               as data_version,
        dl_batch_date           as dl_batch_date,
        now()                   as dl_load_time
     from
