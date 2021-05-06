@@ -555,11 +555,11 @@ entities:
       "filename":"StoreList_TRU.*","all_reg":"13,14,0,1,2,3,4,5,6,7,8,9,10,12,17,16,11,15,19,18"
       },"LBR":{
       "filename":"StoreList_LBR.*","all_reg":"16,18,0,1,2,3,4,5,6,7,8,9,10,14,19,20,12,21,15,22"
-      },JDCOM":{
+      },"JDCOM":{
       "filename":"StoreList_JD.COM.*","all_reg":"12,14,0,1,2,3,4,5,6,13,7,8,9,10,16,17,11,15,19,18"
-      },TMall_B2C":{
+      },"TMall_B2C":{
       "filename":"StoreList_TMall_B2C.*","all_reg":"12,14,0,1,2,3,4,5,6,13,7,8,9,10,16,17,11,15,19,18"
-      },JD_Flagship":{
+      },"JD_Flagship":{
       "filename":"StoreList_JD_Flagship.*","all_reg":"12,14,0,1,2,3,4,5,6,13,7,8,9,10,16,17,11,15,19,18"
       }
       }'
