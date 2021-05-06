@@ -1,52 +1,54 @@
 Staging:
   src_columns:
-    reviewchannel text,
-    customer text,
     store_code text,
     store_name text,
-    store_address text,
-    citycn text,
-    city text,
-    province text,
-    region text,
     sold_to text,
     ship_to text,
     trad_id text,
-    channel_lv1 text,
-    channel_lv2 text,
-    channel_lv3 text,
+    reviewchannel text,
+    channel text,
+    partner text,
+    distributor text,
+    subdistributor text,
+    subdistributor_lvl1 text,
+    subdistributor_lvl2 text,
+    subdistributor_lvl3 text,
+    region text,
+    province text,
+    city text,
+    citycn text,
+    store_address text,
     opendate text,
-    upd_week text,
-    extra_col1 text,
-    extra_col2 text,
-    extra_col3 text,
-    extra_col4 text
+    upd_week text
 ODS:
 
 EDW:
   create_edw_table_query:
-    create table if not exists edw.d_lgc_phy_store
-      (sold_to varchar(200),
-     ship_to varchar(200),
-     trad_id varchar(200),
-     lego_store_code varchar(200),
-     store_name varchar(200),
-     review_channel varchar(200),
-     customer varchar(200),
-     store_address varchar(200),
-     province varchar(200),
-     city varchar(200),
-     city_cn varchar(200),
-     region varchar(200),
-     channel_lv1 varchar(200),
-     channel_lv2 varchar(200),
-     channel_lv3 varchar(200),
-     open_date varchar(100),
-     update_week varchar(100),
-     dl_batch_date varchar(100),
-     dl_load_time timestamp,
-     constraint pk_d_lgc_phy_store primary key(review_channel,lego_store_code)
-    )distributed by (review_channel);
+    create table if not exists edw.d_lgc_phy_store(
+    lego_store_code           varchar(100),
+    store_name                varchar(200),
+    sold_to                   varchar(100),
+    ship_to                   varchar(100),
+    trad_id                   varchar(100),
+    review_channel_name       varchar(200),
+    channel_name              varchar(200),
+    partner_name              varchar(200),
+    distributor_name          varchar(200),
+    sub_distributor_name      varchar(200),
+    sub_distributor_lvl1_name varchar(200),
+    sub_distributor_lvl2_name varchar(200),
+    sub_distributor_lvl3_name varchar(200),
+    region_name_en            varchar(200),
+    provice_name_en           varchar(200),
+    city_name_en              varchar(200),
+    city_name_cn              varchar(200),
+    store_address             varchar(200),
+    open_date                 varchar(50),
+    update_week               varchar(50),
+    ld_batch_date             varchar(50),
+    ld_load_time              timestamp,
+     constraint pk_d_lgc_phy_store primary key(review_channel_name,lego_store_code)
+    )distributed by (review_channel_name);
 
 
   insert_edw_table_query:

@@ -30,7 +30,7 @@ DAG_NAME = 'lgc_phy_store_dag'
 sheet ={
 "Store_Master_Data":{
     'start_column':0,
-    'column_width':21
+    'column_width':19
 }
 }
 
@@ -139,51 +139,41 @@ phy_store_stg2ods_task = PythonOperator(
     dag=dag,
 )
 
-# create edw data task:
-edw_lgc_phy_store_create = PythonOperator(
-    task_id='edw_lgc_phy_store_create',
-    provide_context=True,
-    python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_phy_store",
-               'sql_section': 'create_edw_table_query', 'args': args},
-    on_failure_callback=dag_failure_handler,
-    dag=dag,
-)
-
-## delete edw data task:
-#edw_lgc_phy_store_delete = PythonOperator(
-#    task_id='edw_lgc_phy_store_delete',
-#    provide_context=True,
-#    python_callable=update_downstream,
-#    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_phy_store",
-#               'sql_section': 'delete_edw_table_query', 'args': args},
-#    on_failure_callback=dag_failure_handler,
-#    dag=dag,
-#)
-
-# delete edw data task:
-# insert into edw data task:
-edw_lgc_phy_store_insert = PythonOperator(
-    task_id='edw_lgc_phy_store_insert',
-    provide_context=True,
-    python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_phy_store",
-               'sql_section': 'insert_edw_table_query', 'args': args},
-    on_failure_callback=dag_failure_handler,
-    dag=dag,
-)
-
-# update into edw data task:
-edw_lgc_phy_store_update = PythonOperator(
-    task_id='edw_lgc_phy_store_update',
-    provide_context=True,
-    python_callable=update_downstream,
-    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_phy_store",
-               'sql_section': 'update_edw_table_query', 'args': args},
-    on_failure_callback=dag_failure_handler,
-    dag=dag,
-)
-
+### create edw data task:
+##edw_lgc_phy_store_create = PythonOperator(
+##    task_id='edw_lgc_phy_store_create',
+##    provide_context=True,
+##    python_callable=update_downstream,
+##    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_phy_store",
+##               'sql_section': 'create_edw_table_query', 'args': args},
+##    on_failure_callback=dag_failure_handler,
+##    dag=dag,
+##)
+##
+##
+### delete edw data task:
+### insert into edw data task:
+##edw_lgc_phy_store_insert = PythonOperator(
+##    task_id='edw_lgc_phy_store_insert',
+##    provide_context=True,
+##    python_callable=update_downstream,
+##    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_phy_store",
+##               'sql_section': 'insert_edw_table_query', 'args': args},
+##    on_failure_callback=dag_failure_handler,
+##    dag=dag,
+##)
+##
+### update into edw data task:
+##edw_lgc_phy_store_update = PythonOperator(
+##    task_id='edw_lgc_phy_store_update',
+##    provide_context=True,
+##    python_callable=update_downstream,
+##    op_kwargs={'myutil': myutil, 'gpdb': db, 'sql_file_name': "lgc_phy_store",
+##               'sql_section': 'update_edw_table_query', 'args': args},
+##    on_failure_callback=dag_failure_handler,
+##    dag=dag,
+##)
+##
 
 postprocess_phy_store_task = PythonOperator(
     task_id='postprocess_phy_store_task',
@@ -194,5 +184,5 @@ postprocess_phy_store_task = PythonOperator(
     dag=dag,
 )
 
-preprocess_phy_store_task >> phy_store_src2stg_task >> phy_store_stg2ods_task >> edw_lgc_phy_store_create
-edw_lgc_phy_store_create >> edw_lgc_phy_store_insert >> edw_lgc_phy_store_update >> postprocess_phy_store_task
+preprocess_phy_store_task >> phy_store_src2stg_task >> phy_store_stg2ods_task >> postprocess_phy_store_task
+## edw_lgc_phy_store_create >>edw_lgc_phy_store_create >> edw_lgc_phy_store_insert >> edw_lgc_phy_store_update >> 
