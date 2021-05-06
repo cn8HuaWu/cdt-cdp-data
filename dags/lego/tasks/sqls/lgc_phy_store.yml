@@ -19,11 +19,7 @@ Staging:
     citycn text,
     store_address text,
     opendate text,
-    upd_week text,
-    extra_col1 text,
-    extra_col2 text,
-    extra_col3 text,
-    extra_col4 text
+    upd_week text
 
 
 ODS:
