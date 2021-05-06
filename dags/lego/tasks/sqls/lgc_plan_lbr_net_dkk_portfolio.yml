@@ -32,7 +32,7 @@ EDW:
         channel_code                         as channel_code,
         channel_name                         as channel_name,
         calendar_year                        as plan_lego_year,
-        cs_plan_month                        as plan_lego_month,
+        lpad(cs_plan_month,2,'0')            as plan_lego_month,
         cs_plan_version                      as plan_version,
         top_theme                            as top_theme,
         cast(consumer_sales_plan_value as numeric(17,2)) as plan_amt,
