@@ -65,5 +65,6 @@ EDW:
         ods.r_lgc_sales_stock_nip_dkk
     where
         cust_id is  not null
+        and store_id is not null
         and prod_id is not null
         and cst_cnsmr_sale_qty <> 'PC'; 

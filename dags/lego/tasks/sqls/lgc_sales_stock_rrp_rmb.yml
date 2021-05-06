@@ -25,8 +25,8 @@ EDW:
        distributor_code         varchar(200),
        distributor_name         varchar(200),
        sales_district           varchar(200),
-       lego_store_code          varchar(200),
        sales_location           varchar(200),
+       lego_store_code          varchar(200),
        lego_sku_id              varchar(50),
        lego_sku_name_en         varchar(200),
        consumer_sales_amt       numeric(17,2),
@@ -37,7 +37,7 @@ EDW:
        dl_batch_date            varchar(200),
        dl_load_time             timestamp,
        constraint pk_f_lgc_sales_stock_rrp_rmb primary key(sales_lego_year_week, distributor_code,lego_store_code,lego_sku_id)
-    )distributed by (sales_lego_year_week);
+    );
 
   insert_edw_table_query:
     delete from edw.f_lgc_sales_stock_rrp_rmb;
@@ -64,5 +64,6 @@ EDW:
        ods.r_lgc_sales_stock_rrp_rmb
     where
        cust_id is  not null
+       and store_id is not null
        and prod_id is not null
        and cst_cnsmr_sale_qty <> 'PC';
