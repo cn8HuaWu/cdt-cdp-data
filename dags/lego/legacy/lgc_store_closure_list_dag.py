@@ -28,7 +28,7 @@ src_entity = 'lgc_store_closure_list'
 DAG_NAME = 'lgc_store_closure_list_dag'
 
 sheet = {
-    "Sheet1": {
+    "StoreClosure": {
         'start_column': 0,
         'column_width': 4
     }
@@ -83,7 +83,7 @@ def load_src2stg(**kwargs):
     OK_FILE_PATH = kwargs.get('dag_run').conf.get('ok_file_path')
     excel_fun_list = [myutil.rearrange_columns]
     src2stg = Src2stgHandler(STAGING, batch_date, SRC_NAME, entity, stg_suffix, src_filename, myutil, OK_FILE_PATH,
-                             excel_fun_list=excel_fun_list, has_head=False, sheetname='Sheet1', merge=False, **sheet)
+                             excel_fun_list=excel_fun_list, has_head=False, sheetname='StoreClosure', merge=False, **sheet)
     src2stg.start(version='v2')
 
 
