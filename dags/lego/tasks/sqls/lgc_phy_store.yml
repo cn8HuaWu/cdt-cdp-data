@@ -25,28 +25,28 @@ ODS:
 EDW:
   create_edw_table_query:
     create table if not exists edw.d_lgc_phy_store(
-    lego_store_code           varchar(100),
-    store_name                varchar(200),
-    sold_to                   varchar(100),
-    ship_to                   varchar(100),
-    trad_id                   varchar(100),
-    review_channel_name       varchar(200),
-    channel_name              varchar(200),
-    partner_name              varchar(200),
-    distributor_name          varchar(200),
-    sub_distributor_name      varchar(200),
-    sub_distributor_lvl1_name varchar(200),
-    sub_distributor_lvl2_name varchar(200),
-    sub_distributor_lvl3_name varchar(200),
-    region_name_en            varchar(200),
-    provice_name_en           varchar(200),
-    city_name_en              varchar(200),
-    city_name_cn              varchar(200),
-    store_address             varchar(200),
-    open_date                 varchar(50),
-    update_week               varchar(50),
-    ld_batch_date             varchar(50),
-    ld_load_time              timestamp,
+     lego_store_code           varchar(100),
+     store_name                varchar(200),
+     sold_to                   varchar(100),
+     ship_to                   varchar(100),
+     trad_id                   varchar(100),
+     review_channel_name       varchar(200),
+     channel_name              varchar(200),
+     partner_name              varchar(200),
+     distributor_name          varchar(200),
+     sub_distributor_name      varchar(200),
+     sub_distributor_lvl1_name varchar(200),
+     sub_distributor_lvl2_name varchar(200),
+     sub_distributor_lvl3_name varchar(200),
+     region_name_en            varchar(200),
+     provice_name_en           varchar(200),
+     city_name_en              varchar(200),
+     city_name_cn              varchar(200),
+     store_address             varchar(200),
+     open_date                 varchar(50),
+     update_week               varchar(50),
+     ld_batch_date             varchar(50),
+     ld_load_time              timestamp,
      constraint pk_d_lgc_phy_store primary key(review_channel_name,lego_store_code)
     )distributed by (review_channel_name);
 
@@ -55,54 +55,31 @@ EDW:
     delete from edw.d_lgc_phy_store;
     insert into edw.d_lgc_phy_store
     select
-        sold_to,
-        ship_to,
-        trad_id,
-        lego_store_code,
-        store_name,
-        review_channel,
-        customer,
-        store_address,
-        province,
-        city,
-        city_cn,
-        region,
-        channel_lv1,
-        channel_lv2,
-        channel_lv3,
-        open_date,
-        update_week,
-        dl_batch_date,
-        dl_load_time
-    from 
-       (select
-            sold_to                        as sold_to,
-            ship_to                        as ship_to,
-            trad_id                        as trad_id,
-            store_code                     as lego_store_code,
-            store_name                     as store_name,
-            reviewchannel                  as review_channel,
-            customer                       as customer,
-            case when store_address ='0' then null else store_address end as store_address,
-            province                       as province,
-            city                           as city,
-            citycn                         as city_cn,
-            region                         as region,
-            channel_lv1                    as channel_lv1,
-            channel_lv2                    as channel_lv2,
-            channel_lv3                    as channel_lv3,
-            opendate                       as open_date,
-            replace(upd_week,'WK','13')    as update_week,
-            dl_batch_date                  as dl_batch_date,
-            now()                          as dl_load_time,
-            row_number()over(partition by store_code order by opendate desc,upd_week desc) as row_num 
-            
-          from
-            ods.r_lgc_phy_store
-          where  store_code is not null  
-            and ReviewChannel <>'ReviewChannel'
-         )tt 
-        where row_num =1 ;
+        store_code                        as lego_store_code,
+        store_name                        as store_name,
+        sold_to                           as sold_to,
+        ship_to                           as ship_to,
+        trad_id                           as trad_id,
+        reviewchannel                     as review_channel_name,
+        channel                           as channel_name,
+        partner                           as partner_name,
+        distributor                       as distributor_name ,
+        subdistributor                    as sub_distributor_name ,
+        subdistributor_lvl1               as sub_distributor_lvl1_name,
+        subdistributor_lvl2               as sub_distributor_lvl2_name,
+        subdistributor_lvl3               as sub_distributor_lvl3_name,
+        region                            as region_name_en ,
+        province                          as provice_name_en,
+        city                              as city_name_en,
+        citycn                            as city_name_cn,
+        store_address                     as store_address,
+        opendate                          as open_date,
+        replace(upper(upd_week),'wk','13')as update_week,
+        ld_batch_date                     as ld_batch_date,
+        now()                             as ld_load_time    
+    from ods.r_lgc_phy_store
+    where store_code is not null  
+      and ReviewChannel <>'ReviewChannel'
 
   update_edw_table_query:
     update edw.d_lgc_phy_store t1 
