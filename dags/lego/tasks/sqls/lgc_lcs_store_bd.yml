@@ -185,29 +185,28 @@ EDW:
         
   update_edw_table_query:
     update edw.d_lgc_phy_store t1 
-    set store_name = case when t2.store_name_chn is null then t1.store_name else  t2.store_name_chn  end,
-        customer = case when t2.Partner is null then t1.customer else  t2.Partner end ,
-        store_address = case when t2.store_address_chn is null then t1.store_address  else  t2.store_address_chn end ,
-        province = case when t2.province is null then t1.province else  t2.province end,
-        city = case when t2.city is null then t1.city else  t2.city end,
-        city_cn = case when t2.city_chn is null then t1.city_cn else  t2.city_chn end, 
-        region = case when t2.region is null then t1.region else  t2.region end
-    
+    set store_name = case when t2.store_name_cn is null then t1.store_name else  t2.store_name_cn  end,
+        partner_name = case when t2.partner_name is null then t1.partner_name else  t2.partner_name end ,
+        store_address = case when t2.store_address_cn is null then t1.store_address  else  t2.store_address_cn end ,
+        province_name_en = case when t2.province_en is null then t1.province_name_en else  t2.province_en end,
+        city_name_en = case when t2.city_en is null then t1.city_name_en else  t2.city_en end,
+        city_name_cn = case when t2.city_cn is null then t1.city_name_cn else  t2.city_cn end, 
+        region_name_en = case when t2.region_en is null then t1.region_name_en else  t2.region_en end
         from
             (select distinct 
-                  store_code , 
-                  store_name_chn,
-                  Partner,
-                  store_address_chn,
-                  province,
-                  city,
-                  city_chn,
-                  region,
+                  lego_store_code , 
+                  store_name_cn,
+                  partner_name,
+                  store_address_cn,
+                  province_en,
+                  city_en,
+                  city_cn,
+                  region_en,
                   dl_batch_date
              from 
-                ods.r_lgc_lcs_store_bd 
+                edw.f_lgc_lcs_store_bd
             
             )t2
         where 
-           t2.store_code = t1.lego_store_code
-           and upper(t1.review_channel) = 'LCS';
+           t2.lego_store_code = t1.lego_store_code
+           and upper(t1.channel_name) = 'LCS';
