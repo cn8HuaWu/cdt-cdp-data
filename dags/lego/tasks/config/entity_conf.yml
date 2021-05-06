@@ -515,7 +515,7 @@ entities:
     edw_prefix: f
     update_type: f
     stg_suffix: di
-    key: store_code,year,opening_month
+    key: store_name_key
 
   lgc_modified_product:
     edw_prefix: f
