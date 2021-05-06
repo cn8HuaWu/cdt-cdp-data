@@ -43,24 +43,23 @@ EDW:
     delete from edw.f_lgc_sales_stock_rrp_rmb;
     insert into edw.f_lgc_sales_stock_rrp_rmb
     select
-       ,split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as sales_lego_year_week
-       ,cust_link                    as c6_linking_distributor_code
-       ,cust_name                    as c6_linking_distributor_name
-       ,cust_id                      as distributor_code
-       ,replace(cust_name,'6 CN ','')as distributor_name
-       ,sale_district                as sales_district
-       ,cust_loca                    as sales_location
-       ,store_id                     as lego_store_code
-       ,prod_id                      as lego_sku_id
-       ,prod_name                    as lego_sku_name_en
-       ,cast(cst_cnsmr_sale_rrp as numeric(17,2))    as consumer_sales_amt
-       ,cast(cst_cnsmr_sale_qty as int)              as consumer_sales_qty
-       ,cast(cst_retail_stock_rrp as numeric(17,2))  as retail_stock_amt
-       ,cast(cst_retail_stock_qty as int)            as retail_stock_qty
-       
-       ,'PC'                    as qty_unit
-       ,dl_batch_date           as dl_batch_date
-       ,now()                   as dl_load_time
+       split_part(year_week ,'.',2)||'13'||split_part(year_week ,'.',1) as sales_lego_year_week,
+       cust_link                    as c6_linking_distributor_code,
+       cust_name                    as c6_linking_distributor_name,
+       cust_id                      as distributor_code,
+       replace(cust_name,'6 CN ','')as distributor_name,
+       sales_district               as sales_district,
+       cust_loca                    as sales_location,
+       store_id                     as lego_store_code,
+       prod_id                      as lego_sku_id,
+       prod_name                    as lego_sku_name_en,
+       cast(cst_cnsmr_sale_rrp as numeric(17,2))    as consumer_sales_amt,
+       cast(cst_cnsmr_sale_qty as int)              as consumer_sales_qty,
+       cast(cst_retail_stock_rrp as numeric(17,2))  as retail_stock_amt,
+       cast(cst_retail_stock_qty as int)            as retail_stock_qty,
+       'PC'                    as qty_unit,
+       dl_batch_date           as dl_batch_date,
+       now()                   as dl_load_time
     from
        ods.r_lgc_sales_stock_rrp_rmb
     where

@@ -71,3 +71,4 @@ EDW:
         ods.r_lgc_sellin
     where
         lower(cust_name) not like '%%not assigned' or lower(prod_name) not like '%%not assigned';
+        

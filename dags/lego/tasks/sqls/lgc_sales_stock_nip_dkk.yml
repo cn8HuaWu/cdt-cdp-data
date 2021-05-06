@@ -66,4 +66,4 @@ EDW:
     where
         cust_id is  not null
         and prod_id is not null
-        and cst_cnsmr_sale_qty <> 'PC';
+        and cst_cnsmr_sale_qty <> 'PC'; 
