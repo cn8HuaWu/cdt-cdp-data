@@ -28,8 +28,8 @@ EDW:
     insert into edw.f_lgc_store_renovation_list
     select
         store                              as lego_store_code,
-        to_char(to_date(close_date, 'dd/mm/yyyy'),'yyyy-mm-dd')  as close_date,
-        to_char(to_date(reopen_date, 'dd/mm/yyyy'),'yyyy-mm-dd') as reopen_date,
+        to_char(to_date(close_date, 'yyyy/mm/dd 24h:mi:ss'),'yyyy-mm-dd')  as close_date,
+        to_char(to_date(reopen_date, 'yyyy/mm/dd 24h:mi:ss'),'yyyy-mm-dd') as reopen_date,
         floor                              as his_store_floor,
         cast(sales_space as numeric(17,2)) as his_sales_space,
         dl_batch_date                      as dl_batch_date,

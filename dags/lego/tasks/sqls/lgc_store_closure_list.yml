@@ -32,8 +32,8 @@ EDW:
     )
     select
        store                                                   as lego_store_code,
-       to_char(to_date(close_date,'mm/dd/yyyy'),'yyyy-mm-dd')  as close_date,
-       to_char(to_date(reopen_date,'mm/dd/yyyy'),'yyyy-mm-dd') as reopen_date,
+       to_char(to_date(close_date,'yyyy/mm/dd 24h:mi:ss'),'yyyy-mm-dd')  as close_date,
+       to_char(to_date(reopen_date,'yyyy/mm/dd 24h:mi:ss'),'yyyy-mm-dd') as reopen_date,
        reason,
        dl_batch_date,
        now() as dl_load_time
