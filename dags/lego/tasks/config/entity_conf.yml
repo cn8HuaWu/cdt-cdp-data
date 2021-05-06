@@ -552,7 +552,7 @@ entities:
       },"TRU":{
       "filename":"StoreList_TRU.*","all_reg":"13,14,0,1,2,3,4,5,6,7,8,9,10,12,17,16,11,15,19,18"
       },"JDCOM":{
-      "filename":"StoreList_JD.COM.*","all_reg":"12,14,0,1,2,3,4,5,6,13,7,8,9,10,16,17,11,15,19,18"
+      "filename":"StoreList_JD.com.*","all_reg":"12,14,0,1,2,3,4,5,6,13,7,8,9,10,16,17,11,15,19,18"
       },"TMall_B2C":{
       "filename":"StoreList_TMall_B2C.*","all_reg":"12,14,0,1,2,3,4,5,6,13,7,8,9,10,16,17,11,15,19,18"
       },"JD_Flagship":{
