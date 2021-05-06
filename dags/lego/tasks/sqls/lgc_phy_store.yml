@@ -79,7 +79,7 @@ EDW:
         now()                             as ld_load_time    
     from ods.r_lgc_phy_store
     where store_code is not null  
-      and ReviewChannel <>'ReviewChannel'
+      and ReviewChannel <>'ReviewChannel'；
 
   update_edw_table_query:
     update edw.d_lgc_phy_store t1 
