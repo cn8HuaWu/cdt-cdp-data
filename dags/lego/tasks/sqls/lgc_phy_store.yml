@@ -19,8 +19,11 @@ Staging:
     citycn text,
     store_address text,
     opendate text,
-    upd_week text
-
+    upd_week text,
+    extra_col1 text,
+    extra_col2 text,
+    extra_col3 text,
+    extra_col4 text
 
 ODS:
 
@@ -48,7 +51,7 @@ EDW:
      open_date                 varchar(200),
      update_week               varchar(200),
      dl_batch_date             varchar(200),
-     dlload_time               timestamp,
+     dl_load_time              timestamp,
      constraint pk_d_lgc_phy_store primary key(review_channel_name,lego_store_code)
     )distributed by (review_channel_name);
 
@@ -77,8 +80,8 @@ EDW:
         store_address                     as store_address,
         opendate                          as open_date,
         replace(upper(upd_week),'wk','13')as update_week,
-        ld_batch_date                     as ld_batch_date,
-        now()                             as ld_load_time    
+        dl_batch_date                     as dl_batch_date,
+        now()                             as dl_load_time    
     from ods.r_lgc_phy_store
     where store_code is not null  
       and ReviewChannel <>'ReviewChannel';
