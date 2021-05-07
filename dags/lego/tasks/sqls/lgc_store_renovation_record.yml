@@ -36,3 +36,4 @@ EDW:
         now()                              as dl_load_time
     from
        ods.r_lgc_store_renovation_record;
+       
