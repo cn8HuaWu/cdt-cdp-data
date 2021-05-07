@@ -183,7 +183,7 @@ EDW:
     from
         ods.r_lgc_lcs_store_bd;
         
-  update_edw_table_query:
+
   update_edw_table_query:
     update edw.d_lgc_phy_store t1 
     set store_name_cn = case when t2.store_name_cn is null then t1.store_name_cn else  t2.store_name_cn  end,
