@@ -63,7 +63,7 @@ EDW:
     select
         store_code                        as lego_store_code,
         store_name                        as store_name_cn,
-        null                              as store_name_en
+        null                              as store_name_en,
         sold_to                           as sold_to,
         ship_to                           as ship_to,
         trad_id                           as trad_id,
