@@ -14,7 +14,7 @@ EDW:
     lego_store_code  varchar(200),
     close_date       varchar(200),
     reopen_date      varchar(200),
-    his_store_floor  bigint,
+    his_store_floor  varchar(200),
     his_sales_space  numeric(17,2),
     dl_batch_date    varchar(200),
     dl_load_time     timestamp,
