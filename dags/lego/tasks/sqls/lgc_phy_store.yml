@@ -31,7 +31,7 @@ EDW:
   create_edw_table_query:
     create table if not exists edw.d_lgc_phy_store(
      lego_store_code           varchar(200),
-     store_name                varchar(200),
+     store_name_cn             varchar(200),
      sold_to                   varchar(200),
      ship_to                   varchar(200),
      trad_id                   varchar(200),
@@ -47,7 +47,7 @@ EDW:
      province_en               varchar(200),
      city_en                   varchar(200),
      city_cn                   varchar(200),
-     store_address             varchar(200),
+     store_address_cn          varchar(200),
      open_date                 varchar(200),
      update_week               varchar(200),
      dl_batch_date             varchar(200),
@@ -61,7 +61,7 @@ EDW:
     insert into edw.d_lgc_phy_store
     select
         store_code                        as lego_store_code,
-        store_name                        as store_name,
+        store_name                        as store_name_cn,
         sold_to                           as sold_to,
         ship_to                           as ship_to,
         trad_id                           as trad_id,
@@ -77,7 +77,7 @@ EDW:
         province                          as province_en,
         city                              as city_en,
         citycn                            as city_cn,
-        store_address                     as store_address,
+        store_address                     as store_address_cn,
         substring(opendate,1,10)          as open_date,
         replace(upper(upd_week),'WK','13')as update_week,
         dl_batch_date                     as dl_batch_date,
@@ -88,9 +88,9 @@ EDW:
 
   update_edw_table_query:
     update edw.d_lgc_phy_store t1 
-    set store_name = case when t2.store_name_cn is null then t1.store_name else  t2.store_name_cn  end,
+    set store_name_cn = case when t2.store_name_cn is null then t1.store_name_cn else  t2.store_name_cn  end,
         partner_name = case when t2.partner_name is null then t1.partner_name else  t2.partner_name end ,
-        store_address = case when t2.store_address_cn is null then t1.store_address  else  t2.store_address_cn end ,
+        store_address_cn = case when t2.store_address_cn is null then t1.store_address_cn  else  t2.store_address_cn end ,
         province_en = case when t2.province_en is null then t1.province_en else  t2.province_en end,
         city_en = case when t2.city_en is null then t1.city_en else  t2.city_en end,
         city_cn = case when t2.city_cn is null then t1.city_cn else  t2.city_cn end, 
