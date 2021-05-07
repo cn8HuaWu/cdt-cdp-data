@@ -208,7 +208,6 @@ EDW:
                   dl_batch_date
              from 
                 edw.f_lgc_lcs_store_bd
-            
             )t2
         where 
            t2.lego_store_code = t1.lego_store_code
