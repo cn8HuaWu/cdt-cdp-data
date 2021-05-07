@@ -36,7 +36,7 @@ EDW:
         cs_plan_version                      as plan_version,
         top_theme                            as top_theme,
         cast(consumer_sales_plan_value as numeric(17,2)) as plan_amt,
-        'NEP/NIP DKK'                        as data_version,
+        'NIP/NET DKK'                        as data_version,
         dl_batch_date                        as dl_batch_date,
         now()                                as dl_load_time
     from

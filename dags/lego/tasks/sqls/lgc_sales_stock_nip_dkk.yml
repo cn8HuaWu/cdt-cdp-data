@@ -59,7 +59,7 @@ EDW:
        cast(cst_retail_stock_qty as int)         as retail_stock_qty,
        cast(cst_retail_stock_nip as numeric(17,2)) as retail_stock_amt,
        'PC'                         as qty_unit,
-       'NEP/NIP DKK'                as data_version,
+       'NIP/NET DKK'                as data_version,
        dl_batch_date                as dl_batch_date,
        now()                        as dl_load_time
     from
