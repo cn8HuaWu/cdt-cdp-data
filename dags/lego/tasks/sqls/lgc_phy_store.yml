@@ -89,6 +89,35 @@ EDW:
       and ReviewChannel <>'ReviewChannel';
 
   update_edw_table_query:
+    insert into edw.d_lgc_phy_store
+    select
+        lego_store_code                      as lego_store_code,
+        store_name_cn                        as store_name_cn,
+        store_name_en                        as store_name_en,
+        null                                 as sold_to,
+        null                                 as ship_to,
+        null                                 as trad_id,
+        'D2C'                                as review_channel_name,
+        'LCS'                                as channel_name,
+        partner_name                         as partner_name,
+        null                                 as distributor_name ,
+        null                                 as sub_distributor_name ,
+        null                                 as sub_distributor_lvl1_name,
+        null                                 as sub_distributor_lvl2_name,
+        null                                 as sub_distributor_lvl3_name,
+        region_en                            as region_en ,
+        province_en                          as province_en,
+        city_en                              as city_en,
+        city_cn                              as city_cn,
+        store_address_cn                     as store_address_cn,
+        null                                 as open_date,
+        null                                 as update_week,
+        dl_batch_date                        as dl_batch_date,
+        now()                                as dl_load_time    
+    from 
+        edw.f_lgc_lcs_store_bd 
+    where lego_store_code not in(select lego_store_code from edw.d_lgc_phy_store);
+
     update edw.d_lgc_phy_store t1 
     set store_name_cn = case when t2.store_name_cn is null then t1.store_name_cn else  t2.store_name_cn  end,
         store_name_en = case when t2.store_name_en is null then t1.store_name_en else  t2.store_name_en  end,
